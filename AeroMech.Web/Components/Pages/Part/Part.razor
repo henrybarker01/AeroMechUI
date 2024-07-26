@@ -1,0 +1,154 @@
+﻿@page "/parts"
+@using BlazorBootstrap
+
+<PageTitle>Parts</PageTitle>
+
+<Modal @ref="modal" Title="@title">
+    <BodyTemplate>
+        <EditForm Model="@part" OnValidSubmit="@AddNewPart">
+            <DataAnnotationsValidator />
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="part-number">Part Number:</label>
+                        <InputText @bind-Value="part.PartCode" type="text" class="form-control" id="part-number"></InputText>
+                        <ValidationMessage For="() => part.PartCode" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <InputText @bind-Value="part.PartDescription" type="text" class="form-control" id="description"></InputText>
+                        <ValidationMessage For="() => part.PartDescription" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="warehouse">Warehouse:</label>
+                        <InputText @bind-Value="part.Warehouse.WarehouseCode" type="text" class="form-control" id="warehouse"></InputText>
+                        <ValidationMessage For="() => part.Warehouse.WarehouseCode" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="bin">Bin:</label>
+                        <InputText @bind-Value="part.Bin" type="text" class="form-control" id="bin"></InputText>
+                        <ValidationMessage For="() => part.Bin" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="supplier-code">Supplier Code:</label>
+                        <InputText @bind-Value="part.SupplierCode" type="text" class="form-control" id="supplier-code"></InputText>
+                        <ValidationMessage For="() => part.SupplierCode" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="product-class">Product Class:</label>
+                        <InputText @bind-Value="part.ProductClass" type="text" class="form-control" id="product-class"></InputText>
+                        <ValidationMessage For="() => part.ProductClass" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="cycle-count">Cycle Count:</label>
+                        <NumberInput @bind-Value="part.CycleCount" type="text" class="form-control" id="cycle-count"></NumberInput>
+                        <ValidationMessage For="() => part.CycleCount" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="qty-on-hand">Qty On Hand:</label>
+                        <NumberInput @bind-Value="part.QtyOnHand" class="form-control" id="qty-on-hand" EnableMinMax="true" Min="1"></NumberInput>
+                        <ValidationMessage For="() => part.QtyOnHand" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="cost-price">Cost Price:</label>
+                        <NumberInput TValue="double" @bind-Value="@part.CostPrice" class="form-control" id="cost-price" Step=".01" EnableMinMax="true" Min="1" />
+                        <ValidationMessage For="() => part.CostPrice" />
+                    </div>
+                </div>
+                <div class="row footer-buttons">
+                    <div>
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                    </div>
+                    <div>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </BodyTemplate>
+</Modal>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-2 header">
+            <h1>Parts</h1>
+            <span class="add-icon">
+                <Icon Name="IconName.PlusCircleFill" Size="IconSize.x2" Color="IconColor.Primary" @onclick="OnAddPartClick" Style="cursor: pointer" />
+            </span>
+        </div>
+
+        <div class="col-1">
+        </div>
+        <div class="col-9 text-right"></div>
+    </div>
+</div>
+
+@if (parts == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Part Number</th>
+                <th>Description</th>
+                <th>Warehouse</th>
+                <th>Bin</th>
+                <th>Supplier Code</th>
+                <th>Product Class</th>
+                <th>Cycle Count</th>
+                <th>Qty On Hand</th>
+                <th>Cost Price</th>
+                <th>Total Value</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var part in parts)
+            {
+                <tr>
+                    <td>@part.PartCode</td>
+                    <td class="part-description">@part.PartDescription</td>
+                    <td>@part.Warehouse?.WarehouseCode</td>
+                    <td>@part.Bin</td>
+                    <td>@part.SupplierCode</td>
+                    <td>@part.ProductClass</td>
+                    <td>@part.CycleCount</td>
+                    <td>@part.QtyOnHand</td>
+                    <td>@part.CostPrice</td>
+                    <td>@((part.QtyOnHand * part.CostPrice).ToString("N2"))</td>
+                    <td>
+                        <div style="min-width: 65px">
+                            <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeletePart(part)" Class="me-2" Style="cursor: pointer" />
+                            <Icon Name="IconName.Pencil" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditPartClick(part)" Style="cursor: pointer" />
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+
+
+
+}

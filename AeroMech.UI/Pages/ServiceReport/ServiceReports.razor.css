@@ -1,0 +1,11 @@
+﻿.header {
+    display: flex;
+}
+
+.add-icon {
+    margin-left: 10px;
+}
+
+.edit-rate {
+    margin-left: 10px;
+}

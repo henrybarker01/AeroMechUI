@@ -1,0 +1,45 @@
+﻿@if (serviceReports != null)
+{
+    <div class="widger-container">
+        <table class="widget-data-table">
+            <thead class="widget-data-header">
+                <tr>
+                    <td class="widget-data-col">
+                        Report Number
+                    </td>
+                    <td class="widget-data-col">
+                        Sales Order Number
+                    </td>
+                    <td class="widget-data-col report-date">
+                        Date
+                    </td>
+                </tr>
+
+            </thead>
+            <tbody class="widget-data-body">
+                @foreach (var serviceReport in serviceReports)
+                {
+                    <tr class="widget-data-row" @onclick="() => LoadServiceReport(serviceReport.Id)">
+                        <td class="widget-data-col report-number">
+                           AEM @serviceReport.Id
+                        </td>
+                        <td class="widget-data-col">
+                            @serviceReport.SalesOrderNumber
+                        </td>
+                        <td class="widget-data-col report-date">
+                            @serviceReport.ReportDate.ToString("dd-MMM-yyyy")
+                        </td>
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+
+}
+else
+{
+    <div>Loading...</div>
+}
+
+

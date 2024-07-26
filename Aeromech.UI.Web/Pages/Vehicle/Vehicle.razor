@@ -1,0 +1,165 @@
+﻿@page "/vehicles"
+@using BlazorBootstrap
+
+<PageTitle>Vehicle</PageTitle>
+
+<Modal @ref="modal" Title="@title">
+    <BodyTemplate>
+        <EditForm Model="@vehicle" OnValidSubmit="@AddNewVehicle">
+            <DataAnnotationsValidator />
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="serial-number">Serial Number:</label>
+                        <InputText @bind-Value="vehicle.SerialNumber" type="text" class="form-control" id="serial-number"></InputText>
+                        <ValidationMessage For="() => vehicle.SerialNumber" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="machine-type">Machine Type:</label>
+                        <InputText @bind-Value="vehicle.MachineType" type="text" class="form-control" id="machine-type"></InputText>
+                        <ValidationMessage For="() => vehicle.MachineType" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="description">Description:</label>
+                        <InputText @bind-Value="vehicle.Description" type="text" class="form-control" id="description"></InputText>
+                        <ValidationMessage For="() => vehicle.Description" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="manufacture-date">Manufacture Date:</label>
+                        <DateInput TValue="DateOnly" @bind-Value="vehicle.ManufactureDate" id="manufacture-date" />
+                        <ValidationMessage For="() => vehicle.ManufactureDate" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="date-in-service">Date In Service:</label>
+                        <DateInput TValue="DateOnly?" @bind-Value="vehicle.DateInService" id="date-in-service" />
+                        <ValidationMessage For="() => vehicle.DateInService" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="engine-hours">Engine Hours:</label>
+                        <NumberInput @bind-Value="vehicle.EngineHours" type="text" class="form-control" id="engine-hours" Step=".01"></NumberInput>
+                        <ValidationMessage For="() => vehicle.EngineHours" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="purchase-price">Purchase Price:</label>
+                        <NumberInput @bind-Value="vehicle.PurchasePrice" class="form-control" id="purchase-price" Step=".01"></NumberInput>
+                        <ValidationMessage For="() => vehicle.PurchasePrice" />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label for="job-number">Job Number:</label>
+                        <InputText @bind-Value="vehicle.JobNumber" type="text" class="form-control" id="job-number"></InputText>
+                        <ValidationMessage For="() => vehicle.JobNumber" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="footer-buttons">
+                    <div class="close">
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                    </div>
+                    <div class="save">
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
+                    </div>
+                </div>               
+            </div>
+        </EditForm>
+    </BodyTemplate>
+</Modal>
+
+<div class="container-fluid" style="padding: 0">
+    <div class="row">
+        <div class="col-2 header">
+            <h1>Vehicles</h1>
+            <span class="add-icon">
+                <Icon Name="IconName.PlusCircleFill" Size="IconSize.x2" Color="IconColor.Primary" @onclick="OnAddVehicleClick" Style="cursor: pointer" />
+            </span>
+        </div>
+        <div class="col-1">
+        </div>
+        <div class="col-9 text-right"></div>
+    </div>
+    <br />
+    <div class="row">
+        <div class="col-6">
+            @if (pleaseSelectClient && selectedClientId == 0)
+            {
+                <div style="color: red; font-weight: bold;">Please select a client.</div>
+                <br />
+            }
+
+            <div class="row">
+                <div class="form-group">
+                    <label for="select-client">Client:</label>
+                    <select class="form-select" aria-label="Default select example" @onchange="HandleOnChangeClient" id="select-client">
+                        <option selected>Select client</option>
+                        @foreach (var client in clients)
+                        {
+                            <option value="@client.Id">@client.Name </option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div class="col-6">
+        </div>
+
+    </div>
+    <br />
+</div>
+
+@if (selectedClientId != 0 && vehicles == null)
+{
+    <p><em>Loading...</em></p>
+}
+else if (vehicles != null)
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Serial Number</th>
+                <th>Description</th>
+                <th>MachineType</th>
+                <th>Manufacture Date</th>
+                <th>Date In Service</th>
+                <th>Purchase Price</th>
+                <th>EngineHours</th>
+                <th>Job Number</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var vehicle in vehicles)
+            {
+                <tr>
+                    <td>@vehicle.SerialNumber</td>
+                    <td class="vehicle-description">@vehicle.Description</td>
+                    <td>@vehicle.MachineType</td>
+                    <td>@vehicle.ManufactureDate</td>
+                    <td>@vehicle.DateInService</td>
+                    <td>@vehicle.PurchasePrice</td>
+                    <td>@vehicle.EngineHours</td>
+                    <td>@vehicle.JobNumber</td>
+                    <td>
+                        <div style="min-width: 65px">
+                            <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteVehicle(vehicle)" Class="me-2" Style="cursor: pointer" />
+                            <Icon Name="IconName.Pencil" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditVehicleClick(vehicle)" Style="cursor: pointer" />
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

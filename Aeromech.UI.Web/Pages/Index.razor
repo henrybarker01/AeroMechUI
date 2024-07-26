@@ -1,0 +1,51 @@
+﻿@page "/"
+
+<PageTitle>Home</PageTitle>
+<AuthorizeView>
+	<Authorized>
+		<div class="container-fluid">
+			<div class="row">
+				<div class="col-md-4 col-sm-1 widget">
+					<div class="centered">
+						<h3 class="widget-header">Birthday List</h3>
+						<div class="under-construction">Under construction</div>
+					</div>
+				</div>
+				<div class="col-md-4 col-sm-1 widget">
+					<div class="centered">
+						<h3 class="widget-header">Service Reports</h3>
+						<AeroMech.UI.Web.Pages.Widgets.ServiceReport.ServiceReportWidget></AeroMech.UI.Web.Pages.Widgets.ServiceReport.ServiceReportWidget>
+					</div>
+				</div>
+				<div class="col-md-4 col-sm-1 widget">
+					<div class="centered">
+						<h3 class="widget-header">Quotes</h3>
+						<div class="under-construction">Under construction</div>
+					</div>
+				</div>
+				@* </div>
+				<div class="row"> *@
+				<div class="col-md-4 col-sm-1 widget">
+					<div class="centered">
+						<h3 class="widget-header">Contact List</h3>
+						<div class="under-construction">Under construction</div>
+					</div>
+				</div>
+				<div class="col-md-4 col-sm-1 widget">
+					<div class="centered">
+						<h3 class="widget-header">Stock Levels</h3>
+						<div class="under-construction">Under construction</div>
+					</div>
+				</div>
+				<div class="col-md-4 col-sm-1 widget">
+					<div class="centered">
+						<img class="aero-mech-logo" src="./images/aeromechnotinline.jpeg" />
+					</div>
+				</div>
+			</div>
+		</div>
+	</Authorized>
+	<NotAuthorized>
+		 <AeroMech.UI.Web.Pages.Login.Login></AeroMech.UI.Web.Pages.Login.Login>
+	</NotAuthorized>
+</AuthorizeView>

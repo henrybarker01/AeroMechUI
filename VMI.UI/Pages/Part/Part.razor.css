@@ -1,0 +1,18 @@
+﻿.header {
+    display: flex;
+}
+
+.add-icon {
+    margin-left: 10px;
+}
+
+.edit-rate {
+    margin-left: 10px;
+}
+
+.part-description {
+    text-overflow: ellipsis;
+    max-width: 400px;
+    text-wrap: nowrap;
+    overflow: hidden;
+}

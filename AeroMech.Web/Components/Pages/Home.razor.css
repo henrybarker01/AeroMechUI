@@ -1,0 +1,27 @@
+﻿.centered {
+    display: flex;
+    height: 350px;
+    margin: 20px;
+    background-color: #d3d3d326;
+    padding: 20px;
+    text-align: center;
+    flex-direction: column;
+}
+
+.under-construction {
+    margin-top: 15px;
+}
+
+.aero-mech-logo {
+    width: 100%;
+    margin-top: -38px;
+    z-index: -1;
+}
+
+.widget {
+    min-width: 330px;
+}
+
+.widget-header {
+    font-weight: bold;
+}

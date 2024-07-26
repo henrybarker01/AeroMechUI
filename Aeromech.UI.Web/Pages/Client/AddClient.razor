@@ -1,0 +1,81 @@
+﻿ @page "/add-client"
+
+<PageTitle>Add Client</PageTitle>
+
+
+<h1>Add Client</h1>
+
+
+<EditForm Model="@client" OnValidSubmit="AddNewClient">
+	<div class="container-fluid">
+		<div class="row">
+			<div class="form-group mb-20">
+				<label for="email">Client Name:</label>
+				<InputText @bind-Value="client.Name" type="text" class="form-control" id="name"></InputText>
+			</div>
+		</div>
+		<div class="row mt-5">
+			<div class="form-group">
+				<label for="contact-person-name">Contact Person Name:</label>
+				<InputText @bind-Value="client.ContactPersonName" type="text" class="form-control" id="contact-person-name"></InputText>
+			</div>
+		</div>
+		<div class="row mt-3">
+			<div class="form-group">
+				<label for="contact-person-number">Contact Person Number:</label>
+				<InputText @bind-Value="client.ContactPersonNumber" type="phone" class="form-control" id="contact-person-nunmer"></InputText>
+			</div>
+		</div>
+		<div class="row mt-3">
+			<div class="form-group">
+				<label for="contact-person-email">Contact Person email:</label>
+				<InputText @bind-Value="client.ContactPersonEmail" type="email" class="form-control" id="contact-person-email"></InputText>
+			</div>
+		</div>
+		<div class="row mt-5">
+			<div class="form-group">
+				<label for="addressLine1">Address Line 1:</label>
+				<InputText @bind-Value="client.AddressLine1" type="text" class="form-control" id="addressLine1"></InputText>
+			</div>
+		</div>
+		<div class="row mt-3">
+			<div class="form-group">
+				<label for="addressLine2">Address Line 2:</label>
+				<InputText @bind-Value="client.AddressLine2" type="text" class="form-control" id="addressLine2"></InputText>
+			</div>
+		</div>
+		<div class="row mt-3">
+			<div class="form-group">
+				<label for="city">City:</label>
+				<InputText @bind-Value="client.City" type="text" class="form-control" id="city"></InputText>
+			</div>
+		</div>
+		<div class="row mt-3">
+			<div class="form-group">
+				<label for="postalCode">Post Code:</label>
+				<InputText @bind-Value="client.PostalCode" type="text" class="form-control" id="postalCode"></InputText>
+			</div>
+		</div>
+
+		<div class="row mt-5">
+			<div class="col-1 me-5">
+				<button class="btn btn-primary pe-4 ps-4">Save</button>
+			</div>
+			<div class="col-1">
+				<button class="btn btn-secondary pe-4 ps-4" @onclick="@OnCloseClick">Close</button>
+			</div>
+
+
+		</div>
+
+	</div>
+
+
+
+
+</EditForm>
+
+<div>
+</div>
+
+

@@ -1,0 +1,61 @@
+﻿@page "/service-reports"
+
+<PageTitle>Service Reports</PageTitle>
+
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-4 header">
+            <h1>Service Reports</h1>
+            <span class="add-icon">
+                <Icon Name="IconName.PlusSquare" Size="IconSize.x2" Color="IconColor.Primary" @onclick="NavigateToAddServiceReport" Style="cursor: pointer" />
+            </span>
+        </div>
+
+        <div class="col-1">
+        </div>
+        <div class="col-7 text-right"></div>
+    </div>
+</div>
+
+@if (serviceReports == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Report Number</th>
+                <th>Report Date</th>
+                <th>Sales Order Number</th>
+                <th>Instruction</th>
+                <th>Client</th>
+                <th>Service Type</th>
+                <th>Total</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var serviceReport in serviceReports)
+            {
+                <tr>
+                    <td>@serviceReport.ReportNumber</td>
+                    <td>@serviceReport.ReportDate</td>
+                    <td>@serviceReport.SalesOrderNumber</td>
+                    <td>@serviceReport.Instruction</td>
+                    <td>@serviceReport.Client.Name</td>
+                    <td>@serviceReport.ServiceType</td>
+                    <td>@CalcuateTotalReportValue(serviceReport)</td>
+                    <td>
+                        <Icon Name="IconName.PersonFillGear" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => EditServiceReport(serviceReport.Id)" Style="cursor: pointer" />
+                        <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => PrintServiceReport(serviceReport.Id)" Style="cursor: pointer" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+

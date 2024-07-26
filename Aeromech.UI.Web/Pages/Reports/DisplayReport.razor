@@ -1,0 +1,12 @@
+﻿@page "/ShowPDF"
+@page "/ShowPDF/{reportId:int}"
+@using BlazorBootstrap
+
+@if (pdfBase64String != null)
+{
+    <PdfViewer Class="mb-3"
+               Url="@string.Format("data:application/pdf;base64,{0}", pdfBase64String)"
+               OnDocumentLoaded="OnDocumentLoaded"
+                 
+               OnPageChanged="OnPageChanged" />
+}

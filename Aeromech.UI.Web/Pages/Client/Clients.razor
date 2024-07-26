@@ -1,0 +1,133 @@
+﻿@page "/clients"
+@using AeroMech.Models
+@using BlazorBootstrap
+@using Newtonsoft.Json
+
+<PageTitle>Clients</PageTitle>
+
+<Modal @ref="modal" Title="@title">
+    <BodyTemplate>
+        <EditForm Model="@client" OnValidSubmit=@AddNewClient>
+            <DataAnnotationsValidator />
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="Name">Name</label>
+                        <InputText @bind-Value=client.Name class="form-control" id="Name" />
+                        <ValidationMessage For="() => client.Name" />
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="form-group">
+                        <label for="contact-person-name">Contact Person Name:</label>
+                        <InputText @bind-Value="client.ContactPersonName" type="text" class="form-control" id="contact-person-name"></InputText>
+                        <ValidationMessage For="() => client.ContactPersonName" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="contact-person-number">Contact Person Number:</label>
+                        <InputText @bind-Value="client.ContactPersonNumber" type="phone" class="form-control" id="contact-person-nunmer"></InputText>
+                        <ValidationMessage For="() => client.ContactPersonNumber" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="contact-person-email">Contact Person email:</label>
+                        <InputText @bind-Value="client.ContactPersonEmail" type="email" class="form-control" id="contact-person-email"></InputText>
+                        <ValidationMessage For="() => client.ContactPersonEmail" />
+                    </div>
+                </div>
+                <div class="row mt-5">
+                    <div class="form-group">
+                        <label for="addressLine1">Address Line 1:</label>
+                        <InputText @bind-Value="client.AddressLine1" type="text" class="form-control" id="addressLine1"></InputText>
+                        <ValidationMessage For="() => client.AddressLine1" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="addressLine2">Address Line 2:</label>
+                        <InputText @bind-Value="client.AddressLine2" type="text" class="form-control" id="addressLine2"></InputText>
+                        <ValidationMessage For="() => client.AddressLine2" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="city">City:</label>
+                        <InputText @bind-Value="client.City" type="text" class="form-control" id="city"></InputText>
+                        <ValidationMessage For="() => client.City" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="postalCode">Post Code:</label>
+                        <InputText @bind-Value="client.PostalCode" type="text" class="form-control" id="postalCode"></InputText>
+                        <ValidationMessage For="() => client.PostalCode" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="footer-buttons">
+                    <div class="close">
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                    </div>
+                    <div>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
+                    </div>
+                </div>
+               
+            </div>
+        </EditForm>
+    </BodyTemplate>
+</Modal>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-2 header">
+            <h1>Clients</h1>
+            <span class="add-icon">
+                <Icon Name="IconName.BuildingFillAdd" Size="IconSize.x2" Color="IconColor.Primary" @onclick="OnShowModalClick" Style="cursor: pointer" />
+            </span>
+        </div>
+        <div class="col-1">
+        </div>
+        <div class="col-9 text-right"></div>
+    </div>
+</div>
+
+@if (clients == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+
+                <th>Name</th>
+                <th>Contact Person</th>
+                <th>Contact Number</th>
+                <th>Contact Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var client in clients)
+            {
+                <tr>
+
+                    <td>@client.Name</td>
+                    <td>@client.ContactPersonName</td>
+                    <td>@client.ContactPersonNumber</td>
+                    <td>@client.ContactPersonEmail</td>
+                    <td>
+                        <Icon Name="IconName.BuildingFillDash" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteClient(client)" Class="me-2" Style="cursor: pointer" />
+                        <Icon Name="IconName.BuildingFillGear" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditClientClick(client)" Style="cursor: pointer" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
