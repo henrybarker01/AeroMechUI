@@ -6,6 +6,9 @@ namespace AeroMech.Data.Persistence
 {
     public class AeroMechDBContext : IdentityDbContext
     {
+        public AeroMechDBContext()
+        {
+        }
 
         public AeroMechDBContext(DbContextOptions<AeroMechDBContext> options) : base(options)
         {

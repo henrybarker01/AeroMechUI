@@ -18,15 +18,15 @@ builder.Services.AddScoped<ClientService, ClientService>();
 builder.Services.AddScoped<EmployeeService, EmployeeService>();
 builder.Services.AddScoped<PartsService, PartsService>();
 builder.Services.AddScoped<VehicleService, VehicleService>();
-builder.Services.AddScoped<ServiceReportService, ServiceReportService>();
+builder.Services.AddTransient<ServiceReportService, ServiceReportService>();
 builder.Services.AddScoped<UserService, UserService>();
 
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
-builder.Services.AddDbContext<AeroMechDBContext>(options =>
+builder.Services.AddDbContextFactory<AeroMechDBContext>(options =>
 {
     options.UseSqlServer(connectionString);
-});
+}, ServiceLifetime.Transient);
 
 //builder.Services.AddDbContext<AuthenticationDbContext>(options =>
 //    options.UseSqlServer(connectionString));
@@ -35,8 +35,8 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.Requ
     .AddEntityFrameworkStores<AeroMechDBContext>();
 
 builder.Services.AddScoped<IHostEnvironmentAuthenticationStateProvider>(sp =>
-				(ServerAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>()
-			);
+                (ServerAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>()
+            );
 
 // Add services to the container.
 builder.Services.AddRazorPages();
@@ -44,6 +44,7 @@ builder.Services.AddServerSideBlazor();
 builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddScoped<FieldServiceReport, FieldServiceReport>();
+builder.Services.AddScoped<Quote, Quote>();
 
 builder.Services.AddBlazorBootstrap();
 

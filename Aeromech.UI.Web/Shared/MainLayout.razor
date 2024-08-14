@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+﻿@using BlazorBootstrap
+@inherits LayoutComponentBase
 
 
 <PageTitle>Aeromech.UI.Web</PageTitle>
@@ -9,6 +10,7 @@
     </div>
 
     <main>
+        <Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
         <div class="top-row px-4">
             <LoginDisplay /> 
            @*  <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a> *@
@@ -19,3 +21,5 @@
         </article>
     </main>
 </div>
+
+

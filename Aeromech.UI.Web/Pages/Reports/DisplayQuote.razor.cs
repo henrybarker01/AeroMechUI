@@ -5,7 +5,7 @@ using Microsoft.JSInterop;
 
 namespace AeroMech.UI.Web.Pages.Reports
 {
-    public partial class DisplayReport
+    public partial class DisplayQuote
     {
         [Parameter]
         public int reportId { get; set; }
@@ -31,7 +31,7 @@ namespace AeroMech.UI.Web.Pages.Reports
 
         public async Task<string> GetPDF(int ReportId)
         {
-            pdfBytes = await ServiceReportService.DownloadServiceReport(ReportId);
+            pdfBytes = await ServiceReportService.DownloadQuote(ReportId);
             return Convert.ToBase64String(pdfBytes);
         }
 

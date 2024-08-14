@@ -14,13 +14,14 @@ namespace AeroMech.UI.Web.Pages.Widgets.ServiceReport
         protected override async Task OnInitializedAsync()
         {
             serviceReports = await ServiceReportService.GetRecentServiceReports(DateTime.Now.AddMonths(-1));
-
-            // return base.OnInitializedAsync();
         }
 
-        private void LoadServiceReport(int Id)
+        private void LoadServiceReport(ServiceReportModel serviceReport)
         {
-            NavigationManager.NavigateTo($"/ShowPDF/{Id}");
+            if (serviceReport.IsComplete)
+                NavigationManager.NavigateTo($"/ShowPDF/{serviceReport.Id}");
+            else
+                NavigationManager.NavigateTo($"/add-service-report/{serviceReport.Id}");
         }
     }
 }

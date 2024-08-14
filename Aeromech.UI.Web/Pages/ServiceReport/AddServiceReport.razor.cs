@@ -2,194 +2,277 @@ using AeroMech.Models;
 using AeroMech.Models.Enums;
 using AeroMech.Models.Models;
 using AeroMech.UI.Web.Services;
+using BlazorBootstrap;
+using BootstrapBlazor.Components;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Forms;
 
 namespace AeroMech.UI.Web.Pages.ServiceReport
 {
-    public partial class AddServiceReport
-    {
-        [Inject] ClientService ClientService { get; set; }
-        [Inject] EmployeeService EmployeeService { get; set; }
-        [Inject] PartsService PartsService { get; set; }
-        [Inject] VehicleService VehicleService { get; set; }
-        [Inject] ServiceReportService ServiceReportService { get; set; }
-        [Inject] NavigationManager NavigationManager { get; set; }
+	public partial class AddServiceReport
+	{
+		[Inject] ClientService ClientService { get; set; }
+		[Inject] EmployeeService EmployeeService { get; set; }
+		[Inject] PartsService PartsService { get; set; }
+		[Inject] VehicleService VehicleService { get; set; }
+		[Inject] ServiceReportService ServiceReportService { get; set; }
+		[Inject] NavigationManager NavigationManager { get; set; }
 
-        [Parameter] public int servceReportId { get; set; }
+		[Inject] protected BlazorBootstrap.ToastService ToastService { get; set; }
 
-        ServiceReportModel serviceReport;
-        List<EmployeeModel> employees = new List<EmployeeModel>();
-        List<ClientModel> clients = new List<ClientModel>();
-        List<VehicleModel> vehicles = new List<VehicleModel>();
-        List<PartModel> parts = new List<PartModel>();
-        ServiceReportPartModel selectedPart = new ServiceReportPartModel();
-        ServiceReportEmployeeModel selectedEmployee = new ServiceReportEmployeeModel();
+		[Parameter] public int serviceReportId { get; set; }
 
-        protected override async Task OnInitializedAsync()
-        {
-            serviceReport = new ServiceReportModel();
-            employees = await EmployeeService.GetEmployees();
-            clients = await ClientService.GetClients();
-            parts = await PartsService.GetParts();
+		private EditContext? editContext;
+		private BlazorBootstrap.Modal salesOrderNumberModal = default!;
+		ServiceReportModel serviceReport;
+		List<EmployeeModel> employees = new List<EmployeeModel>();
+		List<ClientModel> clients = new List<ClientModel>();
+		List<VehicleModel> vehicles = new List<VehicleModel>();
+		List<PartModel> parts = new List<PartModel>();
+		ServiceReportPartModel selectedPart = new ServiceReportPartModel();
+		ServiceReportEmployeeModel selectedEmployee = new ServiceReportEmployeeModel();
+		private string pageTitle = "";
 
-            if (servceReportId == 0)
-            {
-                InitServiceReport();
-            }
-            else
-            {
-                serviceReport = await ServiceReportService.GetServiceReport(servceReportId);
-                //serviceReport?.Employees?.Add(new ServiceReportEmployeeModel() { IsAdding = true });
-                //serviceReport?.Parts?.Add(new ServiceReportPartModel() { IsAdding = true });
-            }
-        }
+		protected override async Task OnInitializedAsync()
+		{
+			serviceReport = new ServiceReportModel();
+			editContext = new(serviceReport);
 
-        private void InitServiceReport()
-        {
+			employees = await EmployeeService.GetEmployees();
+			clients = await ClientService.GetClients();
+			parts = await PartsService.GetParts();
+
+			if (serviceReportId == 0)
+			{
+				pageTitle = "New Field Service Report";
+				InitServiceReport();
+			}
+			else
+			{
+				pageTitle = "Edit Field Service Report";
+				serviceReport = await ServiceReportService.GetServiceReport(serviceReportId);
+
+				if (serviceReport.ClientId != 0)
+				{
+					var vehicleId = serviceReport.VehicleId;
+					await HandleOnChangeClient(serviceReport.ClientId);
+
+					if (vehicleId != 0)
+					{
+						HandleOnChangeVehicle(vehicleId);
+					}
+				}
+
+				editContext = new(serviceReport);
+			}
+		}
+
+		private void InitServiceReport()
+		{
+			serviceReport.Employees = new List<ServiceReportEmployeeModel>();
+
+			serviceReport.Parts = new List<ServiceReportPartModel>();
+
+			serviceReport.ReportDate = DateTime.Now;
+
+			StateHasChanged();
+		}
+
+		private void RemoveLabour(int Id)
+		{
+			serviceReport.Employees.Remove(serviceReport.Employees.Single(x => x.Id == Id));
+		}
+
+		private void RemovePart(int Id)
+		{
+			serviceReport.Parts.Remove(serviceReport.Parts.Single(x => x.Id == Id));
+		}
+
+		void HandleOnChangeUnbound(int employeeId)
+		{
+			if (serviceReport.Employees.Any(x => x.Id == employeeId))
+			{
+				return;
+			}
+
+			var employee = new ServiceReportEmployeeModel();
+			var emp = employees.First(x => x.Id == employeeId);
+			employee.FirstName = emp.FirstName;
+			employee.LastName = emp.LastName;
+			employee.Id = emp.Id;
+			employee.Rate = emp.Rate;
+			employee.BirthDate = emp.BirthDate;
+			employee.Email = emp.Email;
+			employee.City = emp.City;
+			employee.AddressId = emp.AddressId;
+			employee.AddressLine1 = emp.AddressLine1;
+			employee.AddressLine2 = emp.AddressLine2;
+			employee.IDNumber = emp.IDNumber;
+			employee.PhoneNumber = emp.PhoneNumber;
+			employee.PostalCode = emp.PostalCode;
+			employee.Title = emp.Title;
 
 
-            serviceReport.Employees = new List<ServiceReportEmployeeModel>();
-            //serviceReport.Employees?.Add(new ServiceReportEmployeeModel() { IsAdding = true });
+			serviceReport.Employees.Add(employee);
+			selectedEmployee = new ServiceReportEmployeeModel();
+		}
 
-            serviceReport.Parts = new List<ServiceReportPartModel>();
-            //serviceReport.Parts?.Add(new ServiceReportPartModel() { IsAdding = true });
+		private async Task HandleOnChangeClient(int clientId)
+		{
+			serviceReport.ClientId = clientId;
+			serviceReport.Client = clients.Single(x => x.Id == clientId);
+			serviceReport.VehicleId = 0;
+			vehicles = await VehicleService.GetVehicles(clientId);
+			if (serviceReport.Client == null)
+			{
+				serviceReport.Client = new ClientModel();
+			}
 
-            serviceReport.ReportDate = DateTime.Now;
+			StateHasChanged();
+		}
 
-            StateHasChanged();
-        }
+		private async void Save()
+		{
+			var isValid = editContext.Validate();
+			if (isValid)
+			{
+				serviceReport.IsComplete = true;
+			}
+			var serviceReportId = await SaveServiceReport(serviceReport, false);
 
-        //private void AddLabour()
-        //{
-        //	if (!serviceReport.Employees.Any(x => x.IsAdding))
-        //	{
-        //		serviceReport.Employees.Add(new ServiceReportEmployeeModel() { IsAdding = true });
-        //	}
-        //}
+			if (serviceReportId != 0)
+			{
+				ToastService.Notify(new(ToastType.Success, $"Service report saved successfully."));
+			}
+			else
+			{
+				ToastService.Notify(new(ToastType.Danger, $"Service report could not be saved."));
+			}
+		}
 
-        //private void AddParts()
-        //{
-        //	//if (!serviceReport.Parts.Any(x => x.IsAdding))
-        //	//{
-        //	//	serviceReport.Parts.Add(new ServiceReportPartModel() { IsAdding = true });
-        //	//}
-        //}
+		private async void SaveAndGenerateQuote()
+		{
+			var isValid = editContext.Validate();
+			if (isValid)
+			{
+				serviceReport.IsComplete = true;
+				var serviceReportId = await SaveServiceReport(serviceReport, true);
 
-        private void RemoveLabour(int Id)
-        {
-            serviceReport.Employees.Remove(serviceReport.Employees.Single(x => x.Id == Id));
-        }
+				if (serviceReportId != 0)
+				{
+					ToastService.Notify(new(ToastType.Success, $"Service report saved successfully."));
+					//TODO - generate quote
+				}
+				else
+				{
+					ToastService.Notify(new(ToastType.Danger, $"Service report could not be saved."));
+				}
+			}
 
-        private void RemovePart(int Id)
-        {
-            serviceReport.Parts.Remove(serviceReport.Parts.Single(x => x.Id == Id));
-        }
+		}
 
-        void HandleOnChangeUnbound(int employeeId)
-        {
-            if (serviceReport.Employees.Any(x => x.Id == employeeId))
-            {
-                return;
-            }
+		private async void SaveAndNew()
+		{
+			var isValid = editContext.Validate();
+			if (isValid)
+			{
+				serviceReport.IsComplete = true;
 
-            var employee = new ServiceReportEmployeeModel();
-            var emp = employees.First(x => x.Id == employeeId);
-            employee.FirstName = emp.FirstName;
-            employee.LastName = emp.LastName;
-            employee.Id = emp.Id;
-            employee.Rate = emp.Rate;
-            //employee.ServceType = employee.ServceType;
-            employee.BirthDate = emp.BirthDate;
-            employee.Email = emp.Email;
-            employee.City = emp.City;
-            employee.AddressId = emp.AddressId;
-            employee.AddressLine1 = emp.AddressLine1;
-            employee.AddressLine2 = emp.AddressLine2;
-            employee.IDNumber = emp.IDNumber;
-            employee.PhoneNumber = emp.PhoneNumber;
-            employee.PostalCode = emp.PostalCode;
-            employee.Title = emp.Title;
+			}
+			var result = await SaveServiceReport(serviceReport, false);
+			if (result != 0)
+			{
+				serviceReport = new ServiceReportModel();
+				InitServiceReport();
+				ToastService.Notify(new(ToastType.Success, $"Service report saved successfully."));
+			}
+			else
+			{
+				ToastService.Notify(new(ToastType.Danger, $"Service report could not be saved."));
+			}
+
+		}
+
+		private async void SaveAndPrint()
+		{
+			if (string.IsNullOrEmpty(serviceReport.SalesOrderNumber))
+			{
+				await salesOrderNumberModal.ShowAsync();
+			}
+			else
+			{
+				await salesOrderNumberModal.HideAsync();
+				var isValid = editContext.Validate();
+				if (isValid)
+				{
+					serviceReport.IsComplete = true;
+					var serviceReportId = await SaveServiceReport(serviceReport, false);
+
+					if (serviceReportId != 0)
+					{
+						ToastService.Notify(new(ToastType.Success, $"Service report saved successfully."));
+						NavigationManager.NavigateTo($"/ShowPDF/{serviceReportId}");
+					}
+					else
+					{
+						ToastService.Notify(new(ToastType.Danger, $"Service report could not be saved."));
+					}
+				}
+			}
+		}
 
 
-            serviceReport.Employees.Add(employee);
-            selectedEmployee = new ServiceReportEmployeeModel();
-        }
+		private async Task<int> SaveServiceReport(ServiceReportModel serviceReportToAdd, bool isQuote)
+		{
+			var isValid = editContext.Validate();
+			if (isValid)
+			{
+				serviceReportToAdd.IsComplete = true;
 
-        private async Task HandleOnChangeClient(int clientId)
-        {
-            serviceReport.ClientId = clientId;
-            serviceReport.Client = clients.Single(x => x.Id == clientId);
+			}
+			serviceReportToAdd.Description = "Description";
+			return await ServiceReportService.AddServiceReport(serviceReportToAdd, isQuote);
+		}
 
-            vehicles = await VehicleService.GetVehicles(clientId);
-            if (serviceReport.Client == null)
-            {
-                serviceReport.Client = new ClientModel();
-            }
+		private void HandleOnServiceTypeChange(ServiceType serviceType)
+		{
+			serviceReport.ServiceType = serviceType;
+		}
 
-            StateHasChanged();
-        }
+		void HandleOnChangePart(int partId)
+		{
+			if (serviceReport.Parts.Any(x => x.Id == partId))
+			{
+				return;
+			}
 
-        private async void SaveAndPrint()
-        {
-            var serviceReportId = await SaveServiceReport(serviceReport);
+			var part = new ServiceReportPartModel { Id = partId };
+			var prt = parts.First(x => x.Id == partId);
+			part.Id = prt.Id;
+			part.PartCode = prt.PartCode;
+			part.PartDescription = prt.PartDescription;
+			part.SellingPrice = prt.CostPrice;
+			part.CostPrice = prt.CostPrice;
+			part.ProductClass = prt.ProductClass;
+			part.Bin = prt.Bin;
+			part.CycleCount = prt.CycleCount;
+			part.QtyOnHand = prt.QtyOnHand;
+			part.Warehouse = prt.Warehouse;
+			part.SupplierCode = prt.SupplierCode;
 
-            if (serviceReportId != 0)
-            {
-                NavigationManager.NavigateTo($"/ShowPDF/{serviceReportId}");
-            }
-        }
+			serviceReport.Parts.Add(part);
+			selectedPart = new ServiceReportPartModel();
+		}
 
-        private async void SaveAndNew(ServiceReportModel serviceReportToAdd)
-        {
-            var result = await SaveServiceReport(serviceReportToAdd);
-            if (result != null)
-            {
-                InitServiceReport();
-            }
-        }
+		void HandleOnChangeVehicle(int vehicleId)
+		{
+			serviceReport.VehicleId = vehicleId;
+			serviceReport.Vehicle = vehicles.First(x => x.Id == vehicleId);
+		}
 
-        private async Task<int> SaveServiceReport(ServiceReportModel serviceReportToAdd)
-        {
-            serviceReportToAdd.Description = "Description";
-            //serviceReportToAdd.SalesOrderNumber = "SAN";
-
-            return await ServiceReportService.AddServiceReport(serviceReportToAdd);
-        }
-
-        private void HandleOnServiceTypeChange(ServiceType serviceType)
-        {
-            serviceReport.ServiceType = serviceType;
-        }
-
-        void HandleOnChangePart(int partId)
-        {
-            if (serviceReport.Parts.Any(x => x.Id == partId))
-            {
-                return;
-            }
-
-            var part = new ServiceReportPartModel { Id = partId };
-            var prt = parts.First(x => x.Id == partId);
-            part.Id = prt.Id;
-            part.PartCode = prt.PartCode;
-            part.PartDescription = prt.PartDescription;
-            part.SellingPrice = prt.CostPrice;
-            part.CostPrice = prt.CostPrice;
-            part.ProductClass = prt.ProductClass;
-            part.Bin = prt.Bin;
-            part.CycleCount = prt.CycleCount;
-            part.QtyOnHand = prt.QtyOnHand;
-            part.Warehouse = prt.Warehouse;
-            part.SupplierCode = prt.SupplierCode;
-
-            serviceReport.Parts.Add(part);
-            selectedPart = new ServiceReportPartModel();
-        }
-
-        void HandleOnChangeVehicle(int vehicleId)
-        {
-            serviceReport.VehicleId = vehicleId;
-            serviceReport.Vehicle = vehicles.First(x => x.Id == vehicleId);
-        }
-    }
+		private async Task OnHideModalClick()
+		{
+			await salesOrderNumberModal.HideAsync();
+		}
+	}
 }

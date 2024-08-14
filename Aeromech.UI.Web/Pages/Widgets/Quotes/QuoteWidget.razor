@@ -1,9 +1,12 @@
-﻿@if (serviceReports != null)
+﻿@if (quotes != null)
 {
     <div class="widger-container">
         <table class="widget-data-table">
             <thead class="widget-data-header">
                 <tr>
+                    <td class="widget-data-col">
+                        Quote Number
+                    </td>
                     <td class="widget-data-col">
                         Report Number
                     </td>
@@ -14,20 +17,22 @@
                         Date
                     </td>
                 </tr>
-
             </thead>
             <tbody class="widget-data-body">
-                @foreach (var serviceReport in serviceReports)
+                @foreach (var quote in quotes)
                 {
-                    <tr class="widget-data-row" @onclick="() => LoadServiceReport(serviceReport)">
+                    <tr class="widget-data-row" @onclick="() => LoadQuote(quote.Id)">
                         <td class="widget-data-col report-number">
-                           AEM @serviceReport.Id
+                            @($"AEM{@quote.QuoteNumber}")
+                        </td>
+                        <td class="widget-data-col report-number">
+                            @($"AEM{@quote.Id}")
                         </td>
                         <td class="widget-data-col">
-                            @serviceReport.SalesOrderNumber
+                            @quote.SalesOrderNumber
                         </td>
                         <td class="widget-data-col report-date">
-                            @serviceReport.ReportDate.ToString("dd-MMM-yyyy")
+                            @quote.ReportDate.ToString("dd-MMM-yyyy")
                         </td>
                     </tr>
                 }
@@ -35,7 +40,6 @@
 
         </table>
     </div>
-
 }
 else
 {

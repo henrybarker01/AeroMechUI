@@ -90,3 +90,18 @@ a, .btn-link {
 .add-icon {
     margin-left: 10px;
 }
+
+.toast-container {
+    z-index: 99999 !important;
+    margin-top: 60px !important;
+}
+
+.fsr-button {
+    margin-left: 20px !important;
+}
+
+.download-report {
+    position: absolute;
+    right: 70px;
+    top: 80px;
+}

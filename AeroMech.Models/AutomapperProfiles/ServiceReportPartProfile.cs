@@ -9,14 +9,16 @@ namespace AeroMech.Models.AutomapperProfiles
 		public ServiceReportPartsProfile()
 		{
 			CreateMap<ServiceReportPart, ServiceReportPartModel>()
-				//.ForMember(x=>x.)
-				
-				;
-		 
+					.ForMember(x => x.CostPrice, opt => opt.MapFrom(e => e.Part.Prices.Single().CostPrice))
+
+					.ForMember(x => x.PartCode, opt => opt.MapFrom(e => e.Part.PartCode))
+					.ForMember(x => x.PartDescription, opt => opt.MapFrom(e => e.Part.PartDescription));
+
+
 			CreateMap<ServiceReportPartModel, ServiceReportPart>()
-				.ForMember(x=>x.PartId, opt => opt.MapFrom(e=>e.Id))			 
+				.ForMember(x => x.PartId, opt => opt.MapFrom(e => e.Id))
 			;
-  
+
 		}
 	}
 }

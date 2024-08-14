@@ -4,19 +4,19 @@
 @using BlazorBootstrap
 
 @page "/add-service-report" 
-@page "/add-service-report/{servceReportId:int}"
+@page "/add-service-report/{serviceReportId:int}"
 
-<PageTitle>New Field Service Report</PageTitle>
+<PageTitle>Field Service Report</PageTitle>
  
 
 <div class="container-fluid">
 	<div class="row">
-		<div class="col-11"><h1>New Field Service Report</h1></div>
+		<div class="col-11"><h1>Field Service Report</h1></div>
 	</div>
 
 	@*  OnValidSubmit="@SaveAndPrint" *@
-
-	<EditForm Model="@serviceReport" OnValidSubmit="@SaveAndPrint">
+@* Model="@serviceReport" *@
+	<EditForm  EditContext="editContext" >
 		<DataAnnotationsValidator />
 		<div class="row mt-3">
 			<div class="col-6">
@@ -43,7 +43,7 @@
 							ValueExpression="@(()=>serviceReport.ClientId)" 
 							Value="@serviceReport.ClientId" 
 							ValueChanged="@((int value) => HandleOnChangeClient(value))">			  			  
-								<option selected value="">Select client</option>
+								<option selected value="0">Select client</option>
 								@foreach (var client in clients)
 								{
 									<option value="@client.Id">@client.Name</option>
@@ -59,7 +59,7 @@
 							ValueExpression="@(()=>serviceReport.VehicleId)" 
 							Value="@serviceReport.VehicleId" 
 							ValueChanged="@((int value) => HandleOnChangeVehicle(value))"> 
-							<option selected value="">Select vehicle</option>
+							<option selected value="0">Select vehicle</option>
 							@foreach (var vehicle in vehicles)
 							{
 								<option value="@vehicle.Id">@vehicle.MachineType</option>
@@ -86,15 +86,22 @@
 						<ValidationMessage For="() => serviceReport.ServiceType" /> 
 				</div>
 			</div>
+			<div class="col-6">
+				<div class="form-group">
+					<label for="vehicle-hours">Vehicle hours:</label> 
+					<NumberInput @bind-Value="serviceReport.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
+					<ValidationMessage For="() => serviceReport.VehicleHours" /> 
+				</div>
+			</div>
 		</div>
-		<div class="row mt-3">
+		@* <div class="row mt-3">
 			<div class="col-1">
 				<h3 class="pt-2">
 					Labour
 				</h3>
 			</div>		 
-		</div>
-		<div class="row mt-1">
+		</div> *@
+		<div class="row mt-3">
 			<table class="table table-hover">
 				<thead>
 					<tr>
@@ -121,7 +128,7 @@
 										@employee.LastName
 									</td>
 									<td>
-										  @employee.Rate
+										  @employee.Rate?.ToString("F", CultureInfo.InvariantCulture)
 									</td
 									<td>
 										 <NumberInput TValue="double?" @bind-Value="@employee.Hours" Placeholder="Enter hours" Step=".01"/> 
@@ -178,14 +185,14 @@
 				</tbody>
 			</table>
 			</div> 
-		<div class="row mt-3">
+		@* <div class="row mt-3">
 			<div class="col-1">
 				<h3 class="pt-2">
 					Parts
 				</h3>
 			</div> 
-		</div>
-		<div class="row mt-1">
+		</div> *@
+		<div class="row mt-3">
 			<table class="table table-hover">
 				<thead>
 					<tr>
@@ -212,7 +219,7 @@
 										@part.PartDescription
 									</td>
 									<td>
-										@part.CostPrice
+										@part.CostPrice.ToString("F", CultureInfo.InvariantCulture)
 									</td>
 									<td>
 										 <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="Enter hours" /> 
@@ -290,28 +297,42 @@
 		</div>
 		<div class="container-fluid page-footer">
 		<div class="row">
-			<div class="col-2">
-
-			</div>
-			<div class="col-2">
-
-			</div>
-			<div class="col-2">
-
-			</div>
-			<div class="col-2">
-
-			</div>
-			
-			<div class="col-2">
-				
-			</div>
-			 <div class="col-2" style="text-align:right">
-				 <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" Style="margin-right 20px">Save & Print</Button>
-				@* <Button Color="ButtonColor.Secondary"  @onclick="() => SaveAndNew(serviceReport)">Save & New</Button> *@
-
-			</div>  
+				 <div class="footer-buttons">
+					<Button class="fsr-button" Color="ButtonColor.Primary"  @onclick="Save" Style="margin-right 20px">Save</Button>
+					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndGenerateQuote" Style="margin-right 20px">Save & Generate Quote</Button>
+					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndPrint" Style="margin-right 20px">Save & Print FSR</Button>
+					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndNew">Save & New</Button>
+				 </div>
 		</div>
 	</div>
 	</EditForm>	
 </div>
+
+
+<Modal @ref="salesOrderNumberModal" Title="Enter sales order number.">
+    <BodyTemplate>
+        <EditForm Model="serviceReport" OnValidSubmit="SaveAndPrint">
+            <DataAnnotationsValidator />
+             <div class="container-fluid">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="son">Sales order number:</label>
+                        <InputText @bind-Value=serviceReport.SalesOrderNumber class="form-control" id="son" />
+                        <ValidationMessage For="() => serviceReport.SalesOrderNumber" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="footer-buttons">
+                    <div class="close">
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                    </div>
+                    <div>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" @onclick="SaveAndPrint">Save</Button>
+                    </div>
+                </div>
+            </div>  
+        </EditForm>
+    </BodyTemplate>
+</Modal>
+

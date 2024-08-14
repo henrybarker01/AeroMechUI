@@ -1,0 +1,48 @@
+﻿
+.widger-container {
+    overflow: auto;
+
+}
+
+.widget-data-table {
+    width: 100%;
+}
+
+.widget-data-header {
+    border-bottom: 1px solid black;
+    font-weight: 600;
+}
+
+.widget-data-body:before {
+    content: "@";
+    display: block;
+    line-height: 10px;
+    text-indent: -99999px;
+}
+
+.widget-data-row {
+    color: black;
+    margin: 5px;
+    cursor: pointer;
+    margin: 0;
+    padding: 0;
+}
+
+    .widget-data-row:hover {
+        background-color: lightgray;
+    }
+
+.widget-data-col {
+    text-align: left;
+    padding: 0px 10px 0px 0;
+    font-size: 14px;
+}
+
+.report-number {
+    
+}
+
+.report-date {
+    text-align: right;
+    min-width: 93px;
+}

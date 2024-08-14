@@ -1,0 +1,65 @@
+﻿@page "/quotes"
+@using BlazorBootstrap
+
+<PageTitle>Quotes</PageTitle>
+
+<div class="container-fluid">
+
+    <div class="row">
+        <div class="col-4 header">
+            <h1>Quotes</h1>
+            <span class="add-icon">
+                <Icon Name="IconName.PlusSquare" Size="IconSize.x2" Color="IconColor.Primary" @onclick="NavigateToAddQuote" Style="cursor: pointer" />
+            </span>
+        </div>
+
+        <div class="col-1">
+        </div>
+        <div class="col-7 text-right"></div>
+    </div>
+</div>
+
+@if (quotes == null)
+{
+    <p><em>Loading...</em></p>
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Quote Number</th>
+                <th>Report Date</th>
+               @*  <th>Sales Order Number</th> *@
+                <th>Instruction</th>
+                <th>Client</th>
+                <th>Service Type</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var quote in quotes)
+            {
+                <tr>
+                    <td>@($"AEM {@quote.QuoteNumber}")</td>
+                    <td>@quote.ReportDate</td>
+                    @* <td>@quote.SalesOrderNumber</td> *@
+                    <td>@quote.Instruction</td>
+                    <td>@quote.Client?.Name</td>
+                    <td>@quote.ServiceType</td>
+                    <td>@CalcuateTotalReportValue(quote)</td>
+                    <td>@(quote.IsComplete == true ? "Complete" : "Incomplete")</td>
+                    <td>
+                       @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
+                        <Icon Name="IconName.Pencil" Size="IconSize.x4" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
+                        <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" hidden="@(!quote.IsComplete)" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
