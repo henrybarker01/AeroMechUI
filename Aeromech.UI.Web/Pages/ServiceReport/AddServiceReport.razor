@@ -107,10 +107,10 @@
 					<tr>
 						<th>Name</th>
 						<th>Surname</th>
+						<th>Date</th>
 						<th>Rate</th>
 						<th>Hours</th>
-						<th>Actual</th>
-						<th>Discount</th>
+						<th>Actual</th>						
 						<th>Total</th>
 						<th>Actions</th>
 					</tr>
@@ -118,7 +118,7 @@
 				<tbody>
 					@if (serviceReport.Employees != null)
 					{
-						@foreach (var employee in serviceReport.Employees)
+						@foreach (var employee in serviceReport.Employees.Where(x=>!x.IsDeleted))
 						{
 								<tr>
 									<td>
@@ -126,6 +126,10 @@
 									</td>
 									<td>
 										@employee.LastName
+									</td>
+									<td>
+										<InputDate @bind-Value="employee.DutyDate" class="form-control" id="report-date"></InputDate>
+										@* <NumberInput TValue="double?" @bind-Value="@employee.Discount" Placeholder="Enter discount" Step=".01"/>  *@
 									</td>
 									<td>
 										  @employee.Rate?.ToString("F", CultureInfo.InvariantCulture)
@@ -136,9 +140,7 @@
 									<td>
 										  @((employee.Rate * employee.Hours)?.ToString("F", CultureInfo.InvariantCulture))
 									</td>
-									<td>
-										<NumberInput TValue="double?" @bind-Value="@employee.Discount" Placeholder="Enter discount" Step=".01"/> 
-									</td>
+									
 									<td>
 										@(((employee.Rate * employee.Hours) - ((employee.Discount / 100) * (employee.Rate * employee.Hours)))?.ToString("F", CultureInfo.InvariantCulture))
 										 
@@ -201,7 +203,7 @@
 						<th>C.P.U.</th>
 						<th>Qty</th>
 						<th>Actual</th>
-						<th>Discount</th>
+						@* <th>Discount</th> *@
 						<th>Total</th>
 						<th>Actions</th>
 					</tr>
@@ -209,17 +211,38 @@
 				<tbody>
 					@if (serviceReport.Parts != null)
 					{
-						@foreach (var part in serviceReport.Parts)
+						@foreach (var part in serviceReport.Parts.Where(x=>!x.IsDeleted))
 						{
-								<tr>
-									<td>
-										@part.PartCode
+							<tr>
+								<td>
+									@if (part.IsAdHockPart)
+									{
+										<InputText @bind-Value="part.PartCode" type="text" class="form-control" ></InputText>
+										<ValidationMessage For="() => part.PartCode" />	
+									}else {
+											@part.PartCode
+									}									
 									</td>
 									<td>
-										@part.PartDescription
+										@if (part.IsAdHockPart)
+									{
+										<InputText @bind-Value="part.PartDescription" type="text" class="form-control" ></InputText>
+										<ValidationMessage For="() => part.PartDescription" />	
+									}else {
+											@part.PartDescription
+									}		 
 									</td>
 									<td>
+										 <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="Enter Cost Price" /> 			
+									@* 	@if (part.IsAdHockPart)
+									{
+										 <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="Enter Cost Price" /> 										
+									}
+									else
+									{ 
 										@part.CostPrice.ToString("F", CultureInfo.InvariantCulture)
+									  } *@
+									
 									</td>
 									<td>
 										 <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="Enter hours" /> 
@@ -227,9 +250,9 @@
 									<td>
 										  @((part.CostPrice * part.QTY).ToString("F", CultureInfo.InvariantCulture))
 									</td>
-									<td>
+									@* <td>
 										<NumberInput TValue="double" @bind-Value="@part.Discount" Placeholder="Enter discount" Step=".01" /> 
-									</td>
+									</td> *@
 									<td>
 										@(((part.CostPrice * part.QTY) - ((part.Discount / 100) * (part.CostPrice * part.QTY))).ToString("F", CultureInfo.InvariantCulture))
 										 
@@ -253,7 +276,8 @@
 											ValueExpression="@(()=>selectedPart.Id)" 
 											Value="@selectedPart.Id" 
 											ValueChanged="@((int value) => HandleOnChangePart(value))">			  			  
-												<option selected value="">Select part</option>
+												<option selected value="0">Select part</option>
+												<option selected value="999999">Non Stock</option>
 												@foreach (var prt in parts)
 												{
 													<option value="@prt.Id">@prt.PartCode @prt.PartDescription</option>
@@ -300,7 +324,7 @@
 				 <div class="footer-buttons">
 					<Button class="fsr-button" Color="ButtonColor.Primary"  @onclick="Save" Style="margin-right 20px">Save</Button>
 					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndGenerateQuote" Style="margin-right 20px">Save & Generate Quote</Button>
-					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndPrint" Style="margin-right 20px">Save & Print FSR</Button>
+					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndGenerateServiceReport" Style="margin-right 20px">Save & Print FSR</Button>
 					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndNew">Save & New</Button>
 				 </div>
 		</div>
@@ -311,7 +335,7 @@
 
 <Modal @ref="salesOrderNumberModal" Title="Enter sales order number.">
     <BodyTemplate>
-        <EditForm Model="serviceReport" OnValidSubmit="SaveAndPrint">
+        <EditForm Model="serviceReport" OnValidSubmit="SaveAndGenerateServiceReport">
             <DataAnnotationsValidator />
              <div class="container-fluid">
                 <div class="row">
@@ -328,7 +352,7 @@
                         <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
                     </div>
                     <div>
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" @onclick="SaveAndPrint">Save</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" @onclick="SaveAndGenerateServiceReport">Save</Button>
                     </div>
                 </div>
             </div>  

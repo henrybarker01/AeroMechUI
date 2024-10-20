@@ -1,4 +1,5 @@
-﻿@if (serviceReports != null)
+﻿@using BlazorBootstrap
+@if (serviceReports != null)
 {
     <div class="widger-container">
         <table class="widget-data-table">
@@ -13,21 +14,35 @@
                     <td class="widget-data-col report-date">
                         Date
                     </td>
+                    <td class="widget-data-col">
+                        Status
+                    </td>
+                    <td class="widget-data-col">
+                    </td>
                 </tr>
 
             </thead>
             <tbody class="widget-data-body">
                 @foreach (var serviceReport in serviceReports)
                 {
-                    <tr class="widget-data-row" @onclick="() => LoadServiceReport(serviceReport)">
+                    @*  @onclick
+            = "() => LoadServiceReport(serviceReport)" *@
+                    <tr class="widget-data-row">
                         <td class="widget-data-col report-number">
-                           AEM @serviceReport.Id
+                            AEM @serviceReport.Id
                         </td>
                         <td class="widget-data-col">
                             @serviceReport.SalesOrderNumber
                         </td>
                         <td class="widget-data-col report-date">
-                            @serviceReport.ReportDate.ToString("dd-MMM-yyyy")
+                            @serviceReport.ReportDate.ToString("dd/MM/yyyy")
+                        </td>
+                        <td class="widget-data-col">
+                            @(serviceReport.IsComplete ? "Complete" : "Incomplete")
+                        </td>
+                        <td class="widget-data-col action-buttons">
+                            <Icon Name="IconName.Pencil" Size="IconSize.x6" Class="me-2" Color="IconColor.Primary" @onclick="() => EditServiceReport(serviceReport.Id)" Style="cursor: pointer" />
+                            <Icon Name="IconName.Printer" Size="IconSize.x6" Color="IconColor.Secondary" hidden="@(!serviceReport.IsComplete)" @onclick="() => PrintServiceReport(serviceReport)" Style="cursor: pointer" />
                         </td>
                     </tr>
                 }

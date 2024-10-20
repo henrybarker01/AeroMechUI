@@ -1,14 +1,15 @@
 ﻿using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using AeroMech.Data.Models;
 using IDocument = AeroMech.UI.Web.Reports.IDocument;
+using System.Globalization;
+using AeroMech.Models;
 
 namespace AeroMech.API.Reports
 {
     public class FieldServiceReport : IDocument
     {
-        public ServiceReport serviceReport { get; set; }
+        public ServiceReportModel serviceReport { get; set; }
 
         public FieldServiceReport()
         {
@@ -118,23 +119,23 @@ namespace AeroMech.API.Reports
 
                     row.RelativeItem().Column(col =>
                     {
-                        var totalLabour = serviceReport.Employees.Sum(x => CalulatePercentageOf(x.Rate, x.Hours, x.Discount));
-                        var totalParts = serviceReport.Parts.Sum(x => CalulatePercentageOf(x.CostPrice, x.Qty, x.Discount));
+                        var totalLabour = serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => CalulatePercentageOf(x.Rate, x.Hours, x.Discount));
+                        var totalParts = serviceReport.Parts.Where(x => !x.IsDeleted).Sum(x => CalulatePercentageOf(x.CostPrice, x.QTY, x.Discount));
 
                         col.Item().Row(r =>
                         {
                             r.RelativeColumn().PaddingTop(10).Text("Labour :");
-                            r.RelativeColumn().AlignRight().PaddingTop(10).Text(totalLabour);
+                            r.RelativeColumn().AlignRight().PaddingTop(10).Text(totalLabour.ToString("C", CultureInfo.CurrentCulture));
                         });
                         col.Item().Row(r =>
                         {
                             r.RelativeColumn().PaddingTop(10).Text("Parts:");
-                            r.RelativeColumn().AlignRight().PaddingTop(10).Text(totalParts);
+                            r.RelativeColumn().AlignRight().PaddingTop(10).Text(totalParts.ToString("C", CultureInfo.CurrentCulture));
                         });
                         col.Item().Row(r =>
                         {
                             r.RelativeColumn(4).PaddingTop(12).Text("Total Cost :").Bold();
-                            r.RelativeColumn(4).AlignRight().PaddingTop(10).BorderTop(1).BorderBottom(1).Text(totalLabour + totalParts).LineHeight(2).Bold();
+                            r.RelativeColumn(4).AlignRight().PaddingTop(10).BorderTop(1).BorderBottom(1).Text((totalLabour + totalParts).ToString("C", CultureInfo.CurrentCulture)).LineHeight(2).Bold();
                         });
                     });
                 });
@@ -153,9 +154,9 @@ namespace AeroMech.API.Reports
             }
         }
 
-        public double CalulatePercentageOf(double value, double multiplier, double discount)
+        public double CalulatePercentageOf(double? value = 0, double? multiplier = 0, double? discount = 0)
         {
-            return (multiplier * value) - ((multiplier * value) * (discount / 100));
+            return (double)((multiplier * value) - ((multiplier * value) * (discount / 100)));
         }
 
         void ComposePartsTable(IContainer container)
@@ -169,7 +170,7 @@ namespace AeroMech.API.Reports
                     columns.RelativeColumn(1);
                     columns.RelativeColumn(1);
                     columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
+                   // columns.RelativeColumn(1);
                     columns.RelativeColumn(1);
 
                 });
@@ -180,7 +181,7 @@ namespace AeroMech.API.Reports
                     header.Cell().Element(CellStyle).AlignRight().Text("C.P.U.");
                     header.Cell().Element(CellStyle).AlignRight().Text("Qty");
                     header.Cell().Element(CellStyle).AlignRight().Text("Actual");
-                    header.Cell().Element(CellStyle).AlignRight().Text("Disc");
+                   // header.Cell().Element(CellStyle).AlignRight().Text("Disc");
                     header.Cell().Element(CellStyle).AlignRight().Text("Total");
 
                     static IContainer CellStyle(IContainer container)
@@ -193,17 +194,27 @@ namespace AeroMech.API.Reports
                 {
                     return container.DefaultTextStyle(x => x.FontSize(10)).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
-                foreach (var part in serviceReport.Parts)
+				//foreach (var part in serviceReport.AdHockParts.Where(x => !x.IsDeleted))
+				//{
+				//	table.Cell().Element(CellStyle).Text(part.PartCode);
+				//	table.Cell().Element(CellStyle).Text(part.PartDescription);
+				//	table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice.ToString("C", CultureInfo.CurrentCulture));
+				//	table.Cell().Element(CellStyle).AlignRight().Text(part.Qty);
+				//	table.Cell().Element(CellStyle).AlignRight().Text((part.CostPrice * part.Qty).ToString("C", CultureInfo.CurrentCulture));
+				//	table.Cell().Element(CellStyle).AlignRight().Text(part.Discount.ToString("C", CultureInfo.CurrentCulture));
+				//	table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(part.CostPrice, part.Qty, part.Discount).ToString("C", CultureInfo.CurrentCulture));
+				//}
+				foreach (var part in serviceReport.Parts.Where(x => !x.IsDeleted))
                 {
-                    table.Cell().Element(CellStyle).Text(part.Part.PartCode);
-                    table.Cell().Element(CellStyle).Text(part.Part.PartDescription);
-                    table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice);
-                    table.Cell().Element(CellStyle).AlignRight().Text(part.Qty);
-                    table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice * part.Qty);
-                    table.Cell().Element(CellStyle).AlignRight().Text(part.Discount);
-                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(part.CostPrice, part.Qty, part.Discount));
+                    table.Cell().Element(CellStyle).Text(part.PartCode);
+                    table.Cell().Element(CellStyle).Text(part.PartDescription);
+                    table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice.ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(part.QTY);
+                    table.Cell().Element(CellStyle).AlignRight().Text((part.CostPrice * part.QTY).ToString("C", CultureInfo.CurrentCulture));
+                    //table.Cell().Element(CellStyle).AlignRight().Text(part.Discount.ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(part.CostPrice, part.QTY, part.Discount).ToString("C", CultureInfo.CurrentCulture));
                 }
-            });
+			});
         }
 
         void ComposeLabourTable(IContainer container)
@@ -218,7 +229,7 @@ namespace AeroMech.API.Reports
                     columns.RelativeColumn(2);
                     columns.RelativeColumn(2);
                     columns.RelativeColumn(2);
-                    columns.RelativeColumn(1);
+                    //columns.RelativeColumn(1);
                     columns.RelativeColumn(2);
                 });
                 table.Header(header =>
@@ -229,7 +240,7 @@ namespace AeroMech.API.Reports
                     header.Cell().Element(CellStyle).AlignRight().Text("Rate");
                     header.Cell().Element(CellStyle).AlignRight().Text("Hours");
                     header.Cell().Element(CellStyle).AlignRight().Text("Actual");
-                    header.Cell().Element(CellStyle).AlignRight().Text("Disc");
+                    //header.Cell().Element(CellStyle).AlignRight().Text("Disc");
                     header.Cell().Element(CellStyle).AlignRight().Text("Total");
 
                     static IContainer CellStyle(IContainer container)
@@ -243,17 +254,16 @@ namespace AeroMech.API.Reports
                     return container.DefaultTextStyle(x => x.FontSize(10)).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
 
-                foreach (var employee in serviceReport.Employees)
+                foreach (var employee in serviceReport.Employees.Where(x => !x.IsDeleted))
                 {
-                    table.Cell().Element(CellStyle).Text($"{employee.Employee.FirstName} {employee.Employee.LastName}");
-                    table.Cell().Element(CellStyle).Text("Electronic");
-                    table.Cell().Element(CellStyle).Text(serviceReport.ReportDate);
-
-                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Rate);
-                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Hours);
-                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Rate * employee.Hours);
-                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Discount);
-                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(employee.Rate, employee.Hours, employee.Discount));
+                    table.Cell().Element(CellStyle).Text($"{employee.FirstName} {employee.LastName}");
+                    table.Cell().Element(CellStyle).Text(serviceReport.ServiceType);
+                    table.Cell().Element(CellStyle).Text(employee.DutyDate.ToShortDateString());
+                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Rate?.ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Hours?.ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text((employee.Rate * employee.Hours)?.ToString("C", CultureInfo.CurrentCulture));
+                    //table.Cell().Element(CellStyle).AlignRight().Text(employee.Discount?.ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(employee.Rate, employee.Hours, employee.Discount).ToString("C", CultureInfo.CurrentCulture));
                 }
             });
         }

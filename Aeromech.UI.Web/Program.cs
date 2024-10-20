@@ -9,6 +9,7 @@ using System.Reflection;
 using AeroMech.Areas.Identity;
 using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Components.Server;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,7 +50,13 @@ builder.Services.AddScoped<Quote, Quote>();
 builder.Services.AddBlazorBootstrap();
 
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AeroMech.Models.AutomapperProfiles.PartsProfile)));
-
+builder.Services.AddAuthentication("Cookies")
+    .AddCookie(options =>
+    {
+        options.LoginPath = "/login";  // Redirect to login page if not authenticated
+        options.ExpireTimeSpan = TimeSpan.FromDays(30);  // Cookie expiration time
+        options.SlidingExpiration = true;  // Reset expiration on activity
+    });
 
 
 QuestPDF.Settings.License = LicenseType.Community;
@@ -64,11 +71,29 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+
+
+app.UseAuthentication();
+app.UseAuthorization();
+
 app.UseHttpsRedirection();
 app.UseStaticFiles();
-app.UseAuthorization();
+//app.UseAuthorization();
 app.UseRouting();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
+
+app.Use(async (context, next) =>
+{
+	var culture = CultureInfo.CurrentCulture.Clone() as CultureInfo;// Set user culture here
+    culture.NumberFormat.CurrencySymbol = "R ";
+	//culture.DateTimeFormat.ShortDatePattern = "dd-yyyy-m";
+	CultureInfo.CurrentCulture = culture;
+	CultureInfo.CurrentUICulture = culture;
+
+	// Call the next delegate/middleware in the pipeline
+	await next();
+});
+
 
 app.Run();

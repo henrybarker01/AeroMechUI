@@ -8,6 +8,8 @@ namespace AeroMech.Models
 
 		public double? Discount { get; set; }
 
-		public string ServceType { get; set; } = "Service"; 
+		public string ServceType { get; set; } = "Service";
+
+		public DateOnly DutyDate { get; set; }
 	}
 }

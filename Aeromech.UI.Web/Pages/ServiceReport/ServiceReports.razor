@@ -1,5 +1,6 @@
 ﻿@page "/service-reports"
 @using BlazorBootstrap
+@using System.Globalization
 
 <PageTitle>Service Reports</PageTitle>
 
@@ -44,12 +45,12 @@ else
             {
                 <tr>
                     <td>@($"AEM {@serviceReport.Id}")</td>
-                    <td>@serviceReport.ReportDate</td>
+                    <td>@serviceReport.ReportDate.ToString("dd/MM/yyyy")</td>
                     <td>@serviceReport.SalesOrderNumber</td>
-                    <td>@serviceReport.Instruction</td>
+                    <td style="max-width:400px">@serviceReport.Instruction</td>
                     <td>@serviceReport.Client?.Name</td>
                     <td>@serviceReport.ServiceType</td>
-                    <td>@CalcuateTotalReportValue(serviceReport)</td>
+                    <td>@CalcuateTotalReportValue(serviceReport).ToString("C", CultureInfo.CurrentCulture)</td>
                     <td>@(serviceReport.IsComplete == true ? "Complete" : "Incomplete")</td>
                     <td>
                        @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@

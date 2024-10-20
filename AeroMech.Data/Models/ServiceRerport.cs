@@ -28,7 +28,9 @@ namespace AeroMech.Data.Models
 
 		public virtual List<ServiceReportPart> Parts { get; set; }
 
-		public string? Instruction { get; set; }
+        public virtual List<ServiceReportAdHockPart> AdHockParts { get; set; }
+
+        public string? Instruction { get; set; }
 
 		public string? DetailedServiceReport { get; set; }
 

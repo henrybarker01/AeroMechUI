@@ -16,12 +16,17 @@ namespace AeroMech.UI.Web.Pages.Widgets.ServiceReport
             serviceReports = await ServiceReportService.GetRecentServiceReports(DateTime.Now.AddMonths(-1));
         }
 
-        private void LoadServiceReport(ServiceReportModel serviceReport)
+        private void PrintServiceReport(ServiceReportModel serviceReport)
         {
             if (serviceReport.IsComplete)
                 NavigationManager.NavigateTo($"/ShowPDF/{serviceReport.Id}");
-            else
-                NavigationManager.NavigateTo($"/add-service-report/{serviceReport.Id}");
+
+
+        }
+
+        private void EditServiceReport(int serviceReportId)
+        {
+            NavigationManager.NavigateTo($"/add-service-report/{serviceReportId}");
         }
     }
 }

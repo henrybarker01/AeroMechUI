@@ -1,5 +1,6 @@
 ﻿@page "/quotes"
 @using BlazorBootstrap
+@using System.Globalization
 
 <PageTitle>Quotes</PageTitle>
 
@@ -44,12 +45,12 @@ else
             {
                 <tr>
                     <td>@($"AEM {@quote.QuoteNumber}")</td>
-                    <td>@quote.ReportDate</td>
+                    <td>@quote.ReportDate.ToString("dd/MM/yyyy")</td>
                     @* <td>@quote.SalesOrderNumber</td> *@
-                    <td>@quote.Instruction</td>
+                    <td style="max-width:400px">@quote.Instruction</td>
                     <td>@quote.Client?.Name</td>
                     <td>@quote.ServiceType</td>
-                    <td>@CalcuateTotalReportValue(quote)</td>
+                    <td>@CalcuateTotalReportValue(quote).ToString("C", CultureInfo.CurrentCulture)</td>
                     <td>@(quote.IsComplete == true ? "Complete" : "Incomplete")</td>
                     <td>
                        @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@

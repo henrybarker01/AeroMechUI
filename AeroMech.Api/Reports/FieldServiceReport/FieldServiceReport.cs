@@ -72,7 +72,7 @@ namespace AeroMech.API.Reports
                 {
                     row.RelativeItem().PaddingBottom(20).Component(new ServiceReportOrderInfoLeft(new OrderInfo()
                     {
-                        Date = serviceReport.ReportDate.ToShortDateString(),
+                        Date = serviceReport.ReportDate.ToString("dd/MM/yyyy"),
                         Client = serviceReport.Client.Name,
                         EngineHours = serviceReport.Vehicle.EngineHours.ToString(),
                         MachineType = serviceReport.Vehicle.MachineType,
@@ -248,7 +248,7 @@ namespace AeroMech.API.Reports
                 {
                     table.Cell().Element(CellStyle).Text($"{employee.Employee.FirstName} {employee.Employee.LastName}");
                     table.Cell().Element(CellStyle).Text("Electronic");
-                    table.Cell().Element(CellStyle).Text(serviceReport.ReportDate);
+                    table.Cell().Element(CellStyle).Text(serviceReport.ReportDate.ToString("dd/MM/yyyy"));
 
                     table.Cell().Element(CellStyle).AlignRight().Text(employee.Rate);
                     table.Cell().Element(CellStyle).AlignRight().Text(employee.Hours);

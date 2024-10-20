@@ -22,6 +22,8 @@ namespace AeroMech.Data.Models
 		public double Rate { get; set; }
 
 		public double Discount { get; set; }
+		public DateOnly DutyDate { get; set; }
+		public bool IsDeleted { get; set; }
 
 	}
 }

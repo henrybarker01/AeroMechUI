@@ -14,7 +14,7 @@ namespace AeroMech.UI.Web.Services
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly SignInManager<IdentityUser> _signInManager;
         private readonly IHostEnvironmentAuthenticationStateProvider? _hostAuthentication;
-        private readonly AuthenticationStateProvider? _authenticationStateProvider;
+       private readonly AuthenticationStateProvider? _authenticationStateProvider;
 
 
 
@@ -64,6 +64,9 @@ namespace AeroMech.UI.Web.Services
                 //await HandleSigningInFailedAsync("Email or Password are not match");
                 return new SignInResult();
             }
+
+
+      
             SignInResult loginResult = await _signInManager!.CheckPasswordSignInAsync(user, credential.Password, false);
             if (loginResult.Succeeded == false)
             {
@@ -71,8 +74,10 @@ namespace AeroMech.UI.Web.Services
                 return loginResult;
             }
             if (loginResult.Succeeded)
-            {
-                ClaimsPrincipal principal = await _signInManager.CreateUserPrincipalAsync(user);
+            { 
+               // await _signInManager.SignInAsync(user, true);
+                 
+                 ClaimsPrincipal principal = await _signInManager.CreateUserPrincipalAsync(user);
                 _signInManager.Context.User = principal;
                 _hostAuthentication!.SetAuthenticationState(
                     Task.FromResult(new AuthenticationState(principal)));

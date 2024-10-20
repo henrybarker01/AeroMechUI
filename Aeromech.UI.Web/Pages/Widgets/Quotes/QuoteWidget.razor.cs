@@ -16,9 +16,14 @@ namespace AeroMech.UI.Web.Pages.Widgets.Quotes
             quotes = await ServiceReportService.GetRecentQuotes(DateTime.Now.AddMonths(-1));
         }
 
-        private void LoadQuote(int Id)
+        private void PrintQuote(int Id)
         {
             NavigationManager.NavigateTo($"/ShowQuote/{Id}");
+        }
+
+        private void EditQuote(int serviceReportId)
+        {
+            NavigationManager.NavigateTo($"/add-service-report/{serviceReportId}");
         }
     }
 }

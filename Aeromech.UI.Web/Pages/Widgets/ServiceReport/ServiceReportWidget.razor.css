@@ -45,3 +45,8 @@
     text-align: right;
     min-width: 93px;
 }
+
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+}

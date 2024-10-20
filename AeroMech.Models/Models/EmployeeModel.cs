@@ -2,12 +2,12 @@
 
 namespace AeroMech.Models
 {
-	public class EmployeeModel
-	{
-		public int Id { get; set; }
+    public class EmployeeModel
+    {
+        public int Id { get; set; }
 
         [Required(ErrorMessage = "ID Number is required")]
-		[MinLength(13, ErrorMessage ="Please enter a valid ID number.")]
+        [MinLength(13, ErrorMessage = "Please enter a valid ID number.")]
         public string? IDNumber { get; set; }
 
         [Required(ErrorMessage = "Title is required")]
@@ -21,7 +21,7 @@ namespace AeroMech.Models
 
         [Required(ErrorMessage = "Rate is required")]
         public double? Rate { get; set; }
-		public List<EmployeeRateModel>? Rates { get; set; }
+        public List<EmployeeRateModel>? Rates { get; set; }
 
         [Required(ErrorMessage = "Phone Number is required")]
         [RegularExpression("^(?!0+$)(\\+\\d{1,3}[- ]?)?(?!0+$)\\d{10,15}$", ErrorMessage = "Please enter valid phone no.")]
@@ -32,8 +32,8 @@ namespace AeroMech.Models
         [RegularExpression(EmailR, ErrorMessage = "Please enter valid email address.")]
         public string? Email { get; set; }
 
-		public bool IsDeleted { get; set; }
-         
+        public bool IsDeleted { get; set; }
+
         public int? AddressId { get; set; }
 
         [Required(ErrorMessage = "Address Line 1 is required")]
@@ -48,7 +48,6 @@ namespace AeroMech.Models
         [Required(ErrorMessage = "PostalCode is required")]
         public string? PostalCode { get; set; }
 
-
-		public DateOnly? BirthDate { get; set; }
-	}
+        public DateOnly? BirthDate { get; set; }
+    }
 }

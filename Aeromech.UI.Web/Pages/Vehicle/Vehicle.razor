@@ -1,5 +1,6 @@
 ﻿@page "/vehicles"
 @using BlazorBootstrap
+@using System.Globalization
 
 <PageTitle>Vehicle</PageTitle>
 
@@ -149,7 +150,7 @@ else if (vehicles != null)
                     <td>@vehicle.MachineType</td>
                     <td>@vehicle.ManufactureDate</td>
                     <td>@vehicle.DateInService</td>
-                    <td>@vehicle.PurchasePrice</td>
+                    <td>@vehicle.PurchasePrice.ToString("C", CultureInfo.CurrentCulture)</td>
                     <td>@vehicle.EngineHours</td>
                     <td>@vehicle.JobNumber</td>
                     <td>

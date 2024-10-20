@@ -14,11 +14,11 @@ namespace AeroMech.Data.Models
 		public int PartId { get; set; }
 
 		[Required]
-		[Column(TypeName = "decimal(5, 2)")]
+		[Column(TypeName = "decimal(8, 2)")]
 		public double CostPrice { get; set; }
 
 		[Required]
-		[Column(TypeName = "decimal(5, 2)")]
+		[Column(TypeName = "decimal(8, 2)")]
 		public double SellingPrice { get; set; }
 
 		[Required]

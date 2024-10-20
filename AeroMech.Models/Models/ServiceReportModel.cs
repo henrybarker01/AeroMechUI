@@ -11,7 +11,7 @@ namespace AeroMech.Models
         [Required(ErrorMessage = "Report Date is required")]
         public DateTime ReportDate { get; set; }
 
-        [Required(ErrorMessage = "Sales Order Number is required")]
+       // [Required(ErrorMessage = "Sales Order Number is required")]
         public string SalesOrderNumber { get; set; }
 
         //[Required(ErrorMessage = "Job Number is required")]

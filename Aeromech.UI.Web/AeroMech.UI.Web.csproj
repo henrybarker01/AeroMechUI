@@ -26,4 +26,8 @@
     <ProjectReference Include="..\AeroMech.Models\AeroMech.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Pages\Reports\ServiceReport\" />
+  </ItemGroup>
+
 </Project>
