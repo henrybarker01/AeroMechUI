@@ -86,7 +86,7 @@ namespace AeroMech.UI.Web.Services
                 return sr.Id;
 
             }
-            else
+            else //edit service report
             {
                 ServiceReport serviceReportToEdit = _aeroMechDBContext.ServiceReports
                 .Include(x => x.Parts)
@@ -182,6 +182,7 @@ namespace AeroMech.UI.Web.Services
                     {
                         var ee = serviceReportToEdit.Employees.Single(x => x.Id == employee.Id);
                         ee.Rate = employee.Rate ?? 0;
+                        ee.Hours = employee.Hours ?? 0;
                         ee.Discount = employee.Discount ?? 0;
                         ee.DutyDate = employee.DutyDate;
                         ee.IsDeleted = employee.IsDeleted;
@@ -191,7 +192,6 @@ namespace AeroMech.UI.Web.Services
                         var employeeToAdd = _mapper.Map<ServiceReportEmployeeModel, ServiceReportEmployee>(employee);
                         employeeToAdd.Id = 0;
                         employeeToAdd.ServiceReportId = serviceReportToEdit.Id;
-
                         serviceReportToEdit.Employees.Add(employeeToAdd);
                     }
                 });
@@ -273,7 +273,7 @@ namespace AeroMech.UI.Web.Services
         {
             var serviceReports = await _aeroMechDBContext.ServiceReports
                .Include(x => x.Parts)
-               .Include(x=>x.AdHockParts)
+               .Include(x => x.AdHockParts)
                .Include(r => r.Employees)
                .Include(x => x.Client)
                .ThenInclude(x => x.Vehicles)
@@ -284,7 +284,7 @@ namespace AeroMech.UI.Web.Services
         public double CalculateServiceReportTotal(ServiceReportModel model)
         {
             var totalEmployee = model.Employees.Where(x => !x.IsDeleted).Sum(x => x.Rate * x.Hours - x.Discount / 100 * x.Rate * x.Hours);
-            var totalParts = model.Parts.Where(x => !x.IsDeleted).Sum(x => x.CostPrice * x.QTY - x.Discount / 100 * (x.CostPrice * x.QTY)); 
+            var totalParts = model.Parts.Where(x => !x.IsDeleted).Sum(x => x.CostPrice * x.QTY - x.Discount / 100 * (x.CostPrice * x.QTY));
             return (totalEmployee ?? 0) + totalParts;
         }
     }

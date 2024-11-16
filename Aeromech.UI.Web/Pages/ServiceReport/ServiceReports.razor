@@ -30,6 +30,7 @@ else
         <thead>
             <tr>
                 <th>Report Number</th>
+                <th>Quote Number</th>
                 <th>Report Date</th>
                 <th>Sales Order Number</th>
                 <th>Instruction</th>
@@ -45,6 +46,7 @@ else
             {
                 <tr>
                     <td>@($"AEM {@serviceReport.Id}")</td>
+                    <td>@($"AEM {@serviceReport.QuoteNumber}")</td>
                     <td>@serviceReport.ReportDate.ToString("dd/MM/yyyy")</td>
                     <td>@serviceReport.SalesOrderNumber</td>
                     <td style="max-width:400px">@serviceReport.Instruction</td>

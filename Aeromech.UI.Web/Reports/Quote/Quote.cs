@@ -5,6 +5,7 @@ using AeroMech.Data.Models;
 using System.Globalization;
 using IDocument = AeroMech.UI.Web.Reports.IDocument;
 using AeroMech.Models;
+using AeroMech.UI.Web.Pages.ServiceReport;
 
 namespace AeroMech.API.Reports
 {
@@ -56,11 +57,24 @@ namespace AeroMech.API.Reports
                 {
 
                     column.Item().Text($"Service Quote").Style(titleStyle);
+
                     column.Item().Text(text =>
                     {
                         text.Span($"Quote No:  AEM{serviceReport.QuoteNumber}").SemiBold().FontSize(12);
                     });
+                    column.Item().Text(text =>
+                    {
+                        text.Span($"Field Service Report No:  AEM{serviceReport.Id}").SemiBold().FontSize(12);
+                    });
                 });
+
+                //row.RelativeItem().ContentFromRightToLeft().Column(column =>
+                //{
+                //    column.Item().Text(text =>
+                //        {
+                //            text.Span($"Report No:  AEM{serviceReport.Id}").SemiBold().FontSize(12);
+                //        });
+                //});
             });
         }
 
@@ -86,7 +100,7 @@ namespace AeroMech.API.Reports
                     //row.ConstantItem(5);
                     //row.ConstantItem(55, Unit.Millimetre).Component(new QuoteOrderInfoMiddle(serviceReport.SalesOrderNumber));
                     row.ConstantItem(5);
-                    row.ConstantItem(36, Unit.Millimetre).Component(new QuoteOrderInfoRight(serviceReport.JobNumber.ToString()));
+                    
                 });
 
 
@@ -260,12 +274,22 @@ namespace AeroMech.API.Reports
                     return container.DefaultTextStyle(x => x.FontSize(10)).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
 
-                table.Cell().Element(CellStyle).Text(serviceReport.Employees.Where(x=>!x.IsDeleted).Sum(x => x.Hours).ToString());
-                table.Cell().Element(CellStyle).Text("Labour");
-                table.Cell().Element(CellStyle).Text("EA");
-                table.Cell().Element(CellStyle).AlignRight().Text(serviceReport.ServiceType);
-                table.Cell().Element(CellStyle).AlignRight().Text(serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Rate)?.ToString("C", CultureInfo.CurrentCulture));
-                table.Cell().Element(CellStyle).AlignRight().Text((serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Hours) * serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Rate))?.ToString("C", CultureInfo.CurrentCulture));
+                serviceReport.Employees.Where(x => !x.IsDeleted).GroupBy(e => e.Rate).Select(g => new
+                {
+                    Rate = g.Key,
+                    Hours = g.Sum(e => e.Hours),
+
+                }).ToList().ForEach(x =>
+                {
+                    table.Cell().Element(CellStyle).Text(x.Hours.ToString());
+                    table.Cell().Element(CellStyle).Text("Labour");
+                    table.Cell().Element(CellStyle).Text("EA");
+                    table.Cell().Element(CellStyle).AlignRight().Text(serviceReport.ServiceType);
+                    table.Cell().Element(CellStyle).AlignRight().Text(x.Rate?.ToString("C", CultureInfo.CurrentCulture));//serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Rate)?.ToString("C", CultureInfo.CurrentCulture)
+                    table.Cell().Element(CellStyle).AlignRight().Text((x.Hours * x.Rate)?.ToString("C", CultureInfo.CurrentCulture));
+                });
+
+
 
                 static IContainer CellFlatStyle(IContainer container)
                 {
@@ -278,7 +302,7 @@ namespace AeroMech.API.Reports
                 table.Cell().Element(CellFlatStyle).AlignRight().Text("");
                 table.Cell().Element(CellFlatStyle).AlignRight().Text("");
 
-                foreach (var part in serviceReport.Parts.Where(x=>x.IsDeleted == false))
+                foreach (var part in serviceReport.Parts.Where(x => x.IsDeleted == false))
                 {
                     table.Cell().Element(CellStyle).Text(part.QTY.ToString());
                     table.Cell().Element(CellStyle).Text(part?.PartCode);
@@ -303,10 +327,13 @@ namespace AeroMech.API.Reports
                 table.Cell().Border(0).Text("");
                 table.Cell().Border(0).Text("");
                 table.Cell().Border(0).Text("");
-                table.Cell().Element(CellTotalsStyle).AlignRight().Text("Total Value:");
-                table.Cell().Element(CellTotalsStyle).AlignRight().Text((serviceReport.Parts.Where(x => x.IsDeleted == false).Sum(x => x.CostPrice * x.QTY) +
-                    (serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Hours) * serviceReport.Employees.Where(x => !x.IsDeleted)
-                    .Sum(x => x.Rate)))?.ToString("C", CultureInfo.CurrentCulture));
+                table.Cell().Element(CellTotalsStyle).AlignRight().Text("Total Excl VAT:");
+                table.Cell().Element(CellTotalsStyle).AlignRight().Text(
+                    (
+                        serviceReport.Parts.Where(x => x.IsDeleted == false).Sum(x => x.CostPrice * x.QTY) +
+                        serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Hours * x.Rate))?
+                        .ToString("C", CultureInfo.CurrentCulture)
+                    );
 
             });
         }

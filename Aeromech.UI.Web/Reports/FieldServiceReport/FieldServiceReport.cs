@@ -72,7 +72,7 @@ namespace AeroMech.API.Reports
                 {
                     row.RelativeItem().PaddingBottom(20).Component(new ServiceReportOrderInfoLeft(new OrderInfo()
                     {
-                        Date = serviceReport.ReportDate.ToShortDateString(),
+                        Date = serviceReport.ReportDate.ToString("dd/MM/yyyy"),
                         Client = serviceReport.Client.Name,
                         EngineHours = serviceReport.Vehicle.EngineHours.ToString(),
                         MachineType = serviceReport.Vehicle.MachineType,
@@ -134,7 +134,7 @@ namespace AeroMech.API.Reports
                         });
                         col.Item().Row(r =>
                         {
-                            r.RelativeColumn(4).PaddingTop(12).Text("Total Cost :").Bold();
+                            r.RelativeColumn(4).PaddingTop(12).Text("Total Excl VAT").Bold();
                             r.RelativeColumn(4).AlignRight().PaddingTop(10).BorderTop(1).BorderBottom(1).Text((totalLabour + totalParts).ToString("C", CultureInfo.CurrentCulture)).LineHeight(2).Bold();
                         });
                     });
@@ -258,7 +258,7 @@ namespace AeroMech.API.Reports
                 {
                     table.Cell().Element(CellStyle).Text($"{employee.FirstName} {employee.LastName}");
                     table.Cell().Element(CellStyle).Text(serviceReport.ServiceType);
-                    table.Cell().Element(CellStyle).Text(employee.DutyDate.ToShortDateString());
+                    table.Cell().Element(CellStyle).Text(employee.DutyDate.ToString("dd/MM/yyyy"));
                     table.Cell().Element(CellStyle).AlignRight().Text(employee.Rate?.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text(employee.Hours?.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text((employee.Rate * employee.Hours)?.ToString("C", CultureInfo.CurrentCulture));
