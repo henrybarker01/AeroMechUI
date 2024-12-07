@@ -109,6 +109,10 @@
 }
 else
 {
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Search..."
+               @oninput="(e) => SearchTerm = e.Value.ToString()" />
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -126,7 +130,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var part in parts)
+            @foreach (var part in FilteredParts)
             {
                 <tr>
                     <td>@part.PartCode</td>

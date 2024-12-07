@@ -21,6 +21,7 @@ namespace AeroMech.UI.Web.Services
             List<AeroMech.Data.Models.Part> parts = await _aeroMechDBContext.Parts.Where(x => x.IsDeleted == false)
                 .Include(a => a.Warehouse)
                 .Include(p => p.Prices)
+                .OrderBy(x=>x.PartCode).ThenBy(x=>x.PartDescription)
                 .ToListAsync();
             return _mapper.Map<List<PartModel>>(parts);
         }

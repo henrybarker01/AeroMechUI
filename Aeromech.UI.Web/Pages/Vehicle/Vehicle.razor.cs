@@ -1,7 +1,9 @@
 ﻿using AeroMech.Models;
+using AeroMech.UI.Web.Pages.Users;
 using AeroMech.UI.Web.Services;
 using BlazorBootstrap;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Identity;
 
 
 namespace AeroMech.UI.Web.Pages.Vehicle
@@ -25,6 +27,14 @@ namespace AeroMech.UI.Web.Pages.Vehicle
         private VehicleModel vehicle = new VehicleModel();
         private List<VehicleModel>? vehicles;
 
+        private string SearchTerm { get; set; } = string.Empty;
+        private IEnumerable<VehicleModel> FilteredVehicles =>
+        vehicles.Where(vehicle =>
+            string.IsNullOrEmpty(SearchTerm) ||
+            vehicle.Description.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            vehicle.SerialNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) || 
+            vehicle.JobNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+        );
         protected override void OnInitialized()
         {
         }

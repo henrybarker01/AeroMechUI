@@ -26,6 +26,10 @@
 }
 else
 {
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Search..."
+               @oninput="(e) => SearchTerm = e.Value.ToString()" />
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -42,7 +46,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var serviceReport in serviceReports)
+            @foreach (var serviceReport in FilteredServiceReports)
             {
                 <tr>
                     <td>@($"AEM {@serviceReport.Id}")</td>
@@ -55,7 +59,7 @@ else
                     <td>@CalcuateTotalReportValue(serviceReport).ToString("C", CultureInfo.CurrentCulture)</td>
                     <td>@(serviceReport.IsComplete == true ? "Complete" : "Incomplete")</td>
                     <td>
-                       @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
+                        @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
                         <Icon Name="IconName.Pencil" Size="IconSize.x4" Class="me-2" Color="IconColor.Primary" @onclick="() => EditServiceReport(serviceReport.Id)" Style="cursor: pointer" />
                         <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" hidden="@(!serviceReport.IsComplete)" @onclick="() => PrintServiceReport(serviceReport.Id)" Style="cursor: pointer" />
                     </td>

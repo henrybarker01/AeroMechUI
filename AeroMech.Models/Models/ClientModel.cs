@@ -35,6 +35,8 @@ namespace AeroMech.Models
         [RegularExpression(Email, ErrorMessage = "Please enter valid email address.")]
         public string ContactPersonEmail { get; set; }
 
+        public DateOnly? ContactPersonBirthDate { get; set; }
+
         public List<VehicleModel>? Vehicles { get; set; }
     }
 }

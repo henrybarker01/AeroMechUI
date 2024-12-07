@@ -1,6 +1,7 @@
 ﻿using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
+using AeroMech.UI.Web.Pages.Employee;
 using Microsoft.EntityFrameworkCore;
 
 namespace AeroMech.UI.Web.Services
@@ -29,6 +30,7 @@ namespace AeroMech.UI.Web.Services
                     ContactPersonName = x.ContactPersonName,
                     ContactPersonEmail = x.ContactPersonEmail,
                     ContactPersonNumber = x.ContactPersonNumber,
+                    ContactPersonBirthDate = x.ContactPersonBirthDate,
                     AddressLine1 = x.Address.AddressLine1,
                     AddressLine2 = x.Address.AddressLine2,
                     City = x.Address.City,
@@ -55,10 +57,37 @@ namespace AeroMech.UI.Web.Services
                 ContactPersonName = client.ContactPersonName,
                 ContactPersonNumber = client.ContactPersonNumber,
                 ContactPersonEmail = client.ContactPersonEmail,
+                ContactPersonBirthDate = client.ContactPersonBirthDate
             };
             _aeroMechDBContext.Clients.Add(newClient);
             await _aeroMechDBContext.SaveChangesAsync();
             return newClient.Id;
+        }
+
+        public async Task<int> EditClient(ClientModel client)
+        {
+            var clientToEdit = await _aeroMechDBContext.Clients
+                .Include(x => x.Address)
+                .SingleAsync(x => x.Id == client.Id);
+
+            clientToEdit.ContactPersonBirthDate = client.ContactPersonBirthDate;
+            clientToEdit.ContactPersonEmail = client.ContactPersonEmail;
+            clientToEdit.ContactPersonName = client.ContactPersonName;
+            clientToEdit.ContactPersonNumber = client.ContactPersonNumber;
+            clientToEdit.Name = client.Name;
+
+            if (clientToEdit.Address == null)
+            {
+                clientToEdit.Address = new Address();
+            }
+
+            clientToEdit.Address.AddressLine1 = client.AddressLine1 ?? "";
+            clientToEdit.Address.AddressLine2 = client.AddressLine2 ?? "";
+            clientToEdit.Address.City = client.City ?? "";
+            clientToEdit.Address.PostalCode = client.PostalCode ?? "";
+
+            await _aeroMechDBContext.SaveChangesAsync();
+            return clientToEdit.Id;
         }
 
         public async Task Delete(int id)

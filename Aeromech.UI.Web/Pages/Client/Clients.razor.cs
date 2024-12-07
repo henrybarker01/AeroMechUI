@@ -20,6 +20,14 @@ namespace AeroMech.UI.Web.Pages.Client
         private ClientModel client = new ClientModel();
         private List<ClientModel>? clients;
 
+        private string SearchTerm { get; set; } = string.Empty;
+        private IEnumerable<ClientModel> FilteredClients =>
+        clients.Where(client =>
+            string.IsNullOrEmpty(SearchTerm) ||
+            client.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            client.ContactPersonName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+        );
+
         protected override async Task OnInitializedAsync()
         {
             await GetClients();
@@ -58,17 +66,11 @@ namespace AeroMech.UI.Web.Pages.Client
             }
             else
             {
-                throw new NotImplementedException();
-
-                //var result = await httpClient.PostAsJsonAsync<ClientModel>($"{configuration.GetValue<string>("ApiUrl")}Client/edit", client);
-                //if (result != null)
-                //{
-                //    var kak = await result.Content.ReadAsStringAsync();
-                //    var morekak = JsonConvert.DeserializeObject(kak);
-
-                //    client = new ClientModel();
-                //    await OnHideModalClick();
-                //}
+                var result = await clientService.EditClient(client);
+                if (result != 0)
+                {
+                    await OnHideModalClick();
+                }
             }
 
         }

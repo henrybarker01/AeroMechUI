@@ -127,6 +127,10 @@
 }
 else if (vehicles != null)
 {
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Search..."
+               @oninput="(e) => SearchTerm = e.Value.ToString()" />
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -142,7 +146,7 @@ else if (vehicles != null)
             </tr>
         </thead>
         <tbody>
-            @foreach (var vehicle in vehicles)
+            @foreach (var vehicle in FilteredVehicles)
             {
                 <tr>
                     <td>@vehicle.SerialNumber</td>

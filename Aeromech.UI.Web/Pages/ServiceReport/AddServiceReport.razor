@@ -271,7 +271,7 @@
 						<tr>
 									<td>
 
-										<InputSelect class="form-select" 
+										@* <InputSelect class="form-select" 
 											id="select-client"
 											ValueExpression="@(()=>selectedPart.Id)" 
 											Value="@selectedPart.Id" 
@@ -282,7 +282,27 @@
 												{
 													<option value="@prt.Id">@prt.PartCode @prt.PartDescription</option>
 												}
-										</InputSelect>
+										</InputSelect> *@
+
+										<div class="dropdown">
+										    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+										        @(selectedPart?.PartCode ?? "Select Part")
+										    </button>
+										    <div class="dropdown-menu p-3" style="max-height: 350px; overflow:auto">
+										        <input type="text" class="form-control mb-2" placeholder="Search part..."
+										               @oninput="(e) => SearchTerm = e.Value.ToString()" />
+										        <ul class="list-unstyled">
+										            <li @onclick="() => HandleOnChangePart(0)" class="dropdown-item">Select part</li>
+										            <li @onclick="() => HandleOnChangePart(999999)" class="dropdown-item">Non Stock</li>
+										            @foreach (var prt in FilteredParts)
+										            {
+										                <li @onclick="() => HandleOnChangePart(prt.Id)" class="dropdown-item">
+										                    @prt.PartCode @prt.PartDescription
+										                </li>
+										            }
+										        </ul>
+										    </div>
+										</div>
 									</td>
 									<td>
 									</td>

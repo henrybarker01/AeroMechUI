@@ -1,0 +1,1 @@
+dotnet ef migrations add Migration18 --startup-project AeroMech.UI.Web

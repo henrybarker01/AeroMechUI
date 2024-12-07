@@ -156,6 +156,10 @@
 }
 else
 {
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Search..."
+               @oninput="(e) => SearchTerm = e.Value.ToString()" />
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -170,7 +174,7 @@ else
             </tr>
         </thead>
         <tbody>
-            @foreach (var employee in employees)
+            @foreach (var employee in FilteredEmpoyees)
             {
                 <tr>
                     <td>@employee.Title</td>

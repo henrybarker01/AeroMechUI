@@ -1,0 +1,55 @@
+﻿@using BlazorBootstrap
+
+@if (birthdays != null)
+{
+    <div class="widger-container">
+        <table class="widget-data-table">
+            <thead class="widget-data-header">
+                <tr>
+                    <td class="widget-data-col">
+                        Name
+                    </td>
+                    <td class="widget-data-col">
+                        Email
+                    </td>
+                    <td class="widget-data-col">
+                        Phone number
+                    </td>
+                    <td class="widget-data-col">
+                        Birth date
+                    </td>
+                </tr>
+            </thead>
+            <tbody class="widget-data-body">
+                @foreach (var birthday in birthdays)
+                {
+                    <tr class="widget-data-row">
+                        <td class="widget-data-col">
+                            @birthday.Name
+                        </td>
+                        <td class="widget-data-col email">
+                            @birthday.Email
+                        </td>
+                        <td class="widget-data-col">
+                            @birthday.PhoneNumber
+                        </td>
+                        <td class="widget-data-col">
+                            @birthday.BirthDate
+                        </td>
+                        @*  <td class="widget-data-col action-buttons">
+                            <Icon Name="IconName.Pencil" Size="IconSize.x6" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
+                            <Icon Name="IconName.Printer" Size="IconSize.x6" Color="IconColor.Secondary" hidden="@(!quote.IsComplete)" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
+                        </td>  *@
+                    </tr>
+                }
+            </tbody>
+
+        </table>
+    </div>
+}
+else
+{
+    <div>Loading...</div>
+}
+
+

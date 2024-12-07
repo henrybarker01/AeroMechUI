@@ -1,4 +1,5 @@
 using AeroMech.Models;
+using AeroMech.UI.Web.Pages.Quote;
 using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Components;
 
@@ -11,6 +12,18 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
         private List<ServiceReportModel>? serviceReports;
 
+        private string SearchTerm { get; set; } = string.Empty;
+        private IEnumerable<ServiceReportModel> FilteredServiceReports =>
+       serviceReports.Where(serviceReport =>
+           string.IsNullOrEmpty(SearchTerm) ||
+           (serviceReport.Description ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+           (serviceReport.DetailedServiceReport ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+           (serviceReport.Instruction ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+           (serviceReport.QuoteNumber.ToString() ?? "").ToString().Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+           (serviceReport.SalesOrderNumber ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+           (serviceReport.JobNumber ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+           serviceReport.Id.ToString().Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+       );
         protected override async Task OnInitializedAsync()
         {
             await GetServiceReports();

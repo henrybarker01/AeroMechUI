@@ -62,6 +62,9 @@ namespace AeroMech.Data.Migrations
                     b.Property<int>("AddressId")
                         .HasColumnType("int");
 
+                    b.Property<DateOnly?>("ContactPersonBirthDate")
+                        .HasColumnType("date");
+
                     b.Property<string>("ContactPersonEmail")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -396,6 +399,41 @@ namespace AeroMech.Data.Migrations
                     b.HasIndex("ServiceReportId");
 
                     b.ToTable("ServiceReportParts");
+                });
+
+            modelBuilder.Entity("AeroMech.Data.Models.StockAdjustment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<Guid>("AdjustedById")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("AdjustementDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("PartId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("QTY")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StockAdjustmentType")
+                        .HasColumnType("int");
+
+                    b.Property<int>("WarehouseId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PartId");
+
+                    b.HasIndex("WarehouseId");
+
+                    b.ToTable("StockAdjustment");
                 });
 
             modelBuilder.Entity("AeroMech.Data.Models.Vehicle", b =>
@@ -783,6 +821,25 @@ namespace AeroMech.Data.Migrations
                     b.Navigation("Part");
 
                     b.Navigation("ServiceReport");
+                });
+
+            modelBuilder.Entity("AeroMech.Data.Models.StockAdjustment", b =>
+                {
+                    b.HasOne("AeroMech.Data.Models.Part", "Part")
+                        .WithMany()
+                        .HasForeignKey("PartId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AeroMech.Data.Models.Warehouse", "Warehouse")
+                        .WithMany()
+                        .HasForeignKey("WarehouseId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Part");
+
+                    b.Navigation("Warehouse");
                 });
 
             modelBuilder.Entity("AeroMech.Data.Models.Vehicle", b =>

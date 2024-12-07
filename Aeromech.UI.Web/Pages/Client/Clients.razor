@@ -38,6 +38,13 @@
                         <ValidationMessage For="() => client.ContactPersonEmail" />
                     </div>
                 </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="contact-person-birthdate">Contact Person birth date:</label>
+                        <DateInput TValue="DateOnly?" @bind-Value="@client.ContactPersonBirthDate" id="contact-person-birthdate" />
+                        <ValidationMessage For="() => client.ContactPersonBirthDate" />
+                    </div>
+                </div>
                 <div class="row mt-5">
                     <div class="form-group">
                         <label for="addressLine1">Address Line 1:</label>
@@ -76,7 +83,7 @@
                         <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
                     </div>
                 </div>
-               
+
             </div>
         </EditForm>
     </BodyTemplate>
@@ -102,6 +109,10 @@
 }
 else
 {
+    <div class="mb-3">
+        <input type="text" class="form-control" placeholder="Search..."
+               @oninput="(e) => SearchTerm = e.Value.ToString()" />
+    </div>
     <table class="table">
         <thead>
             <tr>
@@ -110,11 +121,12 @@ else
                 <th>Contact Person</th>
                 <th>Contact Number</th>
                 <th>Contact Email</th>
+                <th>Contact Birth Date</th>
                 <th>Action</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var client in clients)
+            @foreach (var client in FilteredClients)
             {
                 <tr>
 
@@ -122,6 +134,7 @@ else
                     <td>@client.ContactPersonName</td>
                     <td>@client.ContactPersonNumber</td>
                     <td>@client.ContactPersonEmail</td>
+                    <td>@client.ContactPersonBirthDate?.ToString("dd/MM/yyyy")</td>
                     <td>
                         <Icon Name="IconName.BuildingFillDash" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteClient(client)" Class="me-2" Style="cursor: pointer" />
                         <Icon Name="IconName.BuildingFillGear" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditClientClick(client)" Style="cursor: pointer" />

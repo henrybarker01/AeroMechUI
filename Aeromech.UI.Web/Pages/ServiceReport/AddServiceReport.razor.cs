@@ -1,3 +1,4 @@
+using AeroMech.Data.Models;
 using AeroMech.Models;
 using AeroMech.Models.Enums;
 using AeroMech.Models.Models;
@@ -143,6 +144,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
             if (serviceReportId != 0)
             {
+                serviceReport.Id = serviceReportId;
                 ToastService.Notify(new(ToastType.Success, $"Service report saved successfully."));
             }
             else
@@ -161,6 +163,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
                 if (serviceReportId != 0)
                 {
+                    serviceReport.Id = serviceReportId;
                     ToastService.Notify(new(ToastType.Success, $"Service report saved successfully."));
                     NavigationManager.NavigateTo($"/ShowQuote/{serviceReportId}");
                 }
@@ -211,6 +214,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
                 if (serviceReportId != 0)
                 {
+                    serviceReport.Id = serviceReportId;
                     ToastService.Notify(new(ToastType.Success, $"Service report saved successfully."));
                     NavigationManager.NavigateTo($"/ShowPDF/{serviceReportId}");
                 }
@@ -221,6 +225,12 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             }
             //}
         }
+
+        private string SearchTerm { get; set; } = string.Empty;
+        private IEnumerable<PartModel> FilteredParts =>
+        parts.Where(p => string.IsNullOrEmpty(SearchTerm) ||
+                         p.PartCode.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                         p.PartDescription.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
 
 
         private async Task<int> SaveServiceReport(ServiceReportModel serviceReportToAdd, bool isQuote)
@@ -242,6 +252,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
         void HandleOnChangePart(int partId)
         {
+            SearchTerm = "";
             if (partId == 999999)
             {
                 var part = new ServiceReportPartModel { Id = partId };
@@ -257,7 +268,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
                 //part.Warehouse = ;
                 part.SupplierCode = "";
                 part.IsAdHockPart = true;
-
+               
                 serviceReport.Parts.Add(part);
                 selectedPart = new ServiceReportPartModel();
             }
@@ -271,6 +282,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
                 var part = new ServiceReportPartModel { Id = partId };
                 var prt = parts.First(x => x.Id == partId);
                 part.Id = prt.Id;
+                part.PartId = partId;
                 part.PartCode = prt.PartCode;
                 part.PartDescription = prt.PartDescription;
                 part.SellingPrice = prt.CostPrice;

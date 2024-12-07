@@ -2,6 +2,7 @@
 using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
+using AeroMech.Models.Enums;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
@@ -58,6 +59,22 @@ namespace AeroMech.UI.Web.Services
                          });
 
                          sr.Parts.Remove(sr.Parts.First(x => x.Id == part.Id));
+                     }
+                     else
+                     {
+                         var adjustment = new StockAdjustment()
+                         {
+                             PartId = part.Id,
+                             AdjustementDate = DateTime.Now,
+                             WarehouseId = 1, //TODO - HB this needs to be added
+                             QTY = part.QTY * -1,
+                             AdjustedById = new Guid(), //TODO - get the user id
+                             StockAdjustmentType = StockAdjustmentType.ServiceReport
+                         };
+                         _aeroMechDBContext.StockAdjustment.Add(adjustment);
+
+                         var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == part.Id);
+                         partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
                      }
                  });
 
@@ -144,14 +161,58 @@ namespace AeroMech.UI.Web.Services
                     }
                     else
                     {
-                        if (serviceReportToEdit.Parts.Any(x => x.Id == part.Id))
+                        if (serviceReportToEdit.Parts.Any(x => x.PartId == part.PartId))
                         {
-                            var p = serviceReportToEdit.Parts.Single(x => x.Id == part.Id);
+                            var p = serviceReportToEdit.Parts.Single(x => x.PartId == part.PartId);
+
+                            if (p.Qty != part.QTY)
+                            {
+                                //update the qty on hand first with the original qty
+                                _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
+                                {
+                                    PartId = p.PartId,
+                                    AdjustementDate = DateTime.Now,
+                                    WarehouseId = 1, //TODO - HB this needs to be added
+                                    QTY = p.Qty,
+                                    AdjustedById = new Guid(), //TODO - get the user id
+                                    StockAdjustmentType = StockAdjustmentType.ServiceReportReversal
+                                });
+
+                                var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == p.PartId);
+                                partToUpdate.QtyOnHand = partToUpdate.QtyOnHand + p.Qty;
+
+                                _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
+                                {
+                                    PartId = p.PartId,
+                                    AdjustementDate = DateTime.Now,
+                                    WarehouseId = 1, //TODO - HB this needs to be added
+                                    QTY = part.QTY * -1,
+                                    AdjustedById = new Guid(), //TODO - get the user id
+                                    StockAdjustmentType = StockAdjustmentType.ServiceReportEdit
+                                });
+
+                                partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
+                            }    else if (part.IsDeleted && !p.IsDeleted)
+                            {
+                                _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
+                                {
+                                    PartId = p.PartId,
+                                    AdjustementDate = DateTime.Now,
+                                    WarehouseId = 1, //TODO - HB this needs to be added
+                                    QTY = part.QTY,
+                                    AdjustedById = new Guid(), //TODO - get the user id
+                                    StockAdjustmentType = StockAdjustmentType.ServiceReportReversal
+                                });
+                                var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == p.PartId);
+                                partToUpdate.QtyOnHand = partToUpdate.QtyOnHand + part.QTY;
+                            }                        
+
                             p.Qty = part.QTY;
                             p.Discount = part.Discount;
-                            p.Id = part.Id;
+                            //p.Id = part.Id;
                             p.CostPrice = part.CostPrice;
-                            p.IsDeleted = part.IsDeleted;
+                            p.IsDeleted = part.IsDeleted;                          
+
                         }
                         else
                         {
@@ -164,6 +225,19 @@ namespace AeroMech.UI.Web.Services
                                 IsDeleted = false,
                                 ServiceReportId = serviceReportToEdit.Id,
                             });
+
+                            _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
+                            {
+                                PartId = part.Id,
+                                AdjustementDate = DateTime.Now,
+                                WarehouseId = 1, //TODO - HB this needs to be added
+                                QTY = part.QTY * -1,
+                                AdjustedById = new Guid(), //TODO - get the user id
+                                StockAdjustmentType = StockAdjustmentType.ServiceReport
+                            });
+
+                            var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == part.Id);
+                            partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
                         }
                     }
                 });

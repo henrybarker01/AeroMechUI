@@ -1,4 +1,3 @@
-using Aeromech.UI.Web.Data;
 using AeroMech.API.Reports;
 using AeroMech.Data.Persistence;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -42,7 +41,6 @@ builder.Services.AddScoped<IHostEnvironmentAuthenticationStateProvider>(sp =>
 // Add services to the container.
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
-builder.Services.AddSingleton<WeatherForecastService>();
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 builder.Services.AddScoped<FieldServiceReport, FieldServiceReport>();
 builder.Services.AddScoped<Quote, Quote>();

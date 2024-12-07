@@ -51,7 +51,15 @@ namespace AeroMech.UI.Web.Pages.Employee
 			});
 		}
 
-		private async Task OnShowModalClick()
+        private string SearchTerm { get; set; } = string.Empty;
+        private IEnumerable<EmployeeModel> FilteredEmpoyees =>
+        employees.Where(employee =>
+            string.IsNullOrEmpty(SearchTerm) ||
+            employee.FirstName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            employee.LastName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+        );
+
+        private async Task OnShowModalClick()
 		{
 			title = "Add Employee";
 			employee = new EmployeeModel();

@@ -1,4 +1,5 @@
-﻿using AeroMech.UI.Web.Services;
+﻿using AeroMech.Models;
+using AeroMech.UI.Web.Services;
 using BlazorBootstrap;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Identity;
@@ -14,6 +15,14 @@ namespace AeroMech.UI.Web.Pages.Users
         private Modal modal = default!;
         private IdentityUser user = new IdentityUser();
         private List<IdentityUser>? users;
+
+        private string SearchTerm { get; set; } = string.Empty;
+        private IEnumerable<IdentityUser> FilteredUsers =>
+        users.Where(user =>
+            string.IsNullOrEmpty(SearchTerm) ||
+            user.Email.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            user.UserName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
+        );
 
         protected override async Task OnInitializedAsync()
         {

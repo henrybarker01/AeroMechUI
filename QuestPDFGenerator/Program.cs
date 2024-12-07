@@ -21,14 +21,14 @@ var _quote = new Quote();
 
 using (var _aeroMechDBContext = new AeroMechDBContext()) 
 {
-    _quote.serviceReport = await _aeroMechDBContext.ServiceReports
-         .Include(x => x.Vehicle)
-         .Include(x => x.Parts)
-             .ThenInclude(x => x.Part)
-         .Include(x => x.Employees)
-             .ThenInclude(x => x.Employee)
-         .Include(x => x.Client)
-         .FirstAsync(x => x.Id == 1);
+    //_quote.serviceReport = await _aeroMechDBContext.ServiceReports
+    //     .Include(x => x.Vehicle)
+    //     .Include(x => x.Parts)
+    //         .ThenInclude(x => x.Part)
+    //     .Include(x => x.Employees)
+    //         .ThenInclude(x => x.Employee)
+    //     .Include(x => x.Client)
+    //     .FirstAsync(x => x.Id == 1);
 }
 
 Document.Create(_quote.Compose).ShowInPreviewer();
