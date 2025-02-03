@@ -64,29 +64,40 @@ namespace AeroMech.UI.Web.Services
                 //await HandleSigningInFailedAsync("Email or Password are not match");
                 return new SignInResult();
             }
-
-
-      
-            SignInResult loginResult = await _signInManager!.CheckPasswordSignInAsync(user, credential.Password, false);
+             
+            SignInResult loginResult = await _signInManager!.CheckPasswordSignInAsync(user, credential.Password,false);
             if (loginResult.Succeeded == false)
             {
                 //await HandleSigningInFailedAsync("Email or Password are not match");
                 return loginResult;
             }
+
             if (loginResult.Succeeded)
-            { 
-               // await _signInManager.SignInAsync(user, true);
-                 
-                 ClaimsPrincipal principal = await _signInManager.CreateUserPrincipalAsync(user);
-                _signInManager.Context.User = principal;
+            {
+                //await _signInManager.SignInAsync(user, isPersistent: true);
+
+                ClaimsPrincipal principal = await _signInManager.CreateUserPrincipalAsync(user);
                 _hostAuthentication!.SetAuthenticationState(
                     Task.FromResult(new AuthenticationState(principal)));
-                return loginResult;
-                // If you don't need doing anything without moving to next page, you can remove this.
-                //AuthenticationState authState = await AuthenticationStateProvider!.GetAuthenticationStateAsync();
 
-                //Navigation!.NavigateTo("/Pages/Edit");
+                return loginResult;
             }
+
+
+            //if (loginResult.Succeeded)
+            //{ 
+            //   // await _signInManager.SignInAsync(user, true);
+                 
+            //     ClaimsPrincipal principal = await _signInManager.CreateUserPrincipalAsync(user);
+            //    _signInManager.Context.User = principal;
+            //    _hostAuthentication!.SetAuthenticationState(
+            //        Task.FromResult(new AuthenticationState(principal)));
+            //    return loginResult;
+            //    // If you don't need doing anything without moving to next page, you can remove this.
+            //    //AuthenticationState authState = await AuthenticationStateProvider!.GetAuthenticationStateAsync();
+
+            //    //Navigation!.NavigateTo("/Pages/Edit");
+            //}
             return new SignInResult();
         }
 

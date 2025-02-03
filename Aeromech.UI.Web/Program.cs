@@ -56,6 +56,17 @@ builder.Services.AddAuthentication("Cookies")
         options.SlidingExpiration = true;  // Reset expiration on activity
     });
 
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/login";  // Redirect if not logged in
+    options.LogoutPath = "/logout";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);  // Keep session for 30 days
+    options.SlidingExpiration = true;
+});
+
 
 QuestPDF.Settings.License = LicenseType.Community;
 
@@ -69,6 +80,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+app.UseRouting();
+
 
 
 app.UseAuthentication();
@@ -77,7 +90,7 @@ app.UseAuthorization();
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 //app.UseAuthorization();
-app.UseRouting();
+
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
 
