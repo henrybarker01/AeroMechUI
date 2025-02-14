@@ -1,240 +1,253 @@
-﻿@using AeroMech.Models; 
+﻿@using AeroMech.Models;
 @using AeroMech.Models.Enums
 @using System.Globalization
 @using BlazorBootstrap
 
-@page "/add-service-report" 
+@page "/add-service-report"
 @page "/add-service-report/{serviceReportId:int}"
 
 <PageTitle>Field Service Report</PageTitle>
- 
+
 
 <div class="container-fluid">
-	<div class="row">
-		<div class="col-11"><h1>Field Service Report</h1></div>
-	</div>
+    <div class="row">
+        <div class="col-11"><h1>Field Service Report</h1></div>
+    </div>
 
-	@*  OnValidSubmit="@SaveAndPrint" *@
-@* Model="@serviceReport" *@
-	<EditForm  EditContext="editContext" >
-		<DataAnnotationsValidator />
-		<div class="row mt-3">
-			<div class="col-6">
-				<div class="form-group">
-					<label for="sales-order-number">Sales Order Number:</label>
-					<InputText @bind-Value="serviceReport.SalesOrderNumber" type="text" class="form-control" id="sales-order-number"></InputText>
-					 <ValidationMessage For="() => serviceReport.SalesOrderNumber" />
-				</div>
-			</div>
-			<div class="col-6">
-				<div class="form-group">
-					<label for="report-date">Date:</label>
-					<InputDate @bind-Value="serviceReport.ReportDate" class="form-control" id="report-date"></InputDate>
-					 <ValidationMessage For="() => serviceReport.ReportDate" />
-				</div>
-			</div>
-		</div>
-		<div class="row mt-2">
-			<div class="col-6">
-				<div class="form-group">
-					<label for="select-client">Client:</label>
-						<InputSelect class="form-select" 
-							id="select-client"
-							ValueExpression="@(()=>serviceReport.ClientId)" 
-							Value="@serviceReport.ClientId" 
-							ValueChanged="@((int value) => HandleOnChangeClient(value))">			  			  
-								<option selected value="0">Select client</option>
-								@foreach (var client in clients)
-								{
-									<option value="@client.Id">@client.Name</option>
-								}
-						</InputSelect>
-						<ValidationMessage For="() => serviceReport.ClientId" />
-				</div>				
-			</div>
-			<div class="col-6">
-				<div class="form-group">
-					<label for="select-vehicle">Vehicle:</label>
-					<InputSelect class="form-select" id="select-vehicle" 
-							ValueExpression="@(()=>serviceReport.VehicleId)" 
-							Value="@serviceReport.VehicleId" 
-							ValueChanged="@((int value) => HandleOnChangeVehicle(value))"> 
-							<option selected value="0">Select vehicle</option>
-							@foreach (var vehicle in vehicles)
-							{
-								<option value="@vehicle.Id">@vehicle.MachineType</option>
-							}
-						</InputSelect>
-						<ValidationMessage For="() => serviceReport.VehicleId" />
-				</div>
-			</div>
-		</div>
-		<div class="row mt-2">
-			<div class="col-6">
-				<div class="form-group">
-					<label for="service-type">Service Type:</label>
-		 			<InputSelect class="form-select" id="service-type" 
-							ValueExpression="@(()=>serviceReport.ServiceType)" 
-							Value="@serviceReport.ServiceType" 
-							ValueChanged="@((ServiceType serviceType) => HandleOnServiceTypeChange(serviceType))">	 
-							<option selected value="0">Select vehicle</option>
-							@foreach (var serviceType in Enum.GetValues(typeof(ServiceType)))
-							{
-								<option value="@serviceType">@serviceType</option>
-							}
-						</InputSelect>
-						<ValidationMessage For="() => serviceReport.ServiceType" /> 
-				</div>
-			</div>
-			<div class="col-6">
-				<div class="form-group">
-					<label for="vehicle-hours">Vehicle hours:</label> 
-					<NumberInput @bind-Value="serviceReport.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
-					<ValidationMessage For="() => serviceReport.VehicleHours" /> 
-				</div>
-			</div>
-		</div>
-		@* <div class="row mt-3">
+    @*  OnValidSubmit="@SaveAndPrint" *@
+    @* Model="@serviceReport" *@
+    <EditForm EditContext="editContext">
+        <DataAnnotationsValidator />
+        <div class="row mt-3">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="sales-order-number">Sales Order Number:</label>
+                    <InputText @bind-Value="serviceReport.SalesOrderNumber" type="text" class="form-control" id="sales-order-number"></InputText>
+                    <ValidationMessage For="() => serviceReport.SalesOrderNumber" />
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="report-date">Date:</label>
+                    <InputDate @bind-Value="serviceReport.ReportDate" class="form-control" id="report-date"></InputDate>
+                    <ValidationMessage For="() => serviceReport.ReportDate" />
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="select-client">Client:</label>
+                    <InputSelect class="form-select"
+                                 id="select-client"
+                                 ValueExpression="@(()=>serviceReport.ClientId)"
+                                 Value="@serviceReport.ClientId"
+                                 ValueChanged="@((int value) => HandleOnChangeClient(value))">
+                        <option selected value="0">Select client</option>
+                        @foreach (var client in clients)
+                        {
+                            <option value="@client.Id">@client.Name</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => serviceReport.ClientId" />
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="select-vehicle">Vehicle:</label>
+                    <InputSelect class="form-select" id="select-vehicle"
+                                 ValueExpression="@(()=>serviceReport.VehicleId)"
+                                 Value="@serviceReport.VehicleId"
+                                 ValueChanged="@((int value) => HandleOnChangeVehicle(value))">
+                        <option selected value="0">Select vehicle</option>
+                        @foreach (var vehicle in vehicles)
+                        {
+                            <option value="@vehicle.Id">@vehicle.MachineType</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => serviceReport.VehicleId" />
+                </div>
+            </div>
+        </div>
+        <div class="row mt-2">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="service-type">Service Type:</label>
+                    <InputSelect class="form-select" id="service-type"
+                                 ValueExpression="@(()=>serviceReport.ServiceType)"
+                                 Value="@serviceReport.ServiceType"
+                                 ValueChanged="@((ServiceType serviceType) => HandleOnServiceTypeChange(serviceType))">
+                        <option selected value="0">Select vehicle</option>
+                        @foreach (var serviceType in Enum.GetValues(typeof(ServiceType)))
+                        {
+                            <option value="@serviceType">@serviceType</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => serviceReport.ServiceType" />
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="vehicle-hours">Vehicle hours:</label>
+                    <NumberInput @bind-Value="serviceReport.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
+                    <ValidationMessage For="() => serviceReport.VehicleHours" />
+                </div>
+            </div>
+        </div>
+        @* <div class="row mt-3">
 			<div class="col-1">
 				<h3 class="pt-2">
 					Labour
 				</h3>
 			</div>		 
 		</div> *@
-		<div class="row mt-3">
-			<table class="table table-hover">
-				<thead>
-					<tr>
-						<th>Name</th>
-						<th>Surname</th>
-						<th>Date</th>
-						<th>Rate</th>
-						<th>Hours</th>
-						<th>Actual</th>						
-						<th>Total</th>
-						<th>Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					@if (serviceReport.Employees != null)
-					{
-						@foreach (var employee in serviceReport.Employees.Where(x=>!x.IsDeleted))
-						{
-								<tr>
-									<td>
-										@employee.FirstName
-									</td>
-									<td>
-										@employee.LastName
-									</td>
-									<td>
-										<InputDate @bind-Value="employee.DutyDate" class="form-control" id="report-date"></InputDate>
-										@* <NumberInput TValue="double?" @bind-Value="@employee.Discount" Placeholder="Enter discount" Step=".01"/>  *@
-									</td>
-									<td>
-										  @employee.Rate?.ToString("F", CultureInfo.InvariantCulture)
-									</td
-									<td>
-										 <NumberInput TValue="double?" @bind-Value="@employee.Hours" Placeholder="Enter hours" Step=".01"/> 
-									</td>
-									<td>
-										  @((employee.Rate * employee.Hours)?.ToString("F", CultureInfo.InvariantCulture))
-									</td>
-									
-									<td>
-										@(((employee.Rate * employee.Hours) - ((employee.Discount / 100) * (employee.Rate * employee.Hours)))?.ToString("F", CultureInfo.InvariantCulture))
-										 
-									</td>
-									<td>
-										<div class="col-1">
-											<Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemoveLabour(employee.Id)" />
-										</div>
+        <div class="row mt-3">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Surname</th>
+                        <th>Date</th>
+                        <th>Rate Type</th>
+                        <th>Rate</th>
+                        <th>Hours</th>
+                       @*  <th>Actual</th> *@
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (serviceReport.Employees != null)
+                    {
+                        @foreach (var employee in serviceReport.Employees.Where(x => !x.IsDeleted))
+                        {
+                            <tr>
+                                <td>
+                                    @employee.FirstName
+                                </td>
+                                <td>
+                                    @employee.LastName
+                                </td>
+                                <td>
+                                    <InputDate @bind-Value="employee.DutyDate" class="form-control" id="report-date"></InputDate>
+                                    @* <NumberInput TValue="double?" @bind-Value="@employee.Discount" Placeholder="Enter discount" Step=".01"/>  *@
+                                </td>
+                                <td>
+                                    <InputSelect @bind-Value="employee.RateType" class="form-select">
+                                        @foreach (var rate in RateTypes)
+                                        {
+                                            <option value="@rate">@rate.GetDisplayName()</option>
+                                        }
+                                    </InputSelect>
+                                </td>
+                                <td>
+                                    @getRate(employee).ToString("F", CultureInfo.InvariantCulture)
+                                </td>
+                                <td>
+                                    <NumberInput TValue="double?" @bind-Value="@employee.Hours" Placeholder="Enter hours" Step=".01" />
+                                </td>
+                               @*  <td>
+                                    @(getRate(employee).ToString("F", CultureInfo.InvariantCulture))
+                                </td> *@
 
-									</td>
-								</tr>
-						}
-					}
-					<tr>
-						<td>
-							<InputSelect class="form-select" 
-											id="select-client"
-											ValueExpression="@(()=>selectedEmployee.Id)" 
-											Value="@selectedEmployee.Id" 
-											ValueChanged="@((int value) => HandleOnChangeUnbound(value))">			  			  
-												<option selected value="">Select employee</option>
-												@foreach (var emp in employees)
-												{
-													<option value="@emp.Id">@emp.FirstName @emp.LastName</option>
-												}
-										</InputSelect> 
-						</td>
-						<td>
-						</td>
-						<td>
-						</td>
-						<td>
-						</td>
-						<td>
-						</td>
-						<td>
-						</td>
-						<td>
-						</td>
-						<td>
-						</td>
-					</tr>
+                                <td>
+                                    @(getTotal(employee).ToString("F", CultureInfo.InvariantCulture))
 
-				</tbody>
-			</table>
-			</div> 
-		@* <div class="row mt-3">
+                                </td>
+                                <td>
+                                    <div class="col-1">
+                                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemoveLabour(employee.Id)" />
+                                    </div>
+
+                                </td>
+                            </tr>
+                        }
+                    }
+                    <tr>
+                        <td>
+                            <InputSelect class="form-select"
+                                         id="select-client"
+                                         ValueExpression="@(()=>selectedEmployee.Id)"
+                                         Value="@selectedEmployee.Id"
+                                         ValueChanged="@((int value) => HandleOnChangeUnbound(value))">
+                                <option selected value="">Select employee</option>
+                                @foreach (var emp in employees)
+                                {
+                                    <option value="@emp.Id">@emp.FirstName @emp.LastName</option>
+                                }
+                            </InputSelect>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+        @* <div class="row mt-3">
 			<div class="col-1">
 				<h3 class="pt-2">
 					Parts
 				</h3>
 			</div> 
 		</div> *@
-		<div class="row mt-3">
-			<table class="table table-hover">
-				<thead>
-					<tr>
-						<th>Part Number</th>
-						<th>Description</th>
-						<th>C.P.U.</th>
-						<th>Qty</th>
-						<th>Actual</th>
-						@* <th>Discount</th> *@
-						<th>Total</th>
-						<th>Actions</th>
-					</tr>
-				</thead>
-				<tbody>
-					@if (serviceReport.Parts != null)
-					{
-						@foreach (var part in serviceReport.Parts.Where(x=>!x.IsDeleted))
-						{
-							<tr>
-								<td>
-									@if (part.IsAdHockPart)
-									{
-										<InputText @bind-Value="part.PartCode" type="text" class="form-control" ></InputText>
-										<ValidationMessage For="() => part.PartCode" />	
-									}else {
-											@part.PartCode
-									}									
-									</td>
-									<td>
-										@if (part.IsAdHockPart)
-									{
-										<InputText @bind-Value="part.PartDescription" type="text" class="form-control" ></InputText>
-										<ValidationMessage For="() => part.PartDescription" />	
-									}else {
-											@part.PartDescription
-									}		 
-									</td>
-									<td>
-										 <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="Enter Cost Price" /> 			
-									@* 	@if (part.IsAdHockPart)
+        <div class="row mt-3">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>Part Number</th>
+                        <th>Description</th>
+                        <th>C.P.U.</th>
+                        <th>Qty</th>
+                        <th>Actual</th>
+                        @* <th>Discount</th> *@
+                        <th>Total</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (serviceReport.Parts != null)
+                    {
+                        @foreach (var part in serviceReport.Parts.Where(x => !x.IsDeleted))
+                        {
+                            <tr>
+                                <td>
+                                    @if (part.IsAdHockPart)
+                                    {
+                                        <InputText @bind-Value="part.PartCode" type="text" class="form-control"></InputText>
+                                        <ValidationMessage For="() => part.PartCode" />
+                                    }
+                                    else
+                                    {
+                                        @part.PartCode
+                                    }
+                                </td>
+                                <td>
+                                    @if (part.IsAdHockPart)
+                                    {
+                                        <InputText @bind-Value="part.PartDescription" type="text" class="form-control"></InputText>
+                                        <ValidationMessage For="() => part.PartDescription" />
+                                    }
+                                    else
+                                    {
+                                        @part.PartDescription
+                                    }
+                                </td>
+                                <td>
+                                    <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="Enter Cost Price" Step="0.01" />
+                                    @* 	@if (part.IsAdHockPart)
 									{
 										 <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="Enter Cost Price" /> 										
 									}
@@ -242,36 +255,36 @@
 									{ 
 										@part.CostPrice.ToString("F", CultureInfo.InvariantCulture)
 									  } *@
-									
-									</td>
-									<td>
-										 <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="Enter hours" /> 
-									</td>
-									<td>
-										  @((part.CostPrice * part.QTY).ToString("F", CultureInfo.InvariantCulture))
-									</td>
-									@* <td>
+
+                                </td>
+                                <td>
+                                    <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="Enter hours" />
+                                </td>
+                                <td>
+                                    @((part.CostPrice * part.QTY).ToString("F", CultureInfo.InvariantCulture))
+                                </td>
+                                @* <td>
 										<NumberInput TValue="double" @bind-Value="@part.Discount" Placeholder="Enter discount" Step=".01" /> 
 									</td> *@
-									<td>
-										@(((part.CostPrice * part.QTY) - ((part.Discount / 100) * (part.CostPrice * part.QTY))).ToString("F", CultureInfo.InvariantCulture))
-										 
-									</td>
-									<td>
-										<div class="col-1">
-											<Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemovePart(part.Id)" Style="cursor: pointer" />
-										</div>
-									</td>
-								</tr>
-							@* } *@
-							
+                                <td>
+                                @(((Convert.ToDouble(part.CostPrice) * part.QTY) - ((part.Discount / 100) * (Convert.ToDouble(part.CostPrice) * part.QTY))).ToString("F", CultureInfo.InvariantCulture))
 
-						}
+                                </td>
+                                <td>
+                                    <div class="col-1">
+                                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemovePart(part.Id)" Style="cursor: pointer" />
+                                    </div>
+                                </td>
+                            </tr>
+                            @* } *@
 
-						<tr>
-									<td>
 
-										@* <InputSelect class="form-select" 
+                        }
+
+                        <tr>
+                            <td>
+
+                                @* <InputSelect class="form-select" 
 											id="select-client"
 											ValueExpression="@(()=>selectedPart.Id)" 
 											Value="@selectedPart.Id" 
@@ -284,72 +297,72 @@
 												}
 										</InputSelect> *@
 
-										<div class="dropdown">
-										    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-										        @(selectedPart?.PartCode ?? "Select Part")
-										    </button>
-										    <div class="dropdown-menu p-3" style="max-height: 350px; overflow:auto">
-										        <input type="text" class="form-control mb-2" placeholder="Search part..."
-										               @oninput="(e) => SearchTerm = e.Value.ToString()" />
-										        <ul class="list-unstyled">
-										            <li @onclick="() => HandleOnChangePart(0)" class="dropdown-item">Select part</li>
-										            <li @onclick="() => HandleOnChangePart(999999)" class="dropdown-item">Non Stock</li>
-										            @foreach (var prt in FilteredParts)
-										            {
-										                <li @onclick="() => HandleOnChangePart(prt.Id)" class="dropdown-item">
-										                    @prt.PartCode @prt.PartDescription
-										                </li>
-										            }
-										        </ul>
-										    </div>
-										</div>
-									</td>
-									<td>
-									</td>
-									<td>
-									</td>
-									<td>
-									</td>
-									<td>
-									</td>
-									<td>
-									</td>
-									<td>
-									</td>
-									<td>
-									</td>
-								</tr>
-					}
+                                <div class="dropdown">
+                                    <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        @(selectedPart?.PartCode ?? "Select Part")
+                                    </button>
+                                    <div class="dropdown-menu p-3" style="max-height: 350px; overflow:auto">
+                                        <input type="text" class="form-control mb-2" placeholder="Search part..."
+                                               @oninput="(e) => SearchTerm = e.Value.ToString()" />
+                                        <ul class="list-unstyled">
+                                            <li @onclick="() => HandleOnChangePart(0)" class="dropdown-item">Select part</li>
+                                            <li @onclick="() => HandleOnChangePart(999999)" class="dropdown-item">Non Stock</li>
+                                            @foreach (var prt in FilteredParts)
+                                            {
+                                                <li @onclick="() => HandleOnChangePart(prt.Id)" class="dropdown-item">
+                                                    @prt.PartCode @prt.PartDescription
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                            <td>
+                            </td>
+                        </tr>
+                    }
 
-				</tbody>
-			</table>
-			</div>
-		<br />
-		<div class="row mt-3">
-			<div class="col-6">
-				<div class="form-group">
-					<label for="instruction">Instruction:</label>
-					<InputText @bind-Value="serviceReport.Instruction" type="text" class="form-control" id="instruction"></InputText>
-				</div>
-			</div>
-			<div class="col-6">
-				<div class="form-group">
-					<label for="detailed-service-report">Detailed Service Report:</label>					 
-					<InputTextArea @bind-Value="serviceReport.DetailedServiceReport" type="text" class="form-control" id="detailed-service-report"></InputTextArea>
-				</div>
-			</div>
-		</div>
-		<div class="container-fluid page-footer">
-		<div class="row">
-				 <div class="footer-buttons">
-					<Button class="fsr-button" Color="ButtonColor.Primary"  @onclick="Save" Style="margin-right 20px">Save</Button>
-					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndGenerateQuote" Style="margin-right 20px">Save & Generate Quote</Button>
-					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndGenerateServiceReport" Style="margin-right 20px">Save & Print FSR</Button>
-					<Button class="fsr-button" Color="ButtonColor.Secondary"  @onclick="SaveAndNew">Save & New</Button>
-				 </div>
-		</div>
-	</div>
-	</EditForm>	
+                </tbody>
+            </table>
+        </div>
+        <br />
+        <div class="row mt-3">
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="instruction">Instruction:</label>
+                    <InputText @bind-Value="serviceReport.Instruction" type="text" class="form-control" id="instruction"></InputText>
+                </div>
+            </div>
+            <div class="col-6">
+                <div class="form-group">
+                    <label for="detailed-service-report">Detailed Service Report:</label>
+                    <InputTextArea @bind-Value="serviceReport.DetailedServiceReport" type="text" class="form-control" id="detailed-service-report"></InputTextArea>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid page-footer">
+            <div class="row">
+                <div class="footer-buttons">
+                    <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="Save" Style="margin-right 20px">Save</Button>
+                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndGenerateQuote" Style="margin-right 20px">Save & Generate Quote</Button>
+                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndGenerateServiceReport" Style="margin-right 20px">Save & Print FSR</Button>
+                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndNew">Save & New</Button>
+                </div>
+            </div>
+        </div>
+    </EditForm>
 </div>
 
 
@@ -357,7 +370,7 @@
     <BodyTemplate>
         <EditForm Model="serviceReport" OnValidSubmit="SaveAndGenerateServiceReport">
             <DataAnnotationsValidator />
-             <div class="container-fluid">
+            <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
                         <label for="son">Sales order number:</label>
@@ -375,7 +388,7 @@
                         <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" @onclick="SaveAndGenerateServiceReport">Save</Button>
                     </div>
                 </div>
-            </div>  
+            </div>
         </EditForm>
     </BodyTemplate>
 </Modal>

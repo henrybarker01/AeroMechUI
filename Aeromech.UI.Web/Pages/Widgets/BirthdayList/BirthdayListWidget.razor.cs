@@ -10,31 +10,35 @@ namespace AeroMech.UI.Web.Pages.Widgets.BirthdayList
 
         List<BirthdayList> birthdays { get; set; } = new List<BirthdayList>();
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            (await ClientService.GetClients()).ForEach(client =>
+            if (firstRender)
             {
-                if (client.ContactPersonBirthDate != null)
-                    birthdays.Add(new BirthdayList()
-                    {
-                        Name = client.ContactPersonName,
-                        Email = client.ContactPersonEmail,
-                        PhoneNumber = client.ContactPersonNumber,
-                        BirthDate =  client.ContactPersonBirthDate?.ToString("dd/MM/yyyy"),
+                (await ClientService.GetClients()).ForEach(client =>
+                {
+                    if (client.ContactPersonBirthDate != null)
+                        birthdays.Add(new BirthdayList()
+                        {
+                            Name = client.ContactPersonName,
+                            Email = client.ContactPersonEmail,
+                            PhoneNumber = client.ContactPersonNumber,
+                            BirthDate = client.ContactPersonBirthDate?.ToString("dd/MM/yyyy"),
 
-                    });
-            });
-            (await EmployeeService.GetEmployees()).ForEach(employee =>
-            {
-                if (employee.BirthDate != null)
-                    birthdays.Add(new BirthdayList()
+                        });
+                });
+                    (await EmployeeService.GetEmployees()).ForEach(employee =>
                     {
-                        Name = $"{employee.FirstName} {employee.LastName}",
-                        Email = employee.Email,
-                        PhoneNumber = employee.PhoneNumber,
-                        BirthDate = employee.BirthDate?.ToString("dd/MM/yyyy")
+                        if (employee.BirthDate != null)
+                            birthdays.Add(new BirthdayList()
+                            {
+                                Name = $"{employee.FirstName} {employee.LastName}",
+                                Email = employee.Email,
+                                PhoneNumber = employee.PhoneNumber,
+                                BirthDate = employee.BirthDate?.ToString("dd/MM/yyyy")
+                            });
                     });
-            });
+                }
+            await InvokeAsync(StateHasChanged);
         }
     }
 

@@ -1,4 +1,5 @@
-﻿using AeroMech.Data.Models; 
+﻿using AeroMech.Data.Models;
+using AeroMech.Models.Enums;
 using AutoMapper;
 
 namespace AeroMech.Models.AutomapperProfiles
@@ -12,8 +13,11 @@ namespace AeroMech.Models.AutomapperProfiles
                 .ForMember(x => x.AddressLine2, opt => opt.MapFrom(x => x.Address.AddressLine2))
                 .ForMember(x => x.City, opt => opt.MapFrom(x => x.Address.City))
                 .ForMember(x => x.PostalCode, opt => opt.MapFrom(x => x.Address.PostalCode))
-                    .ForMember(x => x.AddressId, opt => opt.MapFrom(x => x.Address.Id))
-                ;
+                    .ForMember(x => x.AddressId, opt => opt.MapFrom(x => x.Address.Id));
+                //.ForMember(x => x.Rates, opt => opt.MapFrom(x => x.Rates
+                //                            .Where(r => r.EffectiveDate <= DateTime.Now)
+                //                            .OrderByDescending(r => r.EffectiveDate)
+                //                            .FirstOrDefault().Rate));
 
 
             CreateMap<ClientModel, Client>()
@@ -25,8 +29,22 @@ namespace AeroMech.Models.AutomapperProfiles
                     PostalCode = emp.PostalCode,
                     Id = emp.AddressId
 
-                }));
+                })).ForMember(x => x.Rates, opt => opt.MapFrom(e =>
+                    new List<ClientRateModel>
+                    {
+                        new ClientRateModel()
+                            {
+                                Rate = e.Rates.FirstOrDefault().Rate,
+                                EffectiveDate = DateTime.Now,
+                                ClientId = e.Id,
+                                IsActive = true,
+                                RateType =  e.Rates.FirstOrDefault().RateType,
+                            }
+                    }
+                ));
 
+            CreateMap<ClientRateModel, ClientRate>();
+            CreateMap<ClientRate, ClientRateModel>();
         }
     }
 }

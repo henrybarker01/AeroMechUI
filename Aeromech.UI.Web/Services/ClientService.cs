@@ -1,7 +1,7 @@
 ﻿using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
-using AeroMech.UI.Web.Pages.Employee;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 namespace AeroMech.UI.Web.Services
@@ -9,36 +9,22 @@ namespace AeroMech.UI.Web.Services
     public class ClientService
     {
         private readonly AeroMechDBContext _aeroMechDBContext;
+        private readonly IMapper _mapper;
 
-        public ClientService(AeroMechDBContext context)
+        public ClientService(AeroMechDBContext context, IMapper mapper)
         {
             _aeroMechDBContext = context;
+            _mapper = mapper;
         }
 
         public async Task<List<ClientModel>> GetClients()
         {
+            var clients = _aeroMechDBContext.Clients
+    .Include(a => a.Address)
+    .Include(r => r.Rates)
+    .ToList();
 
-            List<Data.Models.Client> clients = _aeroMechDBContext.Clients.Include(a => a.Address).ToList();
-            List<ClientModel> mappedClients = new List<ClientModel>();
-
-            clients.ForEach(x =>
-            {
-                mappedClients.Add(new ClientModel
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    ContactPersonName = x.ContactPersonName,
-                    ContactPersonEmail = x.ContactPersonEmail,
-                    ContactPersonNumber = x.ContactPersonNumber,
-                    ContactPersonBirthDate = x.ContactPersonBirthDate,
-                    AddressLine1 = x.Address.AddressLine1,
-                    AddressLine2 = x.Address.AddressLine2,
-                    City = x.Address.City,
-                    PostalCode = x.Address.PostalCode,
-                });
-            });
-
-            return mappedClients;
+            return _mapper.Map<List<ClientModel>>(clients);
         }
 
         public async Task<int> AddClient(ClientModel client)
@@ -57,8 +43,22 @@ namespace AeroMech.UI.Web.Services
                 ContactPersonName = client.ContactPersonName,
                 ContactPersonNumber = client.ContactPersonNumber,
                 ContactPersonEmail = client.ContactPersonEmail,
-                ContactPersonBirthDate = client.ContactPersonBirthDate
+                ContactPersonBirthDate = client.ContactPersonBirthDate,
+                Rates = new List<ClientRate>()
             };
+
+            client.Rates.ForEach(rate =>
+            {
+                newClient.Rates.Add(new ClientRate()
+                {
+                    Rate = Convert.ToDecimal(rate.Rate),
+                    EffectiveDate = DateTime.Now,
+                    ClientId = client.Id,
+                    RateType = rate.RateType,
+                    IsActive = true,
+                });
+            });
+
             _aeroMechDBContext.Clients.Add(newClient);
             await _aeroMechDBContext.SaveChangesAsync();
             return newClient.Id;
@@ -68,6 +68,7 @@ namespace AeroMech.UI.Web.Services
         {
             var clientToEdit = await _aeroMechDBContext.Clients
                 .Include(x => x.Address)
+                .Include(r => r.Rates)
                 .SingleAsync(x => x.Id == client.Id);
 
             clientToEdit.ContactPersonBirthDate = client.ContactPersonBirthDate;
@@ -85,6 +86,30 @@ namespace AeroMech.UI.Web.Services
             clientToEdit.Address.AddressLine2 = client.AddressLine2 ?? "";
             clientToEdit.Address.City = client.City ?? "";
             clientToEdit.Address.PostalCode = client.PostalCode ?? "";
+
+            if (clientToEdit?.Rates?.Count == 0)
+            {
+                client.Rates.ForEach(rate =>
+                {
+                    clientToEdit.Rates.Add(new ClientRate()
+                    {
+                        Rate = Convert.ToDecimal(rate.Rate),
+                        EffectiveDate = DateTime.Now,
+                        ClientId = client.Id,
+                        RateType = rate.RateType,
+                        IsActive = true,
+                    });
+                });
+            }
+            else
+            {
+                clientToEdit.Rates.ForEach(rate =>
+                {
+                    rate.Rate = Convert.ToDecimal(client.Rates.FirstOrDefault(x => x.RateType == rate.RateType).Rate);
+                    rate.EffectiveDate = DateTime.Now;
+                    rate.IsActive = true;
+                });
+            }
 
             await _aeroMechDBContext.SaveChangesAsync();
             return clientToEdit.Id;

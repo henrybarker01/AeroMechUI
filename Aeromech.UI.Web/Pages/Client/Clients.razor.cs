@@ -1,6 +1,5 @@
 using AeroMech.Models;
 using AeroMech.UI.Web.Services;
-using AeroMech.UI.Web.Services;
 using BlazorBootstrap;
 using Microsoft.AspNetCore.Components;
 
@@ -9,16 +8,35 @@ namespace AeroMech.UI.Web.Pages.Client
     public partial class Clients
     {
 
-        [Inject]
-        IConfiguration configuration { get; set; }
-
+        [Inject] IConfiguration configuration { get; set; }
         [Inject] ClientService clientService { get; set; }
+        [Inject] protected LoaderService _loaderService { get; set; }
+        [Inject] protected ConfirmationService _confirmationService { get; set; }
 
         private string title = "";
 
         private Modal modal = default!;
         private ClientModel client = new ClientModel();
-        private List<ClientModel>? clients;
+
+        //TODO - HB - This really is done simpleton way
+        private ClientRateModel clientRatesWeekdays = new ClientRateModel()
+        {
+            RateType = Models.Enums.RateType.Weekdays
+        };
+        private ClientRateModel clientRatesWeekdaysOvertime = new ClientRateModel()
+        {
+            RateType = Models.Enums.RateType.WeekdaysOvertime
+        };
+        private ClientRateModel clientRatesOvertime = new ClientRateModel()
+        {
+            RateType = Models.Enums.RateType.Overtime
+        };
+        private ClientRateModel clientRatesSundaysAndPublicHolidays = new ClientRateModel()
+        {
+            RateType = Models.Enums.RateType.SundaysAndPublicHolidays
+        };
+
+        private List<ClientModel>? clients = new List<ClientModel>();
 
         private string SearchTerm { get; set; } = string.Empty;
         private IEnumerable<ClientModel> FilteredClients =>
@@ -28,9 +46,12 @@ namespace AeroMech.UI.Web.Pages.Client
             client.ContactPersonName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
         );
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await GetClients();
+            if (firstRender)
+            { 
+                await GetClients(); 
+            }
         }
 
         private async Task OnShowModalClick()
@@ -40,10 +61,16 @@ namespace AeroMech.UI.Web.Pages.Client
             await modal.ShowAsync();
         }
 
-        private async Task OnEditClientClick(ClientModel clnt)
+        private async Task OnEditClientClick(ClientModel clientModel)
         {
             title = "Edit Client";
-            client = clnt;
+            client = clientModel;
+
+            clientRatesOvertime = client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime) ?? new ClientRateModel() { RateType = Models.Enums.RateType.Overtime };
+            clientRatesWeekdaysOvertime = client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime) ?? new ClientRateModel() { RateType = Models.Enums.RateType.WeekdaysOvertime };
+            clientRatesWeekdays = client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays) ?? new ClientRateModel() { RateType = Models.Enums.RateType.Weekdays };
+            clientRatesSundaysAndPublicHolidays = client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays) ?? new ClientRateModel() { RateType = Models.Enums.RateType.SundaysAndPublicHolidays };
+
             await modal.ShowAsync();
         }
 
@@ -58,7 +85,17 @@ namespace AeroMech.UI.Web.Pages.Client
         {
             if (client.Id == 0)
             {
+                client.Rates =
+                [
+                    clientRatesOvertime,
+                    clientRatesWeekdaysOvertime,
+                    clientRatesWeekdays,
+                    clientRatesSundaysAndPublicHolidays,
+                ];
+
+                _loaderService.ShowLoader();
                 var result = await clientService.AddClient(client);
+                _loaderService.HideLoader();
                 if (result != 0)
                 {
                     await OnHideModalClick();
@@ -66,7 +103,28 @@ namespace AeroMech.UI.Web.Pages.Client
             }
             else
             {
+                if (client.Rates != null && client.Rates.Count > 0)
+                {
+                    client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime).Rate = clientRatesOvertime.Rate;
+                    client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime).Rate = clientRatesWeekdaysOvertime.Rate;
+                    client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays).Rate = clientRatesWeekdays.Rate;
+                    client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays).Rate = clientRatesSundaysAndPublicHolidays.Rate;
+                }
+                else
+                {
+                    client.Rates =
+                    [
+                        clientRatesOvertime,
+                        clientRatesWeekdaysOvertime,
+                        clientRatesWeekdays,
+                        clientRatesSundaysAndPublicHolidays,
+                    ];
+                }
+
+
+                _loaderService.ShowLoader();
                 var result = await clientService.EditClient(client);
+                _loaderService.HideLoader();
                 if (result != 0)
                 {
                     await OnHideModalClick();
@@ -77,13 +135,23 @@ namespace AeroMech.UI.Web.Pages.Client
 
         private async Task GetClients()
         {
+            _loaderService.ShowLoader();
             clients = await clientService.GetClients();
+            _loaderService.HideLoader();
+            await InvokeAsync(StateHasChanged);
         }
 
         private async Task DeleteClient(AeroMech.Models.ClientModel client)
         {
-            await clientService.Delete(client.Id);
-            clients?.Remove(client);
+            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            if (confirmed)
+            {
+                _loaderService.ShowLoader();
+                await clientService.Delete(client.Id);
+                clients?.Remove(client);
+                _loaderService.HideLoader();
+            }
+
         }
     }
 }

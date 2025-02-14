@@ -20,7 +20,8 @@ builder.Services.AddScoped<PartsService, PartsService>();
 builder.Services.AddScoped<VehicleService, VehicleService>();
 builder.Services.AddTransient<ServiceReportService, ServiceReportService>();
 builder.Services.AddScoped<UserService, UserService>();
-
+builder.Services.AddScoped<LoaderService, LoaderService>();
+builder.Services.AddSingleton<ConfirmationService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 builder.Services.AddDbContextFactory<AeroMechDBContext>(options =>

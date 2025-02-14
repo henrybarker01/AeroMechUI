@@ -39,7 +39,7 @@ namespace AeroMech.UI.Web.Services
             {
                 AeroMech.Data.Models.Part prt = _mapper.Map<AeroMech.Data.Models.Part>(part);
                 prt.Prices = new List<PartPrice>() { new PartPrice() {
-                CostPrice = part.CostPrice,
+                CostPrice = Convert.ToDouble(part.CostPrice),
                 EffectiveDate = DateTime.Now,
                 IsDeleted = false,
                 SellingPrice = 0
@@ -59,7 +59,7 @@ namespace AeroMech.UI.Web.Services
                 partToEdit.PartDescription = part.PartDescription;
                 partToEdit.Bin = part.Bin;
                 partToEdit.CycleCount = part.CycleCount;
-                partToEdit.Warehouse = _mapper.Map<Warehouse>(part.Warehouse);
+                partToEdit.Warehouse = null;
                 partToEdit.SupplierCode = part.SupplierCode;
                 partToEdit.QtyOnHand = part.QtyOnHand;
                 partToEdit.ProductClass = part.ProductClass;
@@ -67,7 +67,7 @@ namespace AeroMech.UI.Web.Services
                 if (partToEdit.Prices == null || partToEdit.Prices.Count == 0)
                 {
                     partToEdit.Prices = new List<PartPrice>() { new PartPrice() {
-                    CostPrice = part.CostPrice,
+                    CostPrice = Convert.ToDouble(part.CostPrice),
                     EffectiveDate = DateTime.Now,
                     IsDeleted = false,
                     SellingPrice = 0
@@ -75,7 +75,7 @@ namespace AeroMech.UI.Web.Services
                 }
                 else
                 {
-                    partToEdit.Prices.First().CostPrice = part.CostPrice;
+                    partToEdit.Prices.First().CostPrice = Convert.ToDouble(part.CostPrice);
                 }
 
                 await _aeroMechDBContext.SaveChangesAsync();

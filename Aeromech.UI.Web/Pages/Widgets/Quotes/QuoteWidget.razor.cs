@@ -9,11 +9,15 @@ namespace AeroMech.UI.Web.Pages.Widgets.Quotes
         [Inject] ServiceReportService ServiceReportService { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
-        List<ServiceReportModel> quotes { get; set; }
+        List<ServiceReportModel> quotes = new List<ServiceReportModel>();
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            quotes = await ServiceReportService.GetRecentQuotes(DateTime.Now.AddMonths(-1));
+            if (firstRender)
+            {
+                quotes = await ServiceReportService.GetRecentQuotes(DateTime.Now.AddMonths(-1));
+                await InvokeAsync(StateHasChanged);
+            }
         }
 
         private void PrintQuote(int Id)

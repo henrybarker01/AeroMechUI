@@ -73,6 +73,45 @@
                         <ValidationMessage For="() => client.PostalCode" />
                     </div>
                 </div>
+
+                <div class="row mt-5">
+                    <b>Rates:</b>
+                    <table class="rate-table">
+                        <thead>
+                            <tr>
+                                <td>
+                                    Weekdays
+                                </td>
+                                <td>
+                                    Weekdays Overtime
+                                </td>
+                                <td>
+                                    Sundays & Public Holidays
+                                </td>
+                                <td>
+                                    Overtime
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <NumberInput TValue="double" @bind-Value="clientRatesWeekdays.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" /> 
+                                    <ValidationMessage For="() => clientRatesWeekdays.Rate" />
+                                </td>
+                                 <td>
+                                    <NumberInput TValue="double" @bind-Value="clientRatesWeekdaysOvertime.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
+                                </td>
+                                 <td>
+                                    <NumberInput TValue="double" @bind-Value="clientRatesSundaysAndPublicHolidays.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
+                                </td>
+                                <td>
+                                    <NumberInput TValue="double" @bind-Value="clientRatesOvertime.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
             <div class="row">
                 <div class="footer-buttons">
@@ -103,12 +142,7 @@
     </div>
 </div>
 
-@if (clients == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
+ 
     <div class="mb-3">
         <input type="text" class="form-control" placeholder="Search..."
                @oninput="(e) => SearchTerm = e.Value.ToString()" />
@@ -143,4 +177,4 @@ else
             }
         </tbody>
     </table>
-}
+ 

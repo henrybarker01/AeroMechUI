@@ -120,7 +120,7 @@ namespace AeroMech.API.Reports
                     row.RelativeItem().Column(col =>
                     {
                         var totalLabour = serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => CalulatePercentageOf(x.Rate, x.Hours, x.Discount));
-                        var totalParts = serviceReport.Parts.Where(x => !x.IsDeleted).Sum(x => CalulatePercentageOf(x.CostPrice, x.QTY, x.Discount));
+                        var totalParts = serviceReport.Parts.Where(x => !x.IsDeleted).Sum(x => CalulatePercentageOf(Convert.ToDouble(x.CostPrice), x.QTY, x.Discount));
 
                         col.Item().Row(r =>
                         {
@@ -212,7 +212,7 @@ namespace AeroMech.API.Reports
                     table.Cell().Element(CellStyle).AlignRight().Text(part.QTY);
                     table.Cell().Element(CellStyle).AlignRight().Text((part.CostPrice * part.QTY).ToString("C", CultureInfo.CurrentCulture));
                     //table.Cell().Element(CellStyle).AlignRight().Text(part.Discount.ToString("C", CultureInfo.CurrentCulture));
-                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(part.CostPrice, part.QTY, part.Discount).ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(Convert.ToDouble(part.CostPrice), part.QTY, part.Discount).ToString("C", CultureInfo.CurrentCulture));
                 }
 			});
         }
@@ -259,7 +259,7 @@ namespace AeroMech.API.Reports
                     table.Cell().Element(CellStyle).Text($"{employee.FirstName} {employee.LastName}");
                     table.Cell().Element(CellStyle).Text(serviceReport.ServiceType);
                     table.Cell().Element(CellStyle).Text(employee.DutyDate.ToString("dd/MM/yyyy"));
-                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Rate?.ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Rate.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text(employee.Hours?.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text((employee.Rate * employee.Hours)?.ToString("C", CultureInfo.CurrentCulture));
                     //table.Cell().Element(CellStyle).AlignRight().Text(employee.Discount?.ToString("C", CultureInfo.CurrentCulture));

@@ -9,3 +9,16 @@
 .edit-rate {
     margin-left: 10px;
 }
+
+.rate-table {
+    font-size: 14px;
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed; 
+}
+
+    .rate-table th,
+    .rate-table td {
+        padding:  0 4px;
+        width: 25%;  
+    }

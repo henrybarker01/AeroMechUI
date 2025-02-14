@@ -1,0 +1,55 @@
+﻿.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.c-modal {
+    background: white;
+    padding: 0 0 20px 0;
+    border-radius: 8px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    text-align: center;
+    min-width: 300px;
+    overflow: hidden;
+}
+
+    .c-modal p {
+        font-size: 18px;
+        margin-bottom: 15px;
+        background-color: #447EE2;
+        font-weight: bold;
+        padding: 10px 0;
+        color: white;
+    }
+
+    .c-modal button {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+
+        .c-modal button:first-child {
+            background: #28a745;
+            color: white;
+        }
+
+        .c-modal button:last-child {
+            background: #447EE2;
+            color: white;
+        }
+
+        .c-modal button:hover {
+            opacity: 0.8;
+        }

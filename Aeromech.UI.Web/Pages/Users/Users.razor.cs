@@ -10,11 +10,13 @@ namespace AeroMech.UI.Web.Pages.Users
     {
 
         [Inject] UserService userService { get; set; }
+        [Inject] protected LoaderService _loaderService { get; set; }
+        [Inject] protected ConfirmationService _confirmationService { get; set; }
 
         private string title = "";
         private Modal modal = default!;
         private IdentityUser user = new IdentityUser();
-        private List<IdentityUser>? users;
+        private List<IdentityUser>? users = new List<IdentityUser>();
 
         private string SearchTerm { get; set; } = string.Empty;
         private IEnumerable<IdentityUser> FilteredUsers =>
@@ -24,14 +26,18 @@ namespace AeroMech.UI.Web.Pages.Users
             user.UserName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
         );
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await GetUsers();
+            if (firstRender)
+                await GetUsers();
         }
 
         private async Task GetUsers()
         {
+            _loaderService.ShowLoader();
             users = await userService.GetUsers();
+            await InvokeAsync(StateHasChanged);
+            _loaderService.HideLoader();
         }
 
         private async Task AddUserClick()
@@ -48,17 +54,25 @@ namespace AeroMech.UI.Web.Pages.Users
             user.PhoneNumberConfirmed = true;
             user.TwoFactorEnabled = false;
 
+            _loaderService.ShowLoader();
             var result = await userService.CreateUser(user);
             if (result.Succeeded)
             {
                 await OnHideModalClick();
             }
+            _loaderService.HideLoader();
         }
 
         private async Task DeleteUser(IdentityUser user)
         {
-            await userService.DeleteUser(user);
-            users?.Remove(user);
+            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            if (confirmed)
+            {
+                _loaderService.ShowLoader();
+                await userService.DeleteUser(user);
+                users?.Remove(user);
+                _loaderService.HideLoader();
+            }
         }
 
         private async Task EditUser(IdentityUser user)

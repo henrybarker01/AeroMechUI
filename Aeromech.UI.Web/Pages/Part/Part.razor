@@ -8,6 +8,7 @@
     <BodyTemplate>
         <EditForm Model="@part" OnValidSubmit="@AddNewPart">
             <DataAnnotationsValidator />
+            <ValidationSummary />
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
@@ -68,8 +69,8 @@
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="cost-price">Cost Price:</label>
-                        <NumberInput TValue="double" @bind-Value="@part.CostPrice" class="form-control" id="cost-price" />
-                        <ValidationMessage For="() => part.CostPrice" />
+                        <NumberInput TValue="double" @bind-Value="@part.CostPrice" class="form-control" id="cost-price" Step=".01" />
+                        <ValidationMessage For="() => part.CostPrice" /> 
                     </div>
                 </div>
                 <div class="row">
@@ -102,13 +103,6 @@
         <div class="col-5 text-right"></div>
     </div>
 </div>
-
-@if (parts == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
     <div class="mb-3">
         <input type="text" class="form-control" placeholder="Search..."
                @oninput="(e) => SearchTerm = e.Value.ToString()" />
@@ -153,10 +147,3 @@ else
             }
         </tbody>
     </table>
-}
-
-@code {
-
-
-
-}

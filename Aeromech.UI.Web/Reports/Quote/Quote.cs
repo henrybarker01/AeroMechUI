@@ -235,7 +235,7 @@ namespace AeroMech.API.Reports
                     table.Cell().Element(CellStyle).AlignRight().Text(part.QTY);
                     table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice * part.QTY);
                     table.Cell().Element(CellStyle).AlignRight().Text(part.Discount);
-                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(part.CostPrice, part.QTY, part.Discount));
+                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(Convert.ToDouble(part.CostPrice), part.QTY, part.Discount));
                 }
             });
         }
@@ -285,7 +285,7 @@ namespace AeroMech.API.Reports
                     table.Cell().Element(CellStyle).Text("Labour");
                     table.Cell().Element(CellStyle).Text("EA");
                     table.Cell().Element(CellStyle).AlignRight().Text(serviceReport.ServiceType);
-                    table.Cell().Element(CellStyle).AlignRight().Text(x.Rate?.ToString("C", CultureInfo.CurrentCulture));//serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Rate)?.ToString("C", CultureInfo.CurrentCulture)
+                    table.Cell().Element(CellStyle).AlignRight().Text(x.Rate.ToString("C", CultureInfo.CurrentCulture));//serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Rate)?.ToString("C", CultureInfo.CurrentCulture)
                     table.Cell().Element(CellStyle).AlignRight().Text((x.Hours * x.Rate)?.ToString("C", CultureInfo.CurrentCulture));
                 });
 
@@ -330,7 +330,7 @@ namespace AeroMech.API.Reports
                 table.Cell().Element(CellTotalsStyle).AlignRight().Text("Total Excl VAT:");
                 table.Cell().Element(CellTotalsStyle).AlignRight().Text(
                     (
-                        serviceReport.Parts.Where(x => x.IsDeleted == false).Sum(x => x.CostPrice * x.QTY) +
+                        serviceReport.Parts.Where(x => x.IsDeleted == false).Sum(x => Convert.ToDouble(x.CostPrice) * x.QTY) +
                         serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Hours * x.Rate))?
                         .ToString("C", CultureInfo.CurrentCulture)
                     );

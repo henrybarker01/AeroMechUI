@@ -9,8 +9,9 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
     {
         [Inject] NavigationManager NavigationManager { get; set; }
         [Inject] ServiceReportService ServiceReportService { get; set; }
+        [Inject] protected LoaderService _loaderService { get; set; }
 
-        private List<ServiceReportModel>? serviceReports;
+        private List<ServiceReportModel>? serviceReports = new List<ServiceReportModel>();
 
         private string SearchTerm { get; set; } = string.Empty;
         private IEnumerable<ServiceReportModel> FilteredServiceReports =>
@@ -24,15 +25,21 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
            (serviceReport.JobNumber ?? "").Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
            serviceReport.Id.ToString().Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
        );
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await GetServiceReports();
+            if (firstRender)
+            {
+                await GetServiceReports();
+            }
         }
 
         private async Task GetServiceReports()
         {
+            _loaderService.ShowLoader();
             var fromDate = DateTime.Now.AddMonths(-2);
             serviceReports = await ServiceReportService.GetRecentServiceReports(fromDate);
+            await InvokeAsync(StateHasChanged);
+            _loaderService.HideLoader();
         }
 
         private void NavigateToAddServiceReport()

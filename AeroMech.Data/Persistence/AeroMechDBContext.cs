@@ -16,10 +16,10 @@ namespace AeroMech.Data.Persistence
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            //#if DEBUG
-            //			var connection = "Server=localhost;Database=AeroMech;User Id=sa;password=P@ssw0rd;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true;";
-            //			optionsBuilder.UseSqlServer(connection, b => b.MigrationsAssembly("AeroMech.Data"));
-            //#endif
+#if DEBUG
+            var connection = "Server=localhost;Database=AeroMech;User Id=sa;password=P@ssw0rd;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true;";
+            optionsBuilder.UseSqlServer(connection, b => b.MigrationsAssembly("AeroMech.Data"));
+#endif
 
             base.OnConfiguring(optionsBuilder);
         }
@@ -34,7 +34,7 @@ namespace AeroMech.Data.Persistence
         public DbSet<Client> Clients { get; set; }
         public DbSet<Address> Addresss { get; set; }
         public DbSet<Employee> Employees { get; set; }
-        public DbSet<EmployeeRate> EmployeeRates { get; set; }
+        public DbSet<ClientRate> ClientRate { get; set; }
         public DbSet<PartPrice> PartPrices { get; set; }
         public DbSet<Part> Parts { get; set; }
         public DbSet<ServiceReportEmployee> ServiceReportEmployees { get; set; }
@@ -44,5 +44,6 @@ namespace AeroMech.Data.Persistence
         public DbSet<Warehouse> Warehouse { get; set; }
         public DbSet<ServiceReportAdHockPart> ServiceReportAdHockPart { get; set; }
         public DbSet<StockAdjustment> StockAdjustment { get; set; }
+       // public DbSet<ServiceReportEmployeeRates> ServiceReportEmployeeRates { get; set; }
     }
 }

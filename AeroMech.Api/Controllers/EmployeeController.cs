@@ -3,9 +3,7 @@ using AeroMech.Data.Persistence;
 using AeroMech.Models;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using System;
 
 namespace AeroMech.API.Controllers
 {
@@ -25,8 +23,7 @@ namespace AeroMech.API.Controllers
         public async Task<ActionResult<IEnumerable<EmployeeModel>>> GetAll()
         {
             List<Employee> employees = await _aeroMechDBContext.Employees.Where(x => x.IsDeleted == false)
-      .Include(a => a.Address)
-      .Include(r => r.Rates)
+      .Include(a => a.Address) 
       .ToListAsync();
             return Ok(_mapper.Map<IEnumerable<EmployeeModel>>(employees));
         }
@@ -47,7 +44,7 @@ namespace AeroMech.API.Controllers
         {
             Employee employeeToEdit = _aeroMechDBContext.Employees
                 .Include(x => x.Address)
-                .Include(r => r.Rates)
+                
                 .Single(x => x.Id == employee.Id);
 
             employeeToEdit.PhoneNumber = employee.PhoneNumber;
@@ -67,29 +64,7 @@ namespace AeroMech.API.Controllers
             employeeToEdit.Address.AddressLine2 = employee.AddressLine2 ?? "";
             employeeToEdit.Address.City = employee.City ?? "";
             employeeToEdit.Address.PostalCode = employee.PostalCode ?? "";
-
-            if (employeeToEdit?.Rates?.Count == 0)
-            {
-                employeeToEdit.Rates.Add(new EmployeeRate()
-                {
-                    Rate = Convert.ToDecimal(employee.Rate),
-                    EffectiveDate = DateTime.Now,
-                    EmployeeId = employee.Id,
-                    IsActive = true,
-                });
-
-            }
-            else
-            {
-                employeeToEdit.Rates[0] = new EmployeeRate()
-                {
-                    Rate = Convert.ToDecimal(employee.Rate),
-                    EffectiveDate = DateTime.Now,
-                    EmployeeId = employee.Id,
-                    IsActive = true,
-                };
-            }
-
+             
             await _aeroMechDBContext.SaveChangesAsync();
             return Ok();
         }

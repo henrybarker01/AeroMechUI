@@ -14,6 +14,7 @@ namespace AeroMech.Data.Models
         public DateOnly? ContactPersonBirthDate { get; set; }
         public virtual Address Address { get; set; }
 		public int AddressId { get; set; }
-		public virtual List<Vehicle>? Vehicles { get; set; }
+        public virtual List<ClientRate>? Rates { get; set; }
+        public virtual List<Vehicle>? Vehicles { get; set; }
 	}
 }

@@ -11,10 +11,10 @@ namespace AeroMech.UI.Web.Pages.Vehicle
     public partial class Vehicle
     {
 
-        [Inject]
-        VehicleService vehicleService { get; set; }
-
+        [Inject] VehicleService vehicleService { get; set; }
         [Inject] ClientService clientService { get; set; }
+        [Inject] protected LoaderService _loaderService { get; set; }
+        [Inject] protected ConfirmationService _confirmationService { get; set; }
 
         private string title = "";
 
@@ -25,18 +25,31 @@ namespace AeroMech.UI.Web.Pages.Vehicle
 
         private List<ClientModel> clients = new List<ClientModel>();
         private VehicleModel vehicle = new VehicleModel();
-        private List<VehicleModel>? vehicles;
+        private List<VehicleModel>? vehicles = new List<VehicleModel>();
 
         private string SearchTerm { get; set; } = string.Empty;
         private IEnumerable<VehicleModel> FilteredVehicles =>
         vehicles.Where(vehicle =>
             string.IsNullOrEmpty(SearchTerm) ||
             vehicle.Description.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            vehicle.SerialNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) || 
+            vehicle.SerialNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
             vehicle.JobNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
         );
-        protected override void OnInitialized()
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            if (firstRender)
+            {
+                _loaderService.ShowLoader();
+                clients = await clientService.GetClients();
+
+                if (clients != null && clients.Count() == 1)
+                {
+                    ClientSelected(clients.First().Id);
+                }
+                await InvokeAsync(StateHasChanged);
+                _loaderService.HideLoader();
+            }
         }
 
         private async Task OnAddVehicleClick()
@@ -78,20 +91,13 @@ namespace AeroMech.UI.Web.Pages.Vehicle
                 await OnHideModalClick();
             }
         }
-
-        protected override async Task OnInitializedAsync()
-        {
-            clients = await clientService.GetClients();
-
-            if (clients != null && clients.Count() == 1)
-            {
-                ClientSelected(clients.First().Id);
-            }
-        }
-
+         
         private async Task GetVehicles(int clientId)
         {
+            _loaderService.ShowLoader();
             vehicles = await vehicleService.GetVehicles(clientId);
+            await InvokeAsync(StateHasChanged);
+            _loaderService.HideLoader();
         }
 
         private void HandleOnChangeClient(ChangeEventArgs args)
@@ -109,8 +115,14 @@ namespace AeroMech.UI.Web.Pages.Vehicle
 
         private async Task DeleteVehicle(VehicleModel vehicle)
         {
-            await vehicleService.DeleteVehicle(vehicle);
-            vehicles?.Remove(vehicle);
+            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            if (confirmed)
+            {
+                _loaderService.ShowLoader();
+                await vehicleService.DeleteVehicle(vehicle);
+                vehicles?.Remove(vehicle);
+                _loaderService.HideLoader();
+            }
         }
     }
 }

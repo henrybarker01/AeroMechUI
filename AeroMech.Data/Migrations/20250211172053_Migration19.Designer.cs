@@ -4,6 +4,7 @@ using AeroMech.Data.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AeroMech.Data.Migrations
 {
     [DbContext(typeof(AeroMechDBContext))]
-    partial class AeroMechDBContextModelSnapshot : ModelSnapshot
+    [Migration("20250211172053_Migration19")]
+    partial class Migration19
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -88,36 +91,6 @@ namespace AeroMech.Data.Migrations
                     b.ToTable("Clients");
                 });
 
-            modelBuilder.Entity("AeroMech.Data.Models.ClientRate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ClientId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("EffectiveDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("bit");
-
-                    b.Property<decimal>("Rate")
-                        .HasColumnType("decimal(5, 2)");
-
-                    b.Property<int>("RateType")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ClientId");
-
-                    b.ToTable("ClientRate");
-                });
-
             modelBuilder.Entity("AeroMech.Data.Models.Employee", b =>
                 {
                     b.Property<int>("Id")
@@ -160,6 +133,41 @@ namespace AeroMech.Data.Migrations
                     b.HasIndex("AddressId");
 
                     b.ToTable("Employees");
+                });
+
+            modelBuilder.Entity("AeroMech.Data.Models.EmployeeRate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ClientId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("EffectiveDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("EmployeeId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Rate")
+                        .HasColumnType("decimal(5, 2)");
+
+                    b.Property<int>("RateType")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ClientId");
+
+                    b.HasIndex("EmployeeId");
+
+                    b.ToTable("EmployeeRates");
                 });
 
             modelBuilder.Entity("AeroMech.Data.Models.Part", b =>
@@ -723,17 +731,6 @@ namespace AeroMech.Data.Migrations
                     b.Navigation("Address");
                 });
 
-            modelBuilder.Entity("AeroMech.Data.Models.ClientRate", b =>
-                {
-                    b.HasOne("AeroMech.Data.Models.Client", "Client")
-                        .WithMany("Rates")
-                        .HasForeignKey("ClientId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Client");
-                });
-
             modelBuilder.Entity("AeroMech.Data.Models.Employee", b =>
                 {
                     b.HasOne("AeroMech.Data.Models.Address", "Address")
@@ -741,6 +738,25 @@ namespace AeroMech.Data.Migrations
                         .HasForeignKey("AddressId");
 
                     b.Navigation("Address");
+                });
+
+            modelBuilder.Entity("AeroMech.Data.Models.EmployeeRate", b =>
+                {
+                    b.HasOne("AeroMech.Data.Models.Client", "Client")
+                        .WithMany()
+                        .HasForeignKey("ClientId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("AeroMech.Data.Models.Employee", "Employee")
+                        .WithMany("Rates")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Client");
+
+                    b.Navigation("Employee");
                 });
 
             modelBuilder.Entity("AeroMech.Data.Models.Part", b =>
@@ -910,9 +926,12 @@ namespace AeroMech.Data.Migrations
 
             modelBuilder.Entity("AeroMech.Data.Models.Client", b =>
                 {
-                    b.Navigation("Rates");
-
                     b.Navigation("Vehicles");
+                });
+
+            modelBuilder.Entity("AeroMech.Data.Models.Employee", b =>
+                {
+                    b.Navigation("Rates");
                 });
 
             modelBuilder.Entity("AeroMech.Data.Models.Part", b =>

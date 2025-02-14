@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AeroMech.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 
 namespace AeroMech.Data.Models
 {
@@ -21,9 +22,10 @@ namespace AeroMech.Data.Models
 		public double Hours { get; set; }
 		public double Rate { get; set; }
 
-		public double Discount { get; set; }
+        public RateType RateType { get; set; }
+
+        public double Discount { get; set; }
 		public DateOnly DutyDate { get; set; }
 		public bool IsDeleted { get; set; }
-
-	}
+     }
 }

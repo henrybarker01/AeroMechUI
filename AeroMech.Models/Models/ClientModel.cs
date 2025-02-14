@@ -38,5 +38,7 @@ namespace AeroMech.Models
         public DateOnly? ContactPersonBirthDate { get; set; }
 
         public List<VehicleModel>? Vehicles { get; set; }
+         
+        public List<ClientRateModel>? Rates { get; set; }
     }
 }

@@ -30,6 +30,7 @@
     <BodyTemplate>
         <EditForm Model="@employee" OnValidSubmit="@AddNewEmployee">
             <DataAnnotationsValidator />
+            <ValidationSummary />
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
@@ -64,13 +65,13 @@
                         <ValidationMessage For="() => employee.IDNumber" />
                     </div>
                 </div>
-                <div class="row mt-3">
+                @*  <div class="row mt-3">
                     <div class="form-group">
                         <label for="rate">Rate:</label>
                         <NumberInput TValue="double?" @bind-Value="employee.Rate" class="form-control" id="rate" Step=".01" />
                         <ValidationMessage For="() => employee.Rate" />
                     </div>
-                </div>
+                </div> *@
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="phone-number">Phone Number:</label>
@@ -149,41 +150,33 @@
     </div>
 </div>
 
-@if (employees == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Search..."
-               @oninput="(e) => SearchTerm = e.Value.ToString()" />
-    </div>
-    <table class="table">
-        <thead>
+<div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search..."
+           @oninput="(e) => SearchTerm = e.Value.ToString()" />
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Name</th>
+            <th>Surname</th>
+            <th>ID Number</th>
+            <th>Phone Number</th>
+            <th>Email</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var employee in FilteredEmpoyees)
+        {
             <tr>
-                <th>Title</th>
-                <th>Name</th>
-                <th>Surname</th>
-                <th>ID Number</th>
-                <th>Phone Number</th>
-                <th>Email</th>
-                <th>Rate</th>
-                <th>Action</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var employee in FilteredEmpoyees)
-            {
-                <tr>
-                    <td>@employee.Title</td>
-                    <td>@employee.FirstName</td>
-                    <td>@employee.LastName</td>
-                    <td>@employee.IDNumber</td>
-                    <td>@employee.PhoneNumber</td>
-                    <td>@employee.Email</td>
-                    <td>@employee.Rate</td>
-                    @* <td>
+                <td>@employee.Title</td>
+                <td>@employee.FirstName</td>
+                <td>@employee.LastName</td>
+                <td>@employee.IDNumber</td>
+                <td>@employee.PhoneNumber</td>
+                <td>@employee.Email</td>
+                @* <td>
             <div>
             @((employee.Rate ?? 0.00).ToString("N2"))
             <span class="edit-rate">
@@ -191,14 +184,14 @@ else
             </span>
             </div>
             </td> *@
-                    <td>
-                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteEmployee(employee)" Class="me-2" Style="cursor: pointer" />
-                        <Icon Name="IconName.PersonFillGear" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditEmployeeClick(employee)" Style="cursor: pointer" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
+                <td>
+                    <Icon Name="IconName.PersonFillDash" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteEmployee(employee)" Class="me-2" Style="cursor: pointer" />
+                    <Icon Name="IconName.PersonFillGear" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditEmployeeClick(employee)" Style="cursor: pointer" />
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
 
 

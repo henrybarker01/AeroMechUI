@@ -9,8 +9,9 @@ namespace AeroMech.UI.Web.Pages.Quote
     {
         [Inject] NavigationManager NavigationManager { get; set; }
         [Inject] ServiceReportService ServiceReportService { get; set; }
+        [Inject] protected LoaderService _loaderService { get; set; }
 
-        private List<ServiceReportModel>? quotes;
+        private List<ServiceReportModel>? quotes = new List<ServiceReportModel>();
 
         private string SearchTerm { get; set; } = string.Empty;
         private IEnumerable<ServiceReportModel> FilteredQuotes =>
@@ -25,15 +26,21 @@ namespace AeroMech.UI.Web.Pages.Quote
             quote.Id.ToString().Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
         );
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            await GetQuotes();
+            if (firstRender)
+            {
+                await GetQuotes();
+            }
         }
 
         private async Task GetQuotes()
         {
+            _loaderService.ShowLoader();
             var fromDate = DateTime.Now.AddMonths(-2);
             quotes = await ServiceReportService.GetRecentQuotes(fromDate);
+            await InvokeAsync(StateHasChanged);
+            _loaderService.HideLoader();
         }
 
         private void NavigateToAddQuote()

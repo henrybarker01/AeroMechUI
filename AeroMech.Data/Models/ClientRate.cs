@@ -1,9 +1,10 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using AeroMech.Models.Enums;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace AeroMech.Data.Models
 {
-	public class EmployeeRate
+	public class ClientRate
 	{
 		[Key]
 		public int Id { get; set; }
@@ -15,11 +16,14 @@ namespace AeroMech.Data.Models
 		[Column(TypeName = "decimal(5, 2)")]
 		public decimal Rate { get; set; }
 
-		public virtual Employee Employee { get; set; }
+		public virtual Client Client { get; set; }
 
 		[Required]
-		public int EmployeeId { get; set; }
+		public int ClientId { get; set; }
 
-		public bool IsActive { get; set; }
+		[Required]
+		public RateType RateType { get; set; }
+
+        public bool IsActive { get; set; }
 	}
 }

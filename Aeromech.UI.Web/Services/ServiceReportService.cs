@@ -50,7 +50,7 @@ namespace AeroMech.UI.Web.Services
                          sr.AdHockParts.Add(new ServiceReportAdHockPart()
                          {
                              Id = 0,
-                             CostPrice = part.CostPrice,
+                             CostPrice = Convert.ToDouble(part.CostPrice),
                              Discount = part.Discount,
                              IsDeleted = false,
                              PartDescription = part.PartDescription,
@@ -139,7 +139,7 @@ namespace AeroMech.UI.Web.Services
                             p.Qty = part.QTY;
                             p.PartCode = part.PartCode;
                             p.PartDescription = part.PartDescription;
-                            p.CostPrice = part.CostPrice;
+                            p.CostPrice = Convert.ToDouble(part.CostPrice);
                             p.Discount = part.Discount;
                             p.Id = part.Id;
                             p.IsDeleted = part.IsDeleted;
@@ -152,7 +152,7 @@ namespace AeroMech.UI.Web.Services
                                 Qty = part.QTY,
                                 PartDescription = part.PartDescription,
                                 PartCode = part.PartCode,
-                                CostPrice = part.CostPrice,
+                                CostPrice = Convert.ToDouble(part.CostPrice),
                                 Discount = part.Discount,
                                 IsDeleted = false,
                                 ServiceReportId = serviceReportToEdit.Id,
@@ -210,7 +210,7 @@ namespace AeroMech.UI.Web.Services
                             p.Qty = part.QTY;
                             p.Discount = part.Discount;
                             //p.Id = part.Id;
-                            p.CostPrice = part.CostPrice;
+                            p.CostPrice = Convert.ToDouble(part.CostPrice);
                             p.IsDeleted = part.IsDeleted;                          
 
                         }
@@ -220,7 +220,7 @@ namespace AeroMech.UI.Web.Services
                             {
                                 Qty = part.QTY,
                                 PartId = part.Id,
-                                CostPrice = part.CostPrice,
+                                CostPrice = Convert.ToDouble(part.CostPrice),
                                 Discount = part.Discount,
                                 IsDeleted = false,
                                 ServiceReportId = serviceReportToEdit.Id,
@@ -255,7 +255,8 @@ namespace AeroMech.UI.Web.Services
                     if (serviceReportToEdit.Employees.Any(x => x.Id == employee.Id))
                     {
                         var ee = serviceReportToEdit.Employees.Single(x => x.Id == employee.Id);
-                        ee.Rate = employee.Rate ?? 0;
+                        ee.Rate = employee.Rate;
+                        ee.RateType = employee.RateType;
                         ee.Hours = employee.Hours ?? 0;
                         ee.Discount = employee.Discount ?? 0;
                         ee.DutyDate = employee.DutyDate;
@@ -358,7 +359,7 @@ namespace AeroMech.UI.Web.Services
         public double CalculateServiceReportTotal(ServiceReportModel model)
         {
             var totalEmployee = model.Employees.Where(x => !x.IsDeleted).Sum(x => x.Rate * x.Hours - x.Discount / 100 * x.Rate * x.Hours);
-            var totalParts = model.Parts.Where(x => !x.IsDeleted).Sum(x => x.CostPrice * x.QTY - x.Discount / 100 * (x.CostPrice * x.QTY));
+            var totalParts = model.Parts.Where(x => !x.IsDeleted).Sum(x => Convert.ToDouble(x.CostPrice) * x.QTY - x.Discount / 100 * (Convert.ToDouble(x.CostPrice) * x.QTY));
             return (totalEmployee ?? 0) + totalParts;
         }
     }

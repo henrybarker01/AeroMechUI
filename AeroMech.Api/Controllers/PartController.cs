@@ -35,7 +35,7 @@ namespace AeroMech.API.Controllers
 		{
 			Part prt = _mapper.Map<Part>(part);
 			prt.Prices = new List<PartPrice>() { new PartPrice() {
-				CostPrice = part.CostPrice,
+				CostPrice = Convert.ToDouble(part.CostPrice),
 				EffectiveDate = DateTime.Now,
 				IsDeleted = false,
 				SellingPrice = 0
@@ -66,7 +66,7 @@ namespace AeroMech.API.Controllers
 			if (partToEdit.Prices == null || partToEdit.Prices.Count == 0)
 			{
 				partToEdit.Prices = new List<PartPrice>() { new PartPrice() {
-					CostPrice = part.CostPrice,
+					CostPrice = Convert.ToDouble(part.CostPrice),
 					EffectiveDate = DateTime.Now,
 					IsDeleted = false,
 					SellingPrice = 0
@@ -74,7 +74,7 @@ namespace AeroMech.API.Controllers
 			}
 			else
 			{
-				partToEdit.Prices.First().CostPrice = part.CostPrice;
+				partToEdit.Prices.First().CostPrice = Convert.ToDouble(part.CostPrice);
 			}
 
 			await _aeroMechDBContext.SaveChangesAsync();

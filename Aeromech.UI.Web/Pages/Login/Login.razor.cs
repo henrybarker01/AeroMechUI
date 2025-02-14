@@ -8,14 +8,33 @@ namespace AeroMech.UI.Web.Pages.Login
     {
         [Inject] UserService _userService { get; set; }
         [Inject] NavigationManager _navigationManager { get; set; }
-
+        [Inject] protected LoaderService _loaderService { get; set; }
 
         private Credential _credential = new Credential();
 
+        protected override void OnInitialized()
+        {
+            if (_navigationManager.Uri.Contains("login?Return"))
+            {
+                try
+                {
+                    _navigationManager.NavigateTo("/", forceLoad: true);
+                }
+                catch (Exception ex)
+                {
+                }
+
+            }
+
+
+            base.OnInitialized();
+        }
         private async void Authenticate()
         {
+            _loaderService.ShowLoader();
             await _userService.LoginAsync(_credential);
-            //_navigationManager.NavigateTo("/", forceLoad: true);
+            _loaderService.HideLoader();
+
         }
 
     }

@@ -1,8 +1,8 @@
 ﻿using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
-using AutoMapper; 
-using Microsoft.EntityFrameworkCore; 
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 
 namespace AeroMech.UI.Web.Services
 {
@@ -20,7 +20,6 @@ namespace AeroMech.UI.Web.Services
         {
             List<Data.Models.Employee> employees = await _aeroMechDBContext.Employees.Where(x => x.IsDeleted == false)
                 .Include(a => a.Address)
-                .Include(r => r.Rates)
                 .ToListAsync();
             return _mapper.Map<List<EmployeeModel>>(employees);
         }
@@ -46,7 +45,6 @@ namespace AeroMech.UI.Web.Services
             {
                 Data.Models.Employee employeeToEdit = _aeroMechDBContext.Employees
                 .Include(x => x.Address)
-                .Include(r => r.Rates)
                 .Single(x => x.Id == employee.Id);
 
                 employeeToEdit.PhoneNumber = employee.PhoneNumber;
@@ -66,29 +64,7 @@ namespace AeroMech.UI.Web.Services
                 employeeToEdit.Address.AddressLine2 = employee.AddressLine2 ?? "";
                 employeeToEdit.Address.City = employee.City ?? "";
                 employeeToEdit.Address.PostalCode = employee.PostalCode ?? "";
-
-                if (employeeToEdit?.Rates?.Count == 0)
-                {
-                    employeeToEdit.Rates.Add(new EmployeeRate()
-                    {
-                        Rate = Convert.ToDecimal(employee.Rate),
-                        EffectiveDate = DateTime.Now,
-                        EmployeeId = employee.Id,
-                        IsActive = true,
-                    });
-
-                }
-                else
-                {
-                    employeeToEdit.Rates[0] = new EmployeeRate()
-                    {
-                        Rate = Convert.ToDecimal(employee.Rate),
-                        EffectiveDate = DateTime.Now,
-                        EmployeeId = employee.Id,
-                        IsActive = true,
-                    };
-                }
-
+                 
                 await _aeroMechDBContext.SaveChangesAsync();
                 return employeeToEdit.Id;
             }

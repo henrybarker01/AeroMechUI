@@ -2,6 +2,7 @@
 using AeroMech.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AeroMech.API.Controllers
 {
@@ -18,7 +19,10 @@ namespace AeroMech.API.Controllers
 		[HttpGet(Name = "GetAll")]
 		public IActionResult GetAll()
 		{
-			List<Data.Models.Client> clients = _aeroMechDBContext.Clients.Include(a=>a.Address).ToList();
+			List<Data.Models.Client> clients = _aeroMechDBContext.Clients
+				.Include(a=>a.Address)
+                .Include(r => r.Rates)
+                .ToList();
 			List<ClientModel> mappedClients = new List<ClientModel>();
 
 			clients.ForEach(x =>
@@ -62,9 +66,33 @@ namespace AeroMech.API.Controllers
 			_aeroMechDBContext.Clients.Add(newClient);
 			await _aeroMechDBContext.SaveChangesAsync();
 			return new OkObjectResult(newClient.Id);
-		}
+        }
 
-		[Route("delete/{id}")]
+
+		//.Include(r => r.Rates)
+//		 if (employeeToEdit?.Rates?.Count == 0)
+//            {
+//                employeeToEdit.Rates.Add(new EmployeeRate()
+//        {
+//            Rate = Convert.ToDecimal(employee.Rate),
+//                    EffectiveDate = DateTime.Now,
+//                    EmployeeId = employee.Id,
+//                    IsActive = true,
+//                });
+
+        //            }
+        //            else
+        //            {
+        //                employeeToEdit.Rates[0] = new EmployeeRate()
+        //    {
+        //        Rate = Convert.ToDecimal(employee.Rate),
+        //                    EffectiveDate = DateTime.Now,
+        //                    EmployeeId = employee.Id,
+        //                    IsActive = true,
+        //                };
+        //}
+
+[Route("delete/{id}")]
 		[HttpPost(Name = "Delete client")]
 		public async Task<IActionResult> Delete(int id)
 		{

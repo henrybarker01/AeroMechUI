@@ -7,13 +7,17 @@ namespace AeroMech.UI.Web.Pages.Widgets.ContactList
     public partial class ContactListWidget
     {
         [Inject] ClientService ClientService { get; set; }
-      // [Inject] NavigationManager NavigationManager { get; set; }
+        // [Inject] NavigationManager NavigationManager { get; set; }
 
-        List<ClientModel> clients { get; set; }
+        List<ClientModel> clients = new List<ClientModel>();
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            clients = await ClientService.GetClients();
+            if (firstRender)
+            {
+                clients = await ClientService.GetClients();
+                await InvokeAsync(StateHasChanged);
+            }
         }
 
         //private void PrintQuote(int Id)

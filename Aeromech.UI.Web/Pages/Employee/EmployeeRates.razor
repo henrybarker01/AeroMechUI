@@ -1,48 +1,48 @@
-﻿
+﻿@* 
 @using AeroMech.Models
 @using BlazorBootstrap
  @page "/employee-rates"
 
 <h3>EmployeeRatesComponent</h3>
 
-<Grid @ref="employeeRatesGrid" TItem="EmployeeRateModel" class="table table-hover table-bordered table-striped" Data="employeeRates">
-	<GridColumn TItem="EmployeeRateModel" HeaderText="Effective Date" PropertyName="EffectiveDate">
+<Grid @ref="employeeRatesGrid" TItem="ClientRateModel" class="table table-hover table-bordered table-striped" Data="employeeRates">
+	<GridColumn TItem="ClientRateModel" HeaderText="Effective Date" PropertyName="EffectiveDate">
 		@context.EffectiveDate
 	</GridColumn>
-	<GridColumn TItem="EmployeeRateModel" HeaderText="Rate" PropertyName="Rate">
+	<GridColumn TItem="ClientRateModel" HeaderText="Rate" PropertyName="Rate">
 		@context.Rate
 	</GridColumn>
-	<GridColumn TItem="EmployeeRateModel" HeaderText="Active" PropertyName="IsActive">
+	<GridColumn TItem="ClientRateModel" HeaderText="Active" PropertyName="IsActive">
 		@context.IsActive
 	</GridColumn>
 </Grid>
 
 @code {
-	private List<EmployeeRateModel>? employeeRates;
+	private List<ClientRateModel>? employeeRates;
 
-	Grid<EmployeeRateModel> employeeRatesGrid = default!;
+	Grid<ClientRateModel> employeeRatesGrid = default!;
 
 	protected override void OnInitialized()
 	{
 		if (employeeRates == null)
 		{
-			employeeRates = new List<EmployeeRateModel>();
+			employeeRates = new List<ClientRateModel>();
 		}
-		employeeRates.Add(new EmployeeRateModel()
+		employeeRates.Add(new ClientRateModel()
 			{
 				EffectiveDate = DateTime.Now,
 				EmployeeId = 4,
 				IsActive = true,
 				Rate = 650.00
 			});
-		employeeRates.Add(new EmployeeRateModel()
+		employeeRates.Add(new ClientRateModel()
 			{
 				EffectiveDate = DateTime.Now,
 				EmployeeId = 4,
 				IsActive = true,
 				Rate = 680.00
 			});
-		employeeRates.Add(new EmployeeRateModel()
+		employeeRates.Add(new ClientRateModel()
 			{
 				EffectiveDate = DateTime.Now,
 				EmployeeId = 4,
@@ -51,3 +51,4 @@
 			});
 	}
 }
+ *@

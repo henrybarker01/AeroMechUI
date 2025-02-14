@@ -1,4 +1,6 @@
 ﻿
+using AeroMech.Models.Enums; 
+
 namespace AeroMech.Models
 {
 	public class ServiceReportEmployeeModel : EmployeeModel
@@ -10,6 +12,9 @@ namespace AeroMech.Models
 
 		public string ServceType { get; set; } = "Service";
 
-		public DateOnly DutyDate { get; set; }
-	}
+		public DateOnly DutyDate { get; set; } 
+        public double Rate { get; set; }
+
+        public RateType RateType { get; set; }
+    }
 }

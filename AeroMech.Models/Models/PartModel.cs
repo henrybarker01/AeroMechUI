@@ -13,11 +13,11 @@ namespace AeroMech.Models
 		public string PartDescription { get; set; }
 
 		[Required(ErrorMessage = "Cost Price is required")]
-		[Range(1, int.MaxValue, ErrorMessage = "Cost Price is required")]
+		[Range(0.01, double.MaxValue, ErrorMessage = "Cost Price is required")]
 		public double CostPrice { get; set; }
 
-		[Required(ErrorMessage = "Selling Price is required")]
-		[Range(1, int.MaxValue, ErrorMessage = "Selling Price is required")]
+		//[Required(ErrorMessage = "Selling Price is required")]
+		//[Range(1, int.MaxValue, ErrorMessage = "Selling Price is required")]
 		public double SellingPrice { get; set; }
 		public string? Bin { get; set; }
 		public string? SupplierCode { get; set; }

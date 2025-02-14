@@ -1,0 +1,14 @@
+﻿
+
+@if (IsVisible)
+{
+    <div class="modal-overlay">
+    <div class="c-modal">
+            <p>@Message</p>
+            <button @onclick="() => Confirm(true)">Yes</button>
+            <button @onclick="() => Confirm(false)">No</button>
+        </div>
+    </div>
+}
+
+

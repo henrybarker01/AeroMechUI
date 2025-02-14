@@ -9,11 +9,15 @@ namespace AeroMech.UI.Web.Pages.Widgets.ServiceReport
         [Inject] ServiceReportService ServiceReportService { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
-        List<ServiceReportModel> serviceReports { get; set; }
+        List<ServiceReportModel> serviceReports = new List<ServiceReportModel>();
 
-        protected override async Task OnInitializedAsync()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
-            serviceReports = await ServiceReportService.GetRecentServiceReports(DateTime.Now.AddMonths(-1));
+            if (firstRender)
+            {
+                serviceReports = await ServiceReportService.GetRecentServiceReports(DateTime.Now.AddMonths(-1));
+                await InvokeAsync(StateHasChanged);
+            }
         }
 
         private void PrintServiceReport(ServiceReportModel serviceReport)

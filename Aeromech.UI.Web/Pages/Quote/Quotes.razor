@@ -19,54 +19,44 @@
         <div class="col-5 text-right"></div>
     </div>
 </div>
-
-@if (quotes == null)
-{
-    <p><em>Loading...</em></p>
-}
-else
-{
-    <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Search..."
-               @oninput="(e) => SearchTerm = e.Value.ToString()" />
-    </div>
-    <table class="table">
-        <thead>
+<div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search..."
+           @oninput="(e) => SearchTerm = e.Value.ToString()" />
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Quote Number</th>
+            <th>Report Number</th>
+            <th>Report Date</th>
+            @*  <th>Sales Order Number</th> *@
+            <th>Instruction</th>
+            <th>Client</th>
+            <th>Service Type</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var quote in FilteredQuotes)
+        {
             <tr>
-                <th>Quote Number</th>
-                <th>Report Number</th>
-                <th>Report Date</th>
-               @*  <th>Sales Order Number</th> *@
-                <th>Instruction</th>
-                <th>Client</th>
-                <th>Service Type</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Action</th>
+                <td>@($"AEM {@quote.QuoteNumber}")</td>
+                <td>@($"AEM {quote.Id}")</td>
+                <td>@quote.ReportDate.ToString("dd/MM/yyyy")</td>
+                @* <td>@quote.SalesOrderNumber</td> *@
+                <td style="max-width:400px">@quote.Instruction</td>
+                <td>@quote.Client?.Name</td>
+                <td>@quote.ServiceType</td>
+                <td>@CalcuateTotalReportValue(quote).ToString("C", CultureInfo.CurrentCulture)</td>
+                <td>@(quote.IsComplete == true ? "Complete" : "Incomplete")</td>
+                <td>
+                    @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
+                    <Icon Name="IconName.Pencil" Size="IconSize.x4" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
+                    <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" hidden="@(!quote.IsComplete)" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var quote in FilteredQuotes)
-            {
-                <tr>
-                    <td>@($"AEM {@quote.QuoteNumber}")</td>
-                    <td>@($"AEM {quote.Id}")</td>
-                    <td>@quote.ReportDate.ToString("dd/MM/yyyy")</td>
-                    @* <td>@quote.SalesOrderNumber</td> *@
-                    <td style="max-width:400px">@quote.Instruction</td>
-                    <td>@quote.Client?.Name</td>
-                    <td>@quote.ServiceType</td>
-                    <td>@CalcuateTotalReportValue(quote).ToString("C", CultureInfo.CurrentCulture)</td>
-                    <td>@(quote.IsComplete == true ? "Complete" : "Incomplete")</td>
-                    <td>
-                       @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
-                        <Icon Name="IconName.Pencil" Size="IconSize.x4" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
-                        <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" hidden="@(!quote.IsComplete)" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-
-
+        }
+    </tbody>
+</table>

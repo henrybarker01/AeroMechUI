@@ -9,8 +9,9 @@ namespace AeroMech.UI.Web.Pages.Part
     public partial class Part
     {
 
-        [Inject]
-        PartsService partsService { get; set; }
+        [Inject] PartsService partsService { get; set; }
+        [Inject] protected LoaderService _loaderService { get; set; }
+        [Inject] protected ConfirmationService _confirmationService { get; set; }
 
         private string title = "";
 
@@ -18,11 +19,15 @@ namespace AeroMech.UI.Web.Pages.Part
         private Modal rateModal = default!;
 
         private PartModel part = new PartModel();
-        private List<PartModel>? parts;
-       
+        private List<PartModel>? parts = new List<PartModel>();
 
-        protected override void OnInitialized()
+        protected override async Task OnAfterRenderAsync(bool firstRender)
         {
+            if (firstRender)
+            {
+                await GetParts();
+                await InvokeAsync(StateHasChanged);
+            }
         }
 
         private string SearchTerm { get; set; } = string.Empty;
@@ -55,41 +60,41 @@ namespace AeroMech.UI.Web.Pages.Part
         private async Task OnHideModalClick()
         {
             await GetParts();
-            StateHasChanged();
             await modal.HideAsync();
+            await InvokeAsync(StateHasChanged);
         }
 
         private async void AddNewPart()
         {
+            _loaderService.ShowLoader();
             var result = await partsService.AddNewPart(part);
             if (result != null)
             {
                 part = new PartModel();
                 await OnHideModalClick();
             }
-        }
-
-        // private async void EditPartRate(PartModel part)
-        // {
-        // 	await rateModal.ShowAsync();
-        // 	await employeeRatesGrid.RefreshDataAsync();
-
-        // }
-
-        protected override async Task OnInitializedAsync()
-        {
-            await GetParts();
+            _loaderService.HideLoader();
         }
 
         private async Task GetParts()
         {
+            _loaderService.ShowLoader();
             parts = await partsService.GetParts();
+           
+               
+            _loaderService.HideLoader();
         }
 
         private async Task DeletePart(PartModel prt)
         {
-            await partsService.DeletePart(part);
-            parts?.Remove(prt);
+            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            if (confirmed)
+            {
+                _loaderService.ShowLoader();
+                await partsService.DeletePart(part);
+                parts?.Remove(prt);
+                _loaderService.HideLoader();
+            }
         }
     }
 }

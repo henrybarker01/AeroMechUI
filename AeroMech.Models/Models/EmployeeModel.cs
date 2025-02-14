@@ -19,10 +19,6 @@ namespace AeroMech.Models
         [Required(ErrorMessage = "Surname is required")]
         public string LastName { get; set; }
 
-        [Required(ErrorMessage = "Rate is required")]
-        public double? Rate { get; set; }
-        public List<EmployeeRateModel>? Rates { get; set; }
-
         [Required(ErrorMessage = "Phone Number is required")]
         [RegularExpression("^(?!0+$)(\\+\\d{1,3}[- ]?)?(?!0+$)\\d{10,15}$", ErrorMessage = "Please enter valid phone no.")]
         public string? PhoneNumber { get; set; }
