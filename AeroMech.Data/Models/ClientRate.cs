@@ -13,7 +13,7 @@ namespace AeroMech.Data.Models
 		public DateTime EffectiveDate { get; set; }
 
 		[Required]
-		[Column(TypeName = "decimal(5, 2)")]
+		[Column(TypeName = "decimal(8, 2)")]
 		public decimal Rate { get; set; }
 
 		public virtual Client Client { get; set; }
