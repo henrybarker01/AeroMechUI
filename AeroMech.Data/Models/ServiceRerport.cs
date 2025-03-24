@@ -14,7 +14,7 @@ namespace AeroMech.Data.Models
 		public string? JobNumber { get; set; }
 
 		//[Required]
-		//public string ReportNumber { get; set; }
+		public int ServiceReportNumber { get; set; }
 
 		public string? Description { get; set; }
 

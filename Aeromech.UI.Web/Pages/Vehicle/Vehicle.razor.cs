@@ -32,6 +32,7 @@ namespace AeroMech.UI.Web.Pages.Vehicle
         vehicles.Where(vehicle =>
             string.IsNullOrEmpty(SearchTerm) ||
             vehicle.Description.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+            vehicle.ChassisNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
             vehicle.SerialNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
             vehicle.JobNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
         );
@@ -91,7 +92,7 @@ namespace AeroMech.UI.Web.Pages.Vehicle
                 await OnHideModalClick();
             }
         }
-         
+
         private async Task GetVehicles(int clientId)
         {
             _loaderService.ShowLoader();

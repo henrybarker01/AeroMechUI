@@ -1,48 +1,48 @@
 ﻿@using BlazorBootstrap
 
 <div class="widger-container">
-        <table class="widget-data-table">
-            <thead class="widget-data-header">
-                <tr>
-                    <td class="widget-data-col">
-                        Quote Number
+    <table class="widget-data-table">
+        <thead class="widget-data-header">
+            <tr>
+                <td class="widget-data-col">
+                    Quote Number
+                </td>
+                <td class="widget-data-col">
+                    Report Number
+                </td>
+                <td class="widget-data-col">
+                    Sales Order Number
+                </td>
+                <td class="widget-data-col report-date">
+                    Date
+                </td>
+                <td class="widget-data-col">
+                </td>
+            </tr>
+        </thead>
+        <tbody class="widget-data-body">
+            @foreach (var quote in quotes)
+            {
+                <tr class="widget-data-row">
+                    <td class="widget-data-col report-number">
+                        @($"AEM{@quote.QuoteNumber}")
+                    </td>
+                    <td class="widget-data-col report-number">
+                        @($"AEM{@quote.ServiceReportNumber}")
                     </td>
                     <td class="widget-data-col">
-                        Report Number
-                    </td>
-                    <td class="widget-data-col">
-                        Sales Order Number
+                        @quote.SalesOrderNumber
                     </td>
                     <td class="widget-data-col report-date">
-                        Date
+                        @quote.ReportDate.ToString("dd/MM/yyyy")
                     </td>
-                    <td class="widget-data-col">
+                    <td class="widget-data-col action-buttons">
+                        <Icon Name="IconName.Pencil" Size="IconSize.x6" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
+                        <Icon Name="IconName.Printer" Size="IconSize.x6" Color="IconColor.Secondary" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
                     </td>
                 </tr>
-            </thead>
-            <tbody class="widget-data-body">
-                @foreach (var quote in quotes)
-                {
-                    <tr class="widget-data-row">
-                        <td class="widget-data-col report-number">
-                            @($"AEM{@quote.QuoteNumber}")
-                        </td>
-                        <td class="widget-data-col report-number">
-                            @($"AEM{@quote.Id}")
-                        </td>
-                        <td class="widget-data-col">
-                            @quote.SalesOrderNumber
-                        </td>
-                        <td class="widget-data-col report-date">
-                            @quote.ReportDate.ToString("dd/MM/yyyy")
-                        </td>
-                        <td class="widget-data-col action-buttons">
-                            <Icon Name="IconName.Pencil" Size="IconSize.x6" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
-                            <Icon Name="IconName.Printer" Size="IconSize.x6" Color="IconColor.Secondary" hidden="@(!quote.IsComplete)" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
-                        </td>
-                    </tr>
-                }
-            </tbody>
+            }
+        </tbody>
 
-        </table>
-    </div>
+    </table>
+</div>

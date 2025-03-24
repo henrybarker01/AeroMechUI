@@ -19,44 +19,44 @@
         <div class="col-5 text-right"></div>
     </div>
 </div>
-   <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Search..."
-               @oninput="(e) => SearchTerm = e.Value.ToString()" />
-    </div>
-    <table class="table">
-        <thead>
+<div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search..."
+           @oninput="(e) => SearchTerm = e.Value.ToString()" />
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Report Number</th>
+            <th>Quote Number</th>
+            <th>Report Date</th>
+            <th>Sales Order Number</th>
+            <th>Instruction</th>
+            <th>Client</th>
+            <th>Service Type</th>
+            <th>Total</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var serviceReport in FilteredServiceReports)
+        {
             <tr>
-                <th>Report Number</th>
-                <th>Quote Number</th>
-                <th>Report Date</th>
-                <th>Sales Order Number</th>
-                <th>Instruction</th>
-                <th>Client</th>
-                <th>Service Type</th>
-                <th>Total</th>
-                <th>Status</th>
-                <th>Action</th>
+                <td>@($"AEM {@serviceReport.ServiceReportNumber}")</td>
+                <td>@($"AEM {@serviceReport.QuoteNumber}")</td>
+                <td>@serviceReport.ReportDate.ToString("dd/MM/yyyy")</td>
+                <td>@serviceReport.SalesOrderNumber</td>
+                <td style="max-width:400px">@serviceReport.Instruction</td>
+                <td>@serviceReport.Client?.Name</td>
+                <td>@serviceReport.ServiceType</td>
+                <td>@CalcuateTotalReportValue(serviceReport).ToString("C", CultureInfo.CurrentCulture)</td>
+                <td>@(serviceReport.IsComplete == true ? "Complete" : "Incomplete")</td>
+                <td>
+                    @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
+                    <Icon Name="IconName.Pencil" Size="IconSize.x4" Class="me-2" Color="IconColor.Primary" @onclick="() => EditServiceReport(serviceReport.Id)" Style="cursor: pointer" />
+                    <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" hidden="@(!serviceReport.IsComplete)" @onclick="() => PrintServiceReport(serviceReport.Id)" Style="cursor: pointer" />
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var serviceReport in FilteredServiceReports)
-            {
-                <tr>
-                    <td>@($"AEM {@serviceReport.Id}")</td>
-                    <td>@($"AEM {@serviceReport.QuoteNumber}")</td>
-                    <td>@serviceReport.ReportDate.ToString("dd/MM/yyyy")</td>
-                    <td>@serviceReport.SalesOrderNumber</td>
-                    <td style="max-width:400px">@serviceReport.Instruction</td>
-                    <td>@serviceReport.Client?.Name</td>
-                    <td>@serviceReport.ServiceType</td>
-                    <td>@CalcuateTotalReportValue(serviceReport).ToString("C", CultureInfo.CurrentCulture)</td>
-                    <td>@(serviceReport.IsComplete == true ? "Complete" : "Incomplete")</td>
-                    <td>
-                        @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
-                        <Icon Name="IconName.Pencil" Size="IconSize.x4" Class="me-2" Color="IconColor.Primary" @onclick="() => EditServiceReport(serviceReport.Id)" Style="cursor: pointer" />
-                        <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" hidden="@(!serviceReport.IsComplete)" @onclick="() => PrintServiceReport(serviceReport.Id)" Style="cursor: pointer" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+        }
+    </tbody>
+</table>

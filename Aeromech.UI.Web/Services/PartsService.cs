@@ -18,7 +18,9 @@ namespace AeroMech.UI.Web.Services
 
         public async Task<List<PartModel>> GetParts()
         {
-            List<AeroMech.Data.Models.Part> parts = await _aeroMechDBContext.Parts.Where(x => x.IsDeleted == false)
+            List<Part> parts = await _aeroMechDBContext.Parts
+                .AsNoTracking()
+                .Where(x => x.IsDeleted == false)
                 .Include(a => a.Warehouse)
                 .Include(p => p.Prices)
                 .OrderBy(x=>x.PartCode).ThenBy(x=>x.PartDescription)
@@ -51,7 +53,7 @@ namespace AeroMech.UI.Web.Services
             }
             else
             {
-                AeroMech.Data.Models.Part partToEdit = _aeroMechDBContext.Parts
+                Part partToEdit = _aeroMechDBContext.Parts
                  .Include(x => x.Prices)
                  .Single(x => x.Id == part.Id);
 

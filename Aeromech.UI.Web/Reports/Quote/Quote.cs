@@ -64,7 +64,7 @@ namespace AeroMech.API.Reports
                     });
                     column.Item().Text(text =>
                     {
-                        text.Span($"Field Service Report No:  AEM{serviceReport.Id}").SemiBold().FontSize(12);
+                        text.Span($"Field Service Report No:  AEM{serviceReport.ServiceReportNumber}").SemiBold().FontSize(12);
                     });
                 });
 

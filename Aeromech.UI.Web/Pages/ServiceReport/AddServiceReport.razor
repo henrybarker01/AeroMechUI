@@ -62,7 +62,7 @@
                         <option selected value="0">Select vehicle</option>
                         @foreach (var vehicle in vehicles)
                         {
-                            <option value="@vehicle.Id">@vehicle.MachineType</option>
+                            <option value="@vehicle.Id">@vehicle.MachineType @vehicle.SerialNumber</option>
                         }
                     </InputSelect>
                     <ValidationMessage For="() => serviceReport.VehicleId" />

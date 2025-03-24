@@ -5,6 +5,7 @@ using AeroMech.Models;
 using AeroMech.Models.Enums;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using QuestPDF.Fluent;
 
 namespace AeroMech.UI.Web.Services
@@ -15,13 +16,16 @@ namespace AeroMech.UI.Web.Services
         private readonly AeroMechDBContext _aeroMechDBContext;
         private readonly FieldServiceReport _fieldServiceReport;
         private readonly Quote _quote;
+        private readonly IMemoryCache _memoryCache;
 
-        public ServiceReportService(AeroMechDBContext context, IMapper mapper, FieldServiceReport fieldServiceReport, Quote quote)
+        public ServiceReportService(AeroMechDBContext context, IMapper mapper, FieldServiceReport fieldServiceReport, Quote quote, IMemoryCache memoryCache)
         {
+
             _aeroMechDBContext = context;
             _mapper = mapper;
             _fieldServiceReport = fieldServiceReport;
             _quote = quote;
+            _memoryCache = memoryCache;
         }
 
         public async Task<int> AddServiceReport(ServiceReportModel serviceReport, bool isQuote)
@@ -80,7 +84,9 @@ namespace AeroMech.UI.Web.Services
 
                 sr.Parts.ForEach(x => x.Id = 0);
 
-                if (isQuote)
+                sr.ServiceReportNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => x.ServiceReportNumber)) + 1;
+
+                if (isQuote && sr.QuoteNumber == 0)
                 {
                     sr.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => x.QuoteNumber)) + 1;
                 }
@@ -100,15 +106,22 @@ namespace AeroMech.UI.Web.Services
                 _aeroMechDBContext.ServiceReports.Add(sr);
 
                 await _aeroMechDBContext.SaveChangesAsync();
+
+                _memoryCache.Set(sr.Id, _mapper.Map<ServiceReportModel>(sr), TimeSpan.FromMinutes(30));
+
                 return sr.Id;
 
             }
             else //edit service report
             {
                 ServiceReport serviceReportToEdit = _aeroMechDBContext.ServiceReports
+                .Include(x => x.Vehicle)
+                .Include(x => x.Client)
                 .Include(x => x.Parts)
+                //.ThenInclude(x => x.Part)
                 .Include(x => x.AdHockParts)
                 .Include(r => r.Employees)
+                //.ThenInclude(e => e.Employee)
                 .Single(x => x.Id == serviceReport.Id);
 
                 serviceReportToEdit.ReportDate = serviceReport.ReportDate;
@@ -192,7 +205,8 @@ namespace AeroMech.UI.Web.Services
                                 });
 
                                 partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
-                            }    else if (part.IsDeleted && !p.IsDeleted)
+                            }
+                            else if (part.IsDeleted && !p.IsDeleted)
                             {
                                 _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
                                 {
@@ -205,13 +219,13 @@ namespace AeroMech.UI.Web.Services
                                 });
                                 var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == p.PartId);
                                 partToUpdate.QtyOnHand = partToUpdate.QtyOnHand + part.QTY;
-                            }                        
+                            }
 
                             p.Qty = part.QTY;
                             p.Discount = part.Discount;
                             //p.Id = part.Id;
                             p.CostPrice = Convert.ToDouble(part.CostPrice);
-                            p.IsDeleted = part.IsDeleted;                          
+                            p.IsDeleted = part.IsDeleted;
 
                         }
                         else
@@ -248,58 +262,85 @@ namespace AeroMech.UI.Web.Services
                     serviceReportToEdit.Employees = new List<ServiceReportEmployee>();
                 }
 
-                //serviceReportToEdit.Employees.Where(e => !serviceReport.Employees.Any(x => x.Id == e.Id)).Select(x=>x.IsDeleted == true);
-
                 serviceReport.Employees.ForEach(employee =>
-                {
-                    if (serviceReportToEdit.Employees.Any(x => x.Id == employee.Id))
-                    {
-                        var ee = serviceReportToEdit.Employees.Single(x => x.Id == employee.Id);
-                        ee.Rate = employee.Rate;
-                        ee.RateType = employee.RateType;
-                        ee.Hours = employee.Hours ?? 0;
-                        ee.Discount = employee.Discount ?? 0;
-                        ee.DutyDate = employee.DutyDate;
-                        ee.IsDeleted = employee.IsDeleted;
-                    }
-                    else
-                    {
-                        var employeeToAdd = _mapper.Map<ServiceReportEmployeeModel, ServiceReportEmployee>(employee);
-                        employeeToAdd.Id = 0;
-                        employeeToAdd.ServiceReportId = serviceReportToEdit.Id;
-                        serviceReportToEdit.Employees.Add(employeeToAdd);
-                    }
-                });
+              {
+                  if (serviceReportToEdit.Employees.Any(x => x.Id == employee.Id))
+                  {
+                      var ee = serviceReportToEdit.Employees.Single(x => x.Id == employee.Id);
+                      ee.Rate = employee.Rate;
+                      ee.RateType = employee.RateType;
+                      ee.Hours = employee.Hours ?? 0;
+                      ee.Discount = employee.Discount ?? 0;
+                      ee.DutyDate = employee.DutyDate;
+                      ee.IsDeleted = employee.IsDeleted;
+                  }
+                  else
+                  {
 
-                if (isQuote)
+                      var employeeToAdd = _mapper.Map<ServiceReportEmployeeModel, ServiceReportEmployee>(employee);
+                      employeeToAdd.Id = 0;
+                      employeeToAdd.EmployeeId = employee.EmployeeId;
+                      employeeToAdd.ServiceReportId = serviceReportToEdit.Id;
+
+                      serviceReportToEdit.Employees.Add(employeeToAdd);
+                  }
+              });
+
+                if (isQuote && serviceReportToEdit.QuoteNumber == 0)
                 {
                     serviceReportToEdit.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => x.QuoteNumber)) + 1;
                 }
 
                 await _aeroMechDBContext.SaveChangesAsync();
+
+                serviceReportToEdit.Employees.ForEach(employee =>
+                {
+                    var actualEmployee = _aeroMechDBContext.Employees.AsNoTracking().Single(x => x.Id == employee.EmployeeId);
+                    employee.Employee = actualEmployee;
+                });
+                serviceReportToEdit.Parts.ForEach(part =>
+                {
+                    var actualPart = _aeroMechDBContext.Parts.AsNoTracking().Single(x => x.Id == part.PartId);
+                    part.Part = actualPart;
+                });
+                _memoryCache.Set(serviceReport.Id, _mapper.Map<ServiceReportModel>(serviceReportToEdit), TimeSpan.FromMinutes(30));
+
                 return serviceReportToEdit.Id;
             }
         }
 
         public async Task<ServiceReportModel> GetServiceReport(int Id)
         {
-            var serviceReport = await _aeroMechDBContext.ServiceReports
-                .Include(a => a.Parts)
-                .ThenInclude(p => p.Part)
-                .ThenInclude(pp => pp.Prices)
-                .Include(a => a.AdHockParts)
-                .Include(r => r.Employees)
-                .ThenInclude(e => e.Employee)
-                .Include(c => c.Client)
-                .Include(v => v.Vehicle)
-                .SingleAsync(x => x.Id == Id);
+            if (!_memoryCache.TryGetValue(Id, out ServiceReportModel serviceReportModel))
+            {
+                var serviceReport = await _aeroMechDBContext.ServiceReports
+                    .AsNoTracking()
+                    .Include(a => a.Parts)
+                        .ThenInclude(p => p.Part)
+                            .ThenInclude(pp => pp.Prices)
+                    .Include(a => a.AdHockParts)
+                    .Include(r => r.Employees)
+                        .ThenInclude(e => e.Employee)
+                    .Include(c => c.Client)
+                    .Include(v => v.Vehicle)
+                    .SingleAsync(x => x.Id == Id);
 
-            return _mapper.Map<ServiceReportModel>(serviceReport);
+                serviceReportModel = _mapper.Map<ServiceReportModel>(serviceReport);
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(30));
+
+                _memoryCache.Set(Id, serviceReportModel, cacheEntryOptions);
+            }
+
+            return serviceReportModel;
         }
-
         public async Task<byte[]> DownloadServiceReport(int serviceReportId)
         {
-            var serviceResport = await _aeroMechDBContext.ServiceReports
+            if (!_memoryCache.TryGetValue(serviceReportId, out ServiceReportModel serviceReportModel))
+            {
+                var serviceResport = await _aeroMechDBContext.ServiceReports
+                .AsNoTracking()
                .Include(x => x.Vehicle)
                .Include(x => x.Parts)
                    .ThenInclude(x => x.Part)
@@ -309,8 +350,15 @@ namespace AeroMech.UI.Web.Services
                .Include(x => x.Client)
                .FirstAsync(x => x.Id == serviceReportId);
 
-            _fieldServiceReport.serviceReport =
-                _mapper.Map<ServiceReportModel>(serviceResport);
+                serviceReportModel = _mapper.Map<ServiceReportModel>(serviceResport);
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions()
+                    .SetSlidingExpiration(TimeSpan.FromMinutes(30));
+
+                _memoryCache.Set(serviceReportId, serviceReportModel, cacheEntryOptions);
+            }
+
+            _fieldServiceReport.serviceReport = serviceReportModel;
 
             return Document.Create(_fieldServiceReport.Compose).GeneratePdf();
         }
@@ -318,6 +366,7 @@ namespace AeroMech.UI.Web.Services
         public async Task<byte[]> DownloadQuote(int serviceReportId)
         {
             var serviceResport = await _aeroMechDBContext.ServiceReports
+                 .AsNoTracking()
            .Include(x => x.Vehicle)
            .Include(x => x.Parts)
                .ThenInclude(x => x.Part)
@@ -335,24 +384,26 @@ namespace AeroMech.UI.Web.Services
         public async Task<List<ServiceReportModel>> GetRecentServiceReports(DateTime fromDate)
         {
             var serviceReports = await _aeroMechDBContext.ServiceReports
+                 .AsNoTracking()
                .Include(x => x.Parts)
                .Include(x => x.AdHockParts)
                .Include(r => r.Employees)
                .Include(x => x.Client)
                .ThenInclude(x => x.Vehicles)
-               .Where(x => x.ReportDate >= fromDate).ToListAsync();
+               .Where(x => x.ReportDate >= fromDate && x.Client.IsDeleted == false).ToListAsync();
             return _mapper.Map<IEnumerable<ServiceReportModel>>(serviceReports).ToList();
         }
 
         public async Task<List<ServiceReportModel>> GetRecentQuotes(DateTime fromDate)
         {
             var serviceReports = await _aeroMechDBContext.ServiceReports
+                 .AsNoTracking()
                .Include(x => x.Parts)
                .Include(x => x.AdHockParts)
                .Include(r => r.Employees)
                .Include(x => x.Client)
                .ThenInclude(x => x.Vehicles)
-               .Where(x => x.QuoteNumber > 0 && x.ReportDate >= fromDate && x.IsComplete).ToListAsync();
+               .Where(x => x.QuoteNumber > 0 && x.ReportDate >= fromDate).ToListAsync();
             return _mapper.Map<IEnumerable<ServiceReportModel>>(serviceReports).ToList();
         }
 

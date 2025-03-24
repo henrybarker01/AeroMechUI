@@ -40,7 +40,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
         protected override void OnInitialized()
         {
             serviceReport = new ServiceReportModel();
-            editContext = new(serviceReport);            
+            editContext = new(serviceReport);
 
             base.OnInitialized();
         }
@@ -50,7 +50,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             if (firstRender)
             {
                 _loaderService.ShowLoader();
-                 
+
                 employees = await EmployeeService.GetEmployees();
                 clients = await ClientService.GetClients();
                 parts = await PartsService.GetParts();
@@ -115,17 +115,9 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             if (employee.RateType == RateType.None || serviceReport.ClientId == 0) return 0;
 
             var clientRate = serviceReport.Client.Rates.SingleOrDefault(x => x.RateType == employee.RateType);
-            employee.RateType = clientRate.RateType;
-            employee.Rate = clientRate.Rate;
+            employee.RateType = clientRate?.RateType ?? employee.RateType;
+            employee.Rate = clientRate?.Rate ?? 0;
             return employee.Rate;
-        }
-
-        private void OnRateChanged(object newRate)
-        {
-            var o = 1;
-
-            //employee.Rate = newRate;
-            //Console.WriteLine($"Rate changed to: {newRate}"); // Debugging
         }
 
         //void HandleOnRateChangeUnbound(int rateType, int employeeId)
@@ -139,7 +131,8 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             var emp = employees.First(x => x.Id == employeeId);
             employee.FirstName = emp.FirstName;
             employee.LastName = emp.LastName;
-            employee.Id = emp.Id;
+           // employee.Id = emp.Id;
+            employee.EmployeeId = emp.Id;
             //employee.Rates = emp.Rate;
             employee.BirthDate = emp.BirthDate;
             employee.Email = emp.Email;

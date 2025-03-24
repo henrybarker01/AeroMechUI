@@ -47,6 +47,7 @@ builder.Services.AddScoped<FieldServiceReport, FieldServiceReport>();
 builder.Services.AddScoped<Quote, Quote>();
 
 builder.Services.AddBlazorBootstrap();
+builder.Services.AddMemoryCache();
 
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AeroMech.Models.AutomapperProfiles.PartsProfile)));
 builder.Services.AddAuthentication("Cookies")

@@ -17,7 +17,7 @@ namespace AeroMech.Data.Persistence
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
 #if DEBUG
-            var connection = "Server=localhost;Database=AeroMech;User Id=sa;password=P@ssw0rd;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true;";
+            var connection = "Server=localhost;Database=vmi;User Id=sa;password=P@ssw0rd;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true;";
             optionsBuilder.UseSqlServer(connection, b => b.MigrationsAssembly("AeroMech.Data"));
 #endif
 
@@ -44,6 +44,7 @@ namespace AeroMech.Data.Persistence
         public DbSet<Warehouse> Warehouse { get; set; }
         public DbSet<ServiceReportAdHockPart> ServiceReportAdHockPart { get; set; }
         public DbSet<StockAdjustment> StockAdjustment { get; set; }
-       // public DbSet<ServiceReportEmployeeRates> ServiceReportEmployeeRates { get; set; }
+        public DbSet<StockTake> StockTakes { get; set; }
+        public DbSet<StockTakeParts> StockTakeParts { get; set; }
     }
 }

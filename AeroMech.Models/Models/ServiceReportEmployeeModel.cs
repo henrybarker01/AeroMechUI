@@ -16,5 +16,7 @@ namespace AeroMech.Models
         public double Rate { get; set; }
 
         public RateType RateType { get; set; }
+
+        public int EmployeeId { get; set; }
     }
 }

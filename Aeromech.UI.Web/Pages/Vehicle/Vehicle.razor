@@ -65,6 +65,13 @@
                         <ValidationMessage For="() => vehicle.JobNumber" />
                     </div>
                 </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label for="chassis-number">Chassis Number:</label>
+                        <InputText @bind-Value="vehicle.ChassisNumber" type="text" class="form-control" id="chassis-number"></InputText>
+                        <ValidationMessage For="() => vehicle.ChassisNumber" />
+                    </div>
+                </div>
             </div>
             <div class="row">
                 <div class="footer-buttons">
@@ -74,7 +81,7 @@
                     <div class="save">
                         <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
                     </div>
-                </div>               
+                </div>
             </div>
         </EditForm>
     </BodyTemplate>
@@ -120,44 +127,46 @@
     </div>
     <br />
 </div>
- 
-    <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Search..."
-               @oninput="(e) => SearchTerm = e.Value.ToString()" />
-    </div>
-    <table class="table">
-        <thead>
+
+<div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search..."
+           @oninput="(e) => SearchTerm = e.Value.ToString()" />
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Serial Number</th>
+            <th>Description</th>
+            <th>MachineType</th>
+            <th>Manufacture Date</th>
+            <th>Date In Service</th>
+            <th>Purchase Price</th>
+            <th>EngineHours</th>
+            <th>Job Number</th>
+            <th>Chassis Number</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var vehicle in FilteredVehicles)
+        {
             <tr>
-                <th>Serial Number</th>
-                <th>Description</th>
-                <th>MachineType</th>
-                <th>Manufacture Date</th>
-                <th>Date In Service</th>
-                <th>Purchase Price</th>
-                <th>EngineHours</th>
-                <th>Job Number</th>
-                <th>Action</th>
+                <td>@vehicle.SerialNumber</td>
+                <td class="vehicle-description">@vehicle.Description</td>
+                <td>@vehicle.MachineType</td>
+                <td>@vehicle.ManufactureDate</td>
+                <td>@vehicle.DateInService</td>
+                <td>@vehicle.PurchasePrice.ToString("C", CultureInfo.CurrentCulture)</td>
+                <td>@vehicle.EngineHours</td>
+                <td>@vehicle.JobNumber</td>
+                <td>@vehicle.ChassisNumber</td>
+                <td>
+                    <div style="min-width: 65px">
+                        <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteVehicle(vehicle)" Class="me-2" Style="cursor: pointer" />
+                        <Icon Name="IconName.Pencil" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditVehicleClick(vehicle)" Style="cursor: pointer" />
+                    </div>
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var vehicle in FilteredVehicles)
-            {
-                <tr>
-                    <td>@vehicle.SerialNumber</td>
-                    <td class="vehicle-description">@vehicle.Description</td>
-                    <td>@vehicle.MachineType</td>
-                    <td>@vehicle.ManufactureDate</td>
-                    <td>@vehicle.DateInService</td>
-                    <td>@vehicle.PurchasePrice.ToString("C", CultureInfo.CurrentCulture)</td>
-                    <td>@vehicle.EngineHours</td>
-                    <td>@vehicle.JobNumber</td>
-                    <td>
-                        <div style="min-width: 65px">
-                            <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteVehicle(vehicle)" Class="me-2" Style="cursor: pointer" />
-                            <Icon Name="IconName.Pencil" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditVehicleClick(vehicle)" Style="cursor: pointer" />
-                        </div>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+        }
+    </tbody>
+</table>

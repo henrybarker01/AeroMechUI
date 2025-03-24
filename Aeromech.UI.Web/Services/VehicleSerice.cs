@@ -18,7 +18,8 @@ namespace AeroMech.UI.Web.Services
 
         public async Task<List<VehicleModel>> GetVehicles(int clientId)
         {
-            List<Vehicle> vehicles = await _aeroMechDBContext.Vehicles.Where(x => x.IsDeleted == false && x.ClientId == clientId)
+            List<Vehicle> vehicles = await _aeroMechDBContext.Vehicles.AsNoTracking()
+                .Where(x => x.IsDeleted == false && x.ClientId == clientId)
                 .ToListAsync();
             return _mapper.Map<List<VehicleModel>>(vehicles);
         }
@@ -44,6 +45,7 @@ namespace AeroMech.UI.Web.Services
                 Vehicle vehicleToEdit = _aeroMechDBContext.Vehicles
                 .Single(x => x.Id == vehicle.Id);
                 vehicleToEdit.SerialNumber = vehicle.SerialNumber;
+                vehicleToEdit.ChassisNumber = vehicle.ChassisNumber;
                 vehicleToEdit.JobNumber = vehicle.JobNumber;
                 vehicleToEdit.PurchasePrice = vehicle.PurchasePrice;
                 vehicleToEdit.EngineHours = vehicle.EngineHours;

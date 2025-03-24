@@ -19,10 +19,11 @@ namespace AeroMech.UI.Web.Services
 
         public async Task<List<ClientModel>> GetClients()
         {
-            var clients = _aeroMechDBContext.Clients
-    .Include(a => a.Address)
-    .Include(r => r.Rates)
-    .ToList();
+            var clients = _aeroMechDBContext.Clients.AsNoTracking()
+                .Include(a => a.Address)
+                .Include(r => r.Rates)
+                .Where(x => x.IsDeleted == false)
+                .ToList();
 
             return _mapper.Map<List<ClientModel>>(clients);
         }
@@ -120,7 +121,8 @@ namespace AeroMech.UI.Web.Services
             var client = await _aeroMechDBContext.Clients.FindAsync(id);
             if (client != null)
             {
-                _aeroMechDBContext.Clients.Remove(client);
+                client.IsDeleted = true;
+                //_aeroMechDBContext.Clients.Remove(client);
                 await _aeroMechDBContext.SaveChangesAsync();
             }
         }

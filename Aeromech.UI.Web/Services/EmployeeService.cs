@@ -18,7 +18,8 @@ namespace AeroMech.UI.Web.Services
 
         public async Task<List<EmployeeModel>> GetEmployees()
         {
-            List<Data.Models.Employee> employees = await _aeroMechDBContext.Employees.Where(x => x.IsDeleted == false)
+            List<Employee> employees = await _aeroMechDBContext.Employees.AsNoTracking()
+                .Where(x => x.IsDeleted == false)
                 .Include(a => a.Address)
                 .ToListAsync();
             return _mapper.Map<List<EmployeeModel>>(employees);

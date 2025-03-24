@@ -29,5 +29,7 @@ namespace AeroMech.Models
 
 		[Required(ErrorMessage = "Job Number is required")]
 		public string JobNumber { get; set; }
+
+        public string ChassisNumber { get; set; }
     }
 }

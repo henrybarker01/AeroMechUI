@@ -14,11 +14,17 @@
     font-size: 14px;
     border-collapse: collapse;
     width: 100%;
-    table-layout: fixed; 
+    table-layout: fixed;
 }
 
     .rate-table th,
     .rate-table td {
-        padding:  0 4px;
-        width: 25%;  
+        padding: 0 4px;
+        width: 25%;
     }
+
+.rate {
+    width: 120px;
+    text-align: end;
+}
+ 

@@ -57,5 +57,7 @@ namespace AeroMech.Models
 
         public bool IsComplete { get; set; }
 
+        public int ServiceReportNumber { get; set; }
+
     }
 }

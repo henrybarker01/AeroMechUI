@@ -2,6 +2,7 @@
 @using AeroMech.Models
 @using BlazorBootstrap
 @using Newtonsoft.Json
+@using System.Globalization
 
 <PageTitle>Clients</PageTitle>
 
@@ -96,13 +97,13 @@
                         <tbody>
                             <tr>
                                 <td>
-                                    <NumberInput TValue="double" @bind-Value="clientRatesWeekdays.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" /> 
+                                    <NumberInput TValue="double" @bind-Value="clientRatesWeekdays.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
                                     <ValidationMessage For="() => clientRatesWeekdays.Rate" />
                                 </td>
-                                 <td>
+                                <td>
                                     <NumberInput TValue="double" @bind-Value="clientRatesWeekdaysOvertime.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
                                 </td>
-                                 <td>
+                                <td>
                                     <NumberInput TValue="double" @bind-Value="clientRatesSundaysAndPublicHolidays.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
                                 </td>
                                 <td>
@@ -142,39 +143,47 @@
     </div>
 </div>
 
- 
-    <div class="mb-3">
-        <input type="text" class="form-control" placeholder="Search..."
-               @oninput="(e) => SearchTerm = e.Value.ToString()" />
-    </div>
-    <table class="table">
-        <thead>
+
+<div class="mb-3">
+    <input type="text" class="form-control" placeholder="Search..."
+           @oninput="(e) => SearchTerm = e.Value.ToString()" />
+</div>
+<table class="table">
+    <thead>
+        <tr>
+
+            <th>Name</th>
+            <th>Contact Person</th>
+            <th>Contact Number</th>
+            <th>Contact Email</th>
+            <th>Contact Birth Date</th>
+            <th class="rate">Weekdays</th>
+            <th class="rate">Weekdays Overtime</th>
+            <th class="rate">Overtime</th>
+            <th class="rate">Sundays & Public Holidays</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var client in FilteredClients)
+        {
             <tr>
 
-                <th>Name</th>
-                <th>Contact Person</th>
-                <th>Contact Number</th>
-                <th>Contact Email</th>
-                <th>Contact Birth Date</th>
-                <th>Action</th>
+                <td>@client.Name</td>
+                <td>@client.ContactPersonName</td>
+                <td>@client.ContactPersonNumber</td>
+                <td>@client.ContactPersonEmail</td>
+                <td>@client.ContactPersonBirthDate?.ToString("dd/MM/yyyy")</td>
+                <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
+                <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
+                <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
+                <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
+                <td>
+                    <Icon Name="IconName.BuildingFillDash" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteClient(client)" Class="me-2" Style="cursor: pointer" />
+                    <Icon Name="IconName.BuildingFillGear" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditClientClick(client)" Style="cursor: pointer" />
+                </td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach (var client in FilteredClients)
-            {
-                <tr>
+        }
+    </tbody>
+</table>
 
-                    <td>@client.Name</td>
-                    <td>@client.ContactPersonName</td>
-                    <td>@client.ContactPersonNumber</td>
-                    <td>@client.ContactPersonEmail</td>
-                    <td>@client.ContactPersonBirthDate?.ToString("dd/MM/yyyy")</td>
-                    <td>
-                        <Icon Name="IconName.BuildingFillDash" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteClient(client)" Class="me-2" Style="cursor: pointer" />
-                        <Icon Name="IconName.BuildingFillGear" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditClientClick(client)" Style="cursor: pointer" />
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
- 
