@@ -29,7 +29,7 @@
             <th>Quote Number</th>
             <th>Report Number</th>
             <th>Report Date</th>
-            @*  <th>Sales Order Number</th> *@
+            <th>Serial Number</th>
             <th>Instruction</th>
             <th>Client</th>
             <th>Service Type</th>
@@ -45,16 +45,15 @@
                 <td>@($"AEM {@quote.QuoteNumber}")</td>
                 <td>@($"AEM {quote.ServiceReportNumber}")</td>
                 <td>@quote.ReportDate.ToString("dd/MM/yyyy")</td>
-                @* <td>@quote.SalesOrderNumber</td> *@
+                <td>@quote.Vehicle?.SerialNumber</td>
                 <td style="max-width:400px">@quote.Instruction</td>
                 <td>@quote.Client?.Name</td>
                 <td>@quote.ServiceType</td>
                 <td>@CalcuateTotalReportValue(quote).ToString("C", CultureInfo.CurrentCulture)</td>
                 <td>@(quote.IsComplete == true ? "Complete" : "Incomplete")</td>
                 <td>
-                    @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
-                    <Icon Name="IconName.Pencil" Size="IconSize.x4" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
-                    <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
+                     <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
+                    <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
                 </td>
             </tr>
         }

@@ -12,7 +12,7 @@ namespace AeroMech.Models.AutomapperProfiles
 				.ForMember(x => x.LastName, opt => opt.MapFrom(e => e.Employee.LastName));
 
 			CreateMap<ServiceReportEmployeeModel, ServiceReportEmployee>()
-				.ForMember(x => x.EmployeeId, opt => opt.MapFrom(e => e.Id));
+				.ForMember(x => x.EmployeeId, opt => opt.MapFrom(e => e.EmployeeId));
 		}
 	}
 }

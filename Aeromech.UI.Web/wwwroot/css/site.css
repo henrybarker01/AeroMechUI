@@ -10,7 +10,7 @@ h1:focus {
 
 a, .btn-link {
     color: white;
-    font-weight:bold;
+    font-weight: bold;
 }
 
 .btn-primary {
@@ -105,4 +105,19 @@ a, .btn-link {
     position: absolute;
     right: 70px;
     top: 80px;
+}
+
+.table th {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+
+.table td {
+    font-size: 14px;
+    color: black;
+}
+
+.action {
+    font-size: 14px;
 }

@@ -139,8 +139,8 @@
                     <td>@((part.QtyOnHand * part.CostPrice).ToString("C", CultureInfo.CurrentCulture))</td>
                     <td>
                         <div style="min-width: 65px">
-                            <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeletePart(part)" Class="me-2" Style="cursor: pointer" />
-                            <Icon Name="IconName.Pencil" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditPartClick(part)" Style="cursor: pointer" />
+                            <Icon Name="IconName.Trash3" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeletePart(part)" Class="me-2" Style="cursor: pointer" />
+                            <Icon Name="IconName.Pencil" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditPartClick(part)" Style="cursor: pointer" />
                         </div>
                     </td>
                 </tr>

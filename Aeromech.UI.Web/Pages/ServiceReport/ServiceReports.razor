@@ -30,6 +30,7 @@
             <th>Quote Number</th>
             <th>Report Date</th>
             <th>Sales Order Number</th>
+            <th>Serial Number</th>
             <th>Instruction</th>
             <th>Client</th>
             <th>Service Type</th>
@@ -46,15 +47,15 @@
                 <td>@($"AEM {@serviceReport.QuoteNumber}")</td>
                 <td>@serviceReport.ReportDate.ToString("dd/MM/yyyy")</td>
                 <td>@serviceReport.SalesOrderNumber</td>
+                <td>@serviceReport.Vehicle?.SerialNumber</td>
                 <td style="max-width:400px">@serviceReport.Instruction</td>
                 <td>@serviceReport.Client?.Name</td>
                 <td>@serviceReport.ServiceType</td>
                 <td>@CalcuateTotalReportValue(serviceReport).ToString("C", CultureInfo.CurrentCulture)</td>
                 <td>@(serviceReport.IsComplete == true ? "Complete" : "Incomplete")</td>
                 <td>
-                    @*  <Icon Name="IconName.Trash3" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteServiceReport(serviceReport.Id)" Class="me-2" Style="cursor: pointer" /> *@
-                    <Icon Name="IconName.Pencil" Size="IconSize.x4" Class="me-2" Color="IconColor.Primary" @onclick="() => EditServiceReport(serviceReport.Id)" Style="cursor: pointer" />
-                    <Icon Name="IconName.Printer" Size="IconSize.x4" Color="IconColor.Secondary" hidden="@(!serviceReport.IsComplete)" @onclick="() => PrintServiceReport(serviceReport.Id)" Style="cursor: pointer" />
+                     <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => EditServiceReport(serviceReport.Id)" Style="cursor: pointer" />
+                    <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => PrintServiceReport(serviceReport.Id)" Style="cursor: pointer" />
                 </td>
             </tr>
         }

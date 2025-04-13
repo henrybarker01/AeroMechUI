@@ -179,8 +179,8 @@
                 <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
                 <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
                 <td>
-                    <Icon Name="IconName.BuildingFillDash" Size="IconSize.x4" Color="IconColor.Danger" @onclick="() => DeleteClient(client)" Class="me-2" Style="cursor: pointer" />
-                    <Icon Name="IconName.BuildingFillGear" Size="IconSize.x4" Color="IconColor.Secondary" @onclick="() => OnEditClientClick(client)" Style="cursor: pointer" />
+                    <Icon Name="IconName.BuildingFillDash" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteClient(client)" Class="me-2" Style="cursor: pointer" />
+                    <Icon Name="IconName.BuildingFillGear" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditClientClick(client)" Style="cursor: pointer" />
                 </td>
             </tr>
         }

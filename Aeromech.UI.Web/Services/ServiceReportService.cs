@@ -107,6 +107,13 @@ namespace AeroMech.UI.Web.Services
 
                 await _aeroMechDBContext.SaveChangesAsync();
 
+                sr.Employees.ForEach(employee =>
+                {
+                    var actualEmployee = _aeroMechDBContext.Employees.AsNoTracking().Single(x => x.Id == employee.EmployeeId);
+                    employee.Employee = actualEmployee;
+                });
+
+
                 _memoryCache.Set(sr.Id, _mapper.Map<ServiceReportModel>(sr), TimeSpan.FromMinutes(30));
 
                 return sr.Id;
@@ -385,12 +392,13 @@ namespace AeroMech.UI.Web.Services
         {
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
-               .Include(x => x.Parts)
-               .Include(x => x.AdHockParts)
-               .Include(r => r.Employees)
-               .Include(x => x.Client)
-               .ThenInclude(x => x.Vehicles)
-               .Where(x => x.ReportDate >= fromDate && x.Client.IsDeleted == false).ToListAsync();
+                 .Include(x => x.Vehicle)
+                 .Include(x => x.Parts)
+                 .Include(x => x.AdHockParts)
+                 .Include(r => r.Employees)
+                 .Include(x => x.Client)
+                 .ThenInclude(x => x.Vehicles)
+                 .Where(x => x.ReportDate >= fromDate && x.Client.IsDeleted == false).ToListAsync();
             return _mapper.Map<IEnumerable<ServiceReportModel>>(serviceReports).ToList();
         }
 
@@ -398,6 +406,7 @@ namespace AeroMech.UI.Web.Services
         {
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
+               .Include(x => x.Vehicle)
                .Include(x => x.Parts)
                .Include(x => x.AdHockParts)
                .Include(r => r.Employees)
