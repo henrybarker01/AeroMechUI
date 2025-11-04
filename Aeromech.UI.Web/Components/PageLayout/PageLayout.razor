@@ -1,0 +1,33 @@
+﻿@using Microsoft.AspNetCore.Components
+@using BlazorBootstrap
+
+<div class="container-fluid d-flex flex-column vh-100">
+    <div class="row">
+        <div class="col-6 header d-flex align-items-center">
+            <h1 class="me-3">@Title</h1>
+            @if (ShowAddButton)
+            {
+                <span class="add-icon">
+                    <Icon Name="IconName.PlusSquare" Size="IconSize.x2" Color="IconColor.Primary" @onclick="OnAddClicked" Style="cursor: pointer" />
+                </span>
+            }
+        </div>
+        <div class="col-6 text-end">
+            @HeaderContent
+        </div>
+    </div>
+
+    <div class="mb-3 mt-2">
+        <input type="text" class="form-control" placeholder="Search..." @bind="SearchTerm" />
+    </div>
+
+    <div class="flex-grow-1 overflow-auto">
+        @ChildContent
+    </div>
+
+    <div class="mt-3">
+        <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="@(() => OnPageChanged.InvokeAsync(CurrentPage - 1))" disabled="@(CurrentPage == 1)" style="margin-right: 20px">Previous</Button>
+        <span>Page @CurrentPage of @TotalPages</span>
+        <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="@(() => OnPageChanged.InvokeAsync(CurrentPage + 1))" disabled="@(CurrentPage == TotalPages)" style="margin-right: 20px">Next</Button>
+    </div>
+</div>

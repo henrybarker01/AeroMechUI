@@ -22,15 +22,15 @@
             <div class="col-6">
                 <div class="form-group">
                     <label for="sales-order-number">Sales Order Number:</label>
-                    <InputText @bind-Value="serviceReport.SalesOrderNumber" type="text" class="form-control" id="sales-order-number"></InputText>
-                    <ValidationMessage For="() => serviceReport.SalesOrderNumber" />
+                    <InputText @bind-Value="_serviceReport.SalesOrderNumber" type="text" class="form-control" id="sales-order-number"></InputText>
+                    <ValidationMessage For="() => _serviceReport.SalesOrderNumber" />
                 </div>
             </div>
             <div class="col-6">
                 <div class="form-group">
                     <label for="report-date">Date:</label>
-                    <InputDate @bind-Value="serviceReport.ReportDate" class="form-control" id="report-date"></InputDate>
-                    <ValidationMessage For="() => serviceReport.ReportDate" />
+                    <InputDate @bind-Value="_serviceReport.ReportDate" class="form-control" id="report-date"></InputDate>
+                    <ValidationMessage For="() => _serviceReport.ReportDate" />
                 </div>
             </div>
         </div>
@@ -40,8 +40,8 @@
                     <label for="select-client">Client:</label>
                     <InputSelect class="form-select"
                                  id="select-client"
-                                 ValueExpression="@(()=>serviceReport.ClientId)"
-                                 Value="@serviceReport.ClientId"
+                                 ValueExpression="@(()=>_serviceReport.ClientId)"
+                                 Value="@_serviceReport.ClientId"
                                  ValueChanged="@((int value) => HandleOnChangeClient(value))">
                         <option selected value="0">Select client</option>
                         @foreach (var client in clients)
@@ -49,15 +49,15 @@
                             <option value="@client.Id">@client.Name</option>
                         }
                     </InputSelect>
-                    <ValidationMessage For="() => serviceReport.ClientId" />
+                    <ValidationMessage For="() => _serviceReport.ClientId" />
                 </div>
             </div>
             <div class="col-6">
                 <div class="form-group">
                     <label for="select-vehicle">Vehicle:</label>
                     <InputSelect class="form-select" id="select-vehicle"
-                                 ValueExpression="@(()=>serviceReport.VehicleId)"
-                                 Value="@serviceReport.VehicleId"
+                                 ValueExpression="@(()=>_serviceReport.VehicleId)"
+                                 Value="@_serviceReport.VehicleId"
                                  ValueChanged="@((int value) => HandleOnChangeVehicle(value))">
                         <option selected value="0">Select vehicle</option>
                         @foreach (var vehicle in vehicles)
@@ -65,7 +65,7 @@
                             <option value="@vehicle.Id">@vehicle.MachineType @vehicle.SerialNumber</option>
                         }
                     </InputSelect>
-                    <ValidationMessage For="() => serviceReport.VehicleId" />
+                    <ValidationMessage For="() => _serviceReport.VehicleId" />
                 </div>
             </div>
         </div>
@@ -74,8 +74,8 @@
                 <div class="form-group">
                     <label for="service-type">Service Type:</label>
                     <InputSelect class="form-select" id="service-type"
-                                 ValueExpression="@(()=>serviceReport.ServiceType)"
-                                 Value="@serviceReport.ServiceType"
+                                 ValueExpression="@(()=>_serviceReport.ServiceType)"
+                                 Value="@_serviceReport.ServiceType"
                                  ValueChanged="@((ServiceType serviceType) => HandleOnServiceTypeChange(serviceType))">
                         <option selected value="0">Select vehicle</option>
                         @foreach (var serviceType in Enum.GetValues(typeof(ServiceType)))
@@ -83,14 +83,14 @@
                             <option value="@serviceType">@serviceType</option>
                         }
                     </InputSelect>
-                    <ValidationMessage For="() => serviceReport.ServiceType" />
+                    <ValidationMessage For="() => _serviceReport.ServiceType" />
                 </div>
             </div>
             <div class="col-6">
                 <div class="form-group">
                     <label for="vehicle-hours">Vehicle hours:</label>
-                    <NumberInput @bind-Value="serviceReport.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
-                    <ValidationMessage For="() => serviceReport.VehicleHours" />
+                    <NumberInput @bind-Value="_serviceReport.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
+                    <ValidationMessage For="() => _serviceReport.VehicleHours" />
                 </div>
             </div>
         </div>
@@ -117,9 +117,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (serviceReport.Employees != null)
+                    @if (_serviceReport.Employees != null)
                     {
-                        @foreach (var employee in serviceReport.Employees.Where(x => !x.IsDeleted))
+                        @foreach (var employee in _serviceReport.Employees.Where(x => !x.IsDeleted))
                         {
                             <tr>
                                 <td>
@@ -218,9 +218,9 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @if (serviceReport.Parts != null)
+                    @if (_serviceReport.Parts != null)
                     {
-                        @foreach (var part in serviceReport.Parts.Where(x => !x.IsDeleted))
+                        @foreach (var part in _serviceReport.Parts.Where(x => !x.IsDeleted))
                         {
                             <tr>
                                 <td>
@@ -342,13 +342,13 @@
             <div class="col-6">
                 <div class="form-group">
                     <label for="instruction">Instruction:</label>
-                    <InputText @bind-Value="serviceReport.Instruction" type="text" class="form-control" id="instruction"></InputText>
+                    <InputText @bind-Value="_serviceReport.Instruction" type="text" class="form-control" id="instruction"></InputText>
                 </div>
             </div>
             <div class="col-6">
                 <div class="form-group">
                     <label for="detailed-service-report">Detailed Service Report:</label>
-                    <InputTextArea @bind-Value="serviceReport.DetailedServiceReport" type="text" class="form-control" id="detailed-service-report"></InputTextArea>
+                    <InputTextArea @bind-Value="_serviceReport.DetailedServiceReport" type="text" class="form-control" id="detailed-service-report"></InputTextArea>
                 </div>
             </div>
         </div>
@@ -368,14 +368,14 @@
 
 <Modal @ref="salesOrderNumberModal" Title="Enter sales order number.">
     <BodyTemplate>
-        <EditForm Model="serviceReport" OnValidSubmit="SaveAndGenerateServiceReport">
+        <EditForm Model="_serviceReport" OnValidSubmit="SaveAndGenerateServiceReport">
             <DataAnnotationsValidator />
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
                         <label for="son">Sales order number:</label>
-                        <InputText @bind-Value=serviceReport.SalesOrderNumber class="form-control" id="son" />
-                        <ValidationMessage For="() => serviceReport.SalesOrderNumber" />
+                        <InputText @bind-Value=_serviceReport.SalesOrderNumber class="form-control" id="son" />
+                        <ValidationMessage For="() => _serviceReport.SalesOrderNumber" />
                     </div>
                 </div>
             </div>
