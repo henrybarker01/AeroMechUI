@@ -1,0 +1,70 @@
+﻿@typeparam TItem
+
+@using System.Globalization
+@using BlazorBootstrap
+
+<div class="container-fluid" style="height:90vh;">
+    <div class="row">
+        <div class="col-6 header">
+            <h1>@Title</h1>
+            @if (ShowAddButton)
+            {
+                <span class="add-icon">
+                    <Icon Name="IconName.PlusSquare" Size="IconSize.x2" Color="IconColor.Primary" @onclick="OnAdd" Style="cursor: pointer" />
+                </span>
+            }
+        </div>
+        <div class="col-1"></div>
+        <div class="col-5 text-right"></div>
+    </div>
+
+    <div class="row">
+        <div class="mb-3">
+            <input type="text" class="form-control" placeholder="Search..." @bind-value="SearchTerm" @bind-value:event="oninput" />
+        </div>
+    </div>
+
+    <div class="row" style="height:70vh;">
+        <div class="table-container" style="height:100%; overflow-y:auto; position:relative;">
+            @if (IsLoading)
+            {
+                <div class="d-flex justify-content-center align-items-center" style="position:absolute; inset:0; background:rgba(255,255,255,0.6)">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            }
+
+            <table class="table table-striped table-hover">
+                <thead style="position: sticky; top: 0; background-color: white; z-index: 2;">
+                    @HeaderTemplate
+                </thead>
+                <tbody>
+                    @if (PagedItems?.Any() == true)
+                    {
+                        @foreach (var item in PagedItems)
+                        {
+                            @RowTemplate(item)
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="999" class="text-center text-muted py-4">No results</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-4">
+            <div class="mt-2 text-center">
+                <Icon @onclick="PreviousPage" Name="IconName.ChevronLeft" Size="IconSize.x5" Color="IconColor.Primary" Style="cursor: pointer; margin-right:10px" />
+                <span class="page-numbers">Page @CurrentPage of @TotalPages</span>
+                <Icon @onclick="NextPage" Name="IconName.ChevronRight" Size="IconSize.x5" Color="IconColor.Primary" Style="cursor: pointer; margin-left:10px" />
+            </div>
+        </div>
+    </div>
+</div>

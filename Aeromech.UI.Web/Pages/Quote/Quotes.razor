@@ -1,30 +1,23 @@
 ﻿@page "/quotes"
+@using AeroMech.UI.Web.Pages.ListTemplate
 @using BlazorBootstrap
+@using AeroMech.Models
+@using AeroMech.UI.Web.Services
 @using System.Globalization
+@inject NavigationManager Nav
+@inject ServiceReportService Service
+@inject LoaderService Loader
 
 <PageTitle>Quotes</PageTitle>
 
-<div class="container-fluid">
-
-    <div class="row">
-        <div class="col-6 header">
-            <h1>Quotes</h1>
-            <span class="add-icon">
-                <Icon Name="IconName.PlusSquare" Size="IconSize.x2" Color="IconColor.Primary" @onclick="NavigateToAddQuote" Style="cursor: pointer" />
-            </span>
-        </div>
-
-        <div class="col-1">
-        </div>
-        <div class="col-5 text-right"></div>
-    </div>
-</div>
-<div class="mb-3">
-    <input type="text" class="form-control" placeholder="Search..."
-           @oninput="(e) => SearchTerm = e.Value.ToString()" />
-</div>
-<table class="table">
-    <thead>
+<ListTemplate TItem="ServiceReportModel"
+          Title="Quotes"
+          Items="quotes"
+          PageSize="15"
+          SearchPredicate="MatchesSearch"
+          IsLoading="isLoading"
+          OnAdd="NavigateToAddQuote">
+    <HeaderTemplate>
         <tr>
             <th>Quote Number</th>
             <th>Report Number</th>
@@ -37,25 +30,23 @@
             <th>Status</th>
             <th>Action</th>
         </tr>
-    </thead>
-    <tbody>
-        @foreach (var quote in FilteredQuotes)
-        {
-            <tr>
-                <td>@($"AEM {@quote.QuoteNumber}")</td>
-                <td>@($"AEM {quote.ServiceReportNumber}")</td>
-                <td>@quote.ReportDate.ToString("dd/MM/yyyy")</td>
-                <td>@quote.Vehicle?.SerialNumber</td>
-                <td style="max-width:400px">@quote.Instruction</td>
-                <td>@quote.Client?.Name</td>
-                <td>@quote.ServiceType</td>
-                <td>@CalcuateTotalReportValue(quote).ToString("C", CultureInfo.CurrentCulture)</td>
-                <td>@(quote.IsComplete == true ? "Complete" : "Incomplete")</td>
-                <td>
-                     <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />
-                    <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => PrintQuote(quote.Id)" Style="cursor: pointer" />
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    </HeaderTemplate>
+
+    <RowTemplate Context="q">
+        <tr>
+            <td>@($"AEM {q.QuoteNumber}")</td>
+            <td>@($"AEM {q.ServiceReportNumber}")</td>
+            <td>@q.ReportDate.ToString("dd/MM/yyyy")</td>
+            <td>@q.Vehicle?.SerialNumber</td>
+            <td style="max-width:400px">@q.Instruction</td>
+            <td>@q.Client?.Name</td>
+            <td>@q.ServiceType</td>
+            <td>@CalculateTotal(q).ToString("C", CultureInfo.CurrentCulture)</td>
+            <td>@(q.IsComplete == true ? "Complete" : "Incomplete")</td>
+            <td>
+                <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(q.Id)" Style="cursor: pointer" />
+                <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => PrintQuote(q.Id)" Style="cursor: pointer" />
+            </td>
+        </tr>
+    </RowTemplate>
+</ListTemplate>

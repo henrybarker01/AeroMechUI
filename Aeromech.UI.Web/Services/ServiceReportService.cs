@@ -385,8 +385,11 @@ namespace AeroMech.UI.Web.Services
             return Document.Create(_quote.Compose).GeneratePdf();
         }
 
-        public async Task<List<ServiceReportModel>> GetRecentServiceReports(DateTime fromDate)
+        public async Task<List<ServiceReportModel>> GetRecentServiceReports(DateTime fromDate = default)
         {
+            if (fromDate == default)
+                fromDate = DateTime.MinValue;
+
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
                  .Include(x => x.Vehicle)
@@ -397,13 +400,15 @@ namespace AeroMech.UI.Web.Services
                  .ThenInclude(x => x.Vehicles)
                  .Where(x => x.ReportDate >= fromDate && x.Client.IsDeleted == false)
                  .OrderByDescending(x => x.ReportDate)
-
                  .ToListAsync();
             return _mapper.Map<IEnumerable<ServiceReportModel>>(serviceReports).ToList();
         }
 
-        public async Task<List<ServiceReportModel>> GetRecentQuotes(DateTime fromDate)
+        public async Task<List<ServiceReportModel>> GetRecentQuotes(DateTime fromDate = default)
         {
+            if (fromDate == default)
+                fromDate = DateTime.MinValue;
+
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
                .Include(x => x.Vehicle)

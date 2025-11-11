@@ -1,30 +1,20 @@
 ﻿@page "/service-reports"
+
+@using AeroMech.UI.Web.Pages.ListTemplate;
+@using System.Globalization;
+@using AeroMech.Models;
 @using BlazorBootstrap
-@using System.Globalization
 
 <PageTitle>Service Reports</PageTitle>
 
-<div class="container-fluid">
-
-    <div class="row">
-        <div class="col-6 header">
-            <h1>Service Reports</h1>
-            <span class="add-icon">
-                <Icon Name="IconName.PlusSquare" Size="IconSize.x2" Color="IconColor.Primary" @onclick="NavigateToAddServiceReport" Style="cursor: pointer" />
-            </span>
-        </div>
-
-        <div class="col-1">
-        </div>
-        <div class="col-5 text-right"></div>
-    </div>
-</div>
-<div class="mb-3">
-    <input type="text" class="form-control" placeholder="Search..."
-           @oninput="(e) => SearchTerm = e.Value.ToString()" />
-</div>
-<table class="table">
-    <thead>
+<ListTemplate TItem="ServiceReportModel"
+              Title="Service Reports"
+              Items="serviceReports"
+              PageSize="15"
+              SearchPredicate="MatchesSearch"
+              IsLoading="isLoading"
+              OnAdd="NavigateToAdd">
+    <HeaderTemplate>
         <tr>
             <th>Report Number</th>
             <th>Quote Number</th>
@@ -38,26 +28,24 @@
             <th>Status</th>
             <th>Action</th>
         </tr>
-    </thead>
-    <tbody>
-        @foreach (var serviceReport in FilteredServiceReports)
-        {
-            <tr>
-                <td>@($"AEM {@serviceReport.ServiceReportNumber}")</td>
-                <td>@($"AEM {@serviceReport.QuoteNumber}")</td>
-                <td>@serviceReport.ReportDate.ToString("dd/MM/yyyy")</td>
-                <td>@serviceReport.SalesOrderNumber</td>
-                <td>@serviceReport.Vehicle?.SerialNumber</td>
-                <td style="max-width:400px">@serviceReport.Instruction</td>
-                <td>@serviceReport.Client?.Name</td>
-                <td>@serviceReport.ServiceType</td>
-                <td>@CalcuateTotalReportValue(serviceReport).ToString("C", CultureInfo.CurrentCulture)</td>
-                <td>@(serviceReport.IsComplete == true ? "Complete" : "Incomplete")</td>
-                <td>
-                     <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => EditServiceReport(serviceReport.Id)" Style="cursor: pointer" />
-                    <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => PrintServiceReport(serviceReport.Id)" Style="cursor: pointer" />
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    </HeaderTemplate>
+
+    <RowTemplate Context="sr">
+        <tr>
+            <td>@($"AEM {sr.ServiceReportNumber}")</td>
+            <td>@($"AEM {sr.QuoteNumber}")</td>
+            <td>@sr.ReportDate.ToString("dd/MM/yyyy")</td>
+            <td>@sr.SalesOrderNumber</td>
+            <td>@sr.Vehicle?.SerialNumber</td>
+            <td style="max-width:400px">@sr.Instruction</td>
+            <td>@sr.Client?.Name</td>
+            <td>@sr.ServiceType</td>
+            <td>@CalculateTotal(sr).ToString("C", CultureInfo.CurrentCulture)</td>
+            <td>@(sr.IsComplete ? "Complete" : "Incomplete")</td>
+            <td>
+                <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => Edit(sr.Id)" Style="cursor: pointer" />
+                <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => Print(sr.Id)" Style="cursor: pointer" />
+            </td>
+        </tr>
+    </RowTemplate>
+</ListTemplate>

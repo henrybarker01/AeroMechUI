@@ -8,10 +8,14 @@ main {
     flex: 1;
 }
 
+.main-view-port {
+    /*max-height: 100vh;*/
+}
+
 .sidebar {
     background-image: linear-gradient(0deg, rgb(5, 39, 103) 40%, #447EE2 90%);
 }
- 
+
 .top-row {
     font-weight: bold;
     background-color: #447EE2;

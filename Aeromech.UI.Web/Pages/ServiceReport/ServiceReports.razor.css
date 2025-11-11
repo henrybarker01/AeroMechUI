@@ -9,3 +9,8 @@
 .edit-rate {
     margin-left: 10px;
 }
+
+.page-numbers {
+    vertical-align: text-bottom;
+    line-height: 20px;
+}
