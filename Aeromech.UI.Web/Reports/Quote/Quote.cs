@@ -285,11 +285,9 @@ namespace AeroMech.API.Reports
                     table.Cell().Element(CellStyle).Text("Labour");
                     table.Cell().Element(CellStyle).Text("EA");
                     table.Cell().Element(CellStyle).AlignRight().Text(serviceReport.ServiceType);
-                    table.Cell().Element(CellStyle).AlignRight().Text(x.Rate.ToString("C", CultureInfo.CurrentCulture));//serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Rate)?.ToString("C", CultureInfo.CurrentCulture)
+                    table.Cell().Element(CellStyle).AlignRight().Text(x.Rate.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text((x.Hours * x.Rate)?.ToString("C", CultureInfo.CurrentCulture));
                 });
-
-
 
                 static IContainer CellFlatStyle(IContainer container)
                 {

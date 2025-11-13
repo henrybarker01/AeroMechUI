@@ -45,13 +45,11 @@ namespace AeroMech.API.Reports
             var titleStyle = TextStyle.Default.FontSize(22).Bold().FontColor(Colors.Black);
             container.Row(row =>
             {
-
                 var path = Path.Combine(Environment.CurrentDirectory, @"Reports\Images\", "AreoMechSmall.png");
                 row.ConstantItem(200).Image(path); 
 
                 row.RelativeItem().ContentFromRightToLeft().Column(column =>
                 {
-
                     column.Item().Text($"Field Service Report").Style(titleStyle);
                     column.Item().Text(text =>
                     {
@@ -63,7 +61,6 @@ namespace AeroMech.API.Reports
 
         void ComposeContent(IContainer container)
         {
-
             container.PaddingVertical(20).Column(column =>
             {
                 column.Spacing(5);
@@ -110,12 +107,10 @@ namespace AeroMech.API.Reports
                     row.RelativeItem().Text("Customers Signature");
                 });
 
-
                 column.Item().PaddingTop(10).Row(row =>
                 {
                     row.RelativeItem().Text("We accept that the work detailed above is satisfactory, and the\r\nlabour and materials reflected are correct.").FontSize(10);
                     row.ConstantItem(50);
-
 
                     row.RelativeItem().Column(col =>
                     {
@@ -170,9 +165,7 @@ namespace AeroMech.API.Reports
                     columns.RelativeColumn(1);
                     columns.RelativeColumn(1);
                     columns.RelativeColumn(1);
-                   // columns.RelativeColumn(1);
                     columns.RelativeColumn(1);
-
                 });
                 table.Header(header =>
                 {
@@ -181,7 +174,6 @@ namespace AeroMech.API.Reports
                     header.Cell().Element(CellStyle).AlignRight().Text("C.P.U.");
                     header.Cell().Element(CellStyle).AlignRight().Text("Qty");
                     header.Cell().Element(CellStyle).AlignRight().Text("Actual");
-                   // header.Cell().Element(CellStyle).AlignRight().Text("Disc");
                     header.Cell().Element(CellStyle).AlignRight().Text("Total");
 
                     static IContainer CellStyle(IContainer container)
@@ -194,16 +186,7 @@ namespace AeroMech.API.Reports
                 {
                     return container.DefaultTextStyle(x => x.FontSize(10)).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
-				//foreach (var part in serviceReport.AdHockParts.Where(x => !x.IsDeleted))
-				//{
-				//	table.Cell().Element(CellStyle).Text(part.PartCode);
-				//	table.Cell().Element(CellStyle).Text(part.PartDescription);
-				//	table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice.ToString("C", CultureInfo.CurrentCulture));
-				//	table.Cell().Element(CellStyle).AlignRight().Text(part.Qty);
-				//	table.Cell().Element(CellStyle).AlignRight().Text((part.CostPrice * part.Qty).ToString("C", CultureInfo.CurrentCulture));
-				//	table.Cell().Element(CellStyle).AlignRight().Text(part.Discount.ToString("C", CultureInfo.CurrentCulture));
-				//	table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(part.CostPrice, part.Qty, part.Discount).ToString("C", CultureInfo.CurrentCulture));
-				//}
+				
 				foreach (var part in serviceReport.Parts.Where(x => !x.IsDeleted))
                 {
                     table.Cell().Element(CellStyle).Text(part.PartCode);
@@ -211,7 +194,6 @@ namespace AeroMech.API.Reports
                     table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text(part.QTY);
                     table.Cell().Element(CellStyle).AlignRight().Text((part.CostPrice * part.QTY).ToString("C", CultureInfo.CurrentCulture));
-                    //table.Cell().Element(CellStyle).AlignRight().Text(part.Discount.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(Convert.ToDouble(part.CostPrice), part.QTY, part.Discount).ToString("C", CultureInfo.CurrentCulture));
                 }
 			});
@@ -229,7 +211,6 @@ namespace AeroMech.API.Reports
                     columns.RelativeColumn(2);
                     columns.RelativeColumn(2);
                     columns.RelativeColumn(2);
-                    //columns.RelativeColumn(1);
                     columns.RelativeColumn(2);
                 });
                 table.Header(header =>
@@ -240,7 +221,6 @@ namespace AeroMech.API.Reports
                     header.Cell().Element(CellStyle).AlignRight().Text("Rate");
                     header.Cell().Element(CellStyle).AlignRight().Text("Hours");
                     header.Cell().Element(CellStyle).AlignRight().Text("Actual");
-                    //header.Cell().Element(CellStyle).AlignRight().Text("Disc");
                     header.Cell().Element(CellStyle).AlignRight().Text("Total");
 
                     static IContainer CellStyle(IContainer container)
@@ -260,9 +240,8 @@ namespace AeroMech.API.Reports
                     table.Cell().Element(CellStyle).Text(serviceReport.ServiceType);
                     table.Cell().Element(CellStyle).Text(employee.DutyDate.ToString("dd/MM/yyyy"));
                     table.Cell().Element(CellStyle).AlignRight().Text(employee.Rate.ToString("C", CultureInfo.CurrentCulture));
-                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Hours?.ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(employee.Hours?.ToString());
                     table.Cell().Element(CellStyle).AlignRight().Text((employee.Rate * employee.Hours)?.ToString("C", CultureInfo.CurrentCulture));
-                    //table.Cell().Element(CellStyle).AlignRight().Text(employee.Discount?.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(employee.Rate, employee.Hours, employee.Discount).ToString("C", CultureInfo.CurrentCulture));
                 }
             });
