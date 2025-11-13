@@ -1,8 +1,4 @@
 ﻿@page "/clients"
-@using AeroMech.Models
-@using BlazorBootstrap
-@using Newtonsoft.Json
-@using System.Globalization
 
 <PageTitle>Clients</PageTitle>
 
@@ -129,7 +125,49 @@
     </BodyTemplate>
 </Modal>
 
-<div class="container-fluid">
+<ListTemplate TItem="ClientModel"
+              Title="Clients"
+              Items="clients"
+              PageSize="15"
+              SearchPredicate="MatchesSearch"
+              ShowAddButton="true"
+              OnAdd="OnShowModalClick">
+    <HeaderTemplate>
+        <tr>
+            <th>Name</th>
+            <th>Contact Person</th>
+            <th>Contact Number</th>
+            <th>Contact Email</th>
+            <th>Contact Birth Date</th>
+            <th class="rate">Weekdays</th>
+            <th class="rate">Weekdays Overtime</th>
+            <th class="rate">Overtime</th>
+            <th class="rate">Sundays & Public Holidays</th>
+            <th>Action</th>
+        </tr>
+    </HeaderTemplate>
+    <RowTemplate Context="client">
+        <tr>
+            <td>@client.Name</td>
+            <td>@client.ContactPersonName</td>
+            <td>@client.ContactPersonNumber</td>
+            <td>@client.ContactPersonEmail</td>
+            <td>@client.ContactPersonBirthDate?.ToString("dd/MM/yyyy")</td>
+            <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
+            <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
+            <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
+            <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
+            <td>
+                <Icon Name="IconName.BuildingFillDash" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteClient(client)" Class="me-2" Style="cursor: pointer" />
+                <Icon Name="IconName.BuildingFillGear" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditClientClick(client)" Style="cursor: pointer" />
+            </td>
+        </tr>
+    </RowTemplate>
+</ListTemplate>
+
+
+
+@* <div class="container-fluid">
     <div class="row">
         <div class="col-6 header">
             <h1>Clients</h1>
@@ -141,9 +179,9 @@
         </div>
         <div class="col-5 text-right"></div>
     </div>
-</div>
+</div> *@
 
-
+@* 
 <div class="mb-3">
     <input type="text" class="form-control" placeholder="Search..."
            @oninput="(e) => SearchTerm = e.Value.ToString()" />
@@ -186,4 +224,4 @@
         }
     </tbody>
 </table>
-
+ *@

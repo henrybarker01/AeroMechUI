@@ -1,21 +1,13 @@
 ﻿@page "/quotes"
-@using AeroMech.UI.Web.Pages.ListTemplate
-@using BlazorBootstrap
-@using AeroMech.Models
-@using AeroMech.UI.Web.Services
-@using System.Globalization
-@inject NavigationManager Nav
-@inject ServiceReportService Service
-@inject LoaderService Loader
 
 <PageTitle>Quotes</PageTitle>
 
 <ListTemplate TItem="ServiceReportModel"
           Title="Quotes"
-          Items="quotes"
+          Items="_quotes"
           PageSize="15"
           SearchPredicate="MatchesSearch"
-          IsLoading="isLoading"
+          ShowAddButton="true"
           OnAdd="NavigateToAddQuote">
     <HeaderTemplate>
         <tr>

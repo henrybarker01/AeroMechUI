@@ -7,16 +7,21 @@ namespace AeroMech.UI.Web.Pages.Client
 {
     public partial class Clients
     {
-
-        [Inject] IConfiguration configuration { get; set; }
         [Inject] ClientService clientService { get; set; }
         [Inject] protected LoaderService _loaderService { get; set; }
         [Inject] protected ConfirmationService _confirmationService { get; set; }
 
-        private string title = "";
-
+        private string title = string.Empty;
         private Modal modal = default!;
         private ClientModel client = new ClientModel();
+
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await GetClients();
+            }
+        }
 
         //TODO - HB - This really is done simpleton way
         private ClientRateModel clientRatesWeekdays = new ClientRateModel()
@@ -38,20 +43,14 @@ namespace AeroMech.UI.Web.Pages.Client
 
         private List<ClientModel>? clients = new List<ClientModel>();
 
-        private string SearchTerm { get; set; } = string.Empty;
-        private IEnumerable<ClientModel> FilteredClients =>
-        clients.Where(client =>
-            string.IsNullOrEmpty(SearchTerm) ||
-            client.Name.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            client.ContactPersonName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
-        );
-
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        private bool MatchesSearch(ClientModel client, string term)
         {
-            if (firstRender)
-            { 
-                await GetClients(); 
-            }
+            if (string.IsNullOrWhiteSpace(term)) return true;
+            var t = term.Trim();
+
+            return
+                (client.Name ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                (client.ContactPersonName ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase);
         }
 
         private async Task OnShowModalClick()
@@ -121,7 +120,6 @@ namespace AeroMech.UI.Web.Pages.Client
                     ];
                 }
 
-
                 _loaderService.ShowLoader();
                 var result = await clientService.EditClient(client);
                 _loaderService.HideLoader();
@@ -130,7 +128,6 @@ namespace AeroMech.UI.Web.Pages.Client
                     await OnHideModalClick();
                 }
             }
-
         }
 
         private async Task GetClients()
@@ -151,7 +148,6 @@ namespace AeroMech.UI.Web.Pages.Client
                 clients?.Remove(client);
                 _loaderService.HideLoader();
             }
-
         }
     }
 }

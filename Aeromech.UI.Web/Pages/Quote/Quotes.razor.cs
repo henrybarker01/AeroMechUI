@@ -10,8 +10,7 @@ namespace AeroMech.UI.Web.Pages.Quote
         [Inject] private ServiceReportService _serviceReportService { get; set; }
         [Inject] private LoaderService _loaderService { get; set; }
 
-        private List<ServiceReportModel> quotes = new();
-        private bool isLoading;
+        private List<ServiceReportModel> _quotes = new();
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -21,11 +20,9 @@ namespace AeroMech.UI.Web.Pages.Quote
 
         private async Task GetQuotes()
         {
-            isLoading = true;
             _loaderService.ShowLoader();
-            quotes = await _serviceReportService.GetRecentQuotes();
+            _quotes = await _serviceReportService.GetRecentQuotes();
             _loaderService.HideLoader();
-            isLoading = false;
             await InvokeAsync(StateHasChanged);
         }
 

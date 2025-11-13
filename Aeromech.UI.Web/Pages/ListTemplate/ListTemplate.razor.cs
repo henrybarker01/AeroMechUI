@@ -4,18 +4,31 @@ namespace AeroMech.UI.Web.Pages.ListTemplate
 {
     public partial class ListTemplate<TItem>
     {
-        [Parameter] public string Title { get; set; } = "Items";
-        [Parameter] public IEnumerable<TItem>? Items { get; set; }
+        [EditorRequired]
+        [Parameter] public string Title { get; set; }
+
+        [EditorRequired]
+        [Parameter] public IEnumerable<TItem> Items { get; set; }
+
         [Parameter] public int PageSize { get; set; } = 15;
+
+        [EditorRequired]
         [Parameter] public RenderFragment? HeaderTemplate { get; set; }
-        [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
-        [Parameter] public Func<TItem, string, bool>? SearchPredicate { get; set; }
+
+        [EditorRequired]
+        [Parameter] public RenderFragment<TItem> RowTemplate { get; set; }
+
+        [EditorRequired]
+        [Parameter] public Func<TItem, string, bool> SearchPredicate { get; set; }
+
         [Parameter] public EventCallback OnAdd { get; set; }
-        [Parameter] public bool ShowAddButton { get; set; } = true;
-        [Parameter] public bool IsLoading { get; set; } = false;
+
+        [EditorRequired]
+        [Parameter] public bool ShowAddButton { get; set; }
 
 
         private string _searchTerm = string.Empty;
+         
         [Parameter]
         public string SearchTerm
         {
