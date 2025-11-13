@@ -8,18 +8,14 @@ namespace AeroMech.UI.Web.Pages.Part
 {
     public partial class Part
     {
+        [Inject] private PartsService _partsService { get; set; }
+        [Inject] private LoaderService _loaderService { get; set; }
+        [Inject] private ConfirmationService _confirmationService { get; set; }
 
-        [Inject] PartsService partsService { get; set; }
-        [Inject] protected LoaderService _loaderService { get; set; }
-        [Inject] protected ConfirmationService _confirmationService { get; set; }
-
-        private string title = "";
-
-        private Modal modal = default!;
-        private Modal rateModal = default!;
-
-        private PartModel part = new PartModel();
-        private List<PartModel>? parts = new List<PartModel>();
+        private string _title = "";
+        private Modal _modal = default!;      
+        private PartModel _part = new PartModel();
+        private List<PartModel>? _parts = new List<PartModel>();
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -30,47 +26,49 @@ namespace AeroMech.UI.Web.Pages.Part
             }
         }
 
-        private string SearchTerm { get; set; } = string.Empty;
-        private IEnumerable<PartModel> FilteredParts =>
-        parts.Where(part =>
-            string.IsNullOrEmpty(SearchTerm) ||
-            part.PartCode.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            part.PartDescription.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
-        );
+        private bool MatchesSearch(PartModel part, string term)
+        {
+            if (string.IsNullOrWhiteSpace(term)) return true;
+            var t = term.Trim();
+
+            return
+                (part.PartCode ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                (part.PartDescription ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase);
+        }
 
         private async Task OnAddPartClick()
         {
-            title = "Add Part";
-            part = new PartModel();
-            part.Warehouse = new WarehouseModel()
+            _title = "Add Part";
+            _part = new PartModel();
+            _part.Warehouse = new WarehouseModel()
             {
                 Id = 0,
                 WarehouseCode = "JH"
             };
-            await modal.ShowAsync();
+            await _modal.ShowAsync();
         }
 
         private async Task OnEditPartClick(PartModel prt)
         {
-            title = "Edit Part";
-            part = prt;
-            await modal.ShowAsync();
+            _title = "Edit Part";
+            _part = prt;
+            await _modal.ShowAsync();
         }
 
         private async Task OnHideModalClick()
         {
             await GetParts();
-            await modal.HideAsync();
+            await _modal.HideAsync();
             await InvokeAsync(StateHasChanged);
         }
 
         private async void AddNewPart()
         {
             _loaderService.ShowLoader();
-            var result = await partsService.AddNewPart(part);
+            var result = await _partsService.AddNewPart(_part);
             if (result != null)
             {
-                part = new PartModel();
+                _part = new PartModel();
                 await OnHideModalClick();
             }
             _loaderService.HideLoader();
@@ -79,9 +77,7 @@ namespace AeroMech.UI.Web.Pages.Part
         private async Task GetParts()
         {
             _loaderService.ShowLoader();
-            parts = await partsService.GetParts();
-           
-               
+            _parts = await _partsService.GetParts();
             _loaderService.HideLoader();
         }
 
@@ -91,8 +87,8 @@ namespace AeroMech.UI.Web.Pages.Part
             if (confirmed)
             {
                 _loaderService.ShowLoader();
-                await partsService.DeletePart(part);
-                parts?.Remove(prt);
+                await _partsService.DeletePart(_part);
+                _parts?.Remove(prt);
                 _loaderService.HideLoader();
             }
         }

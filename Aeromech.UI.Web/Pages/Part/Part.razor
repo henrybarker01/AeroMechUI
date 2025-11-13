@@ -1,76 +1,74 @@
 ﻿@page "/parts"
-@using BlazorBootstrap
-@using System.Globalization
 
 <PageTitle>Parts</PageTitle>
 
-<Modal @ref="modal" Title="@title">
+<Modal @ref="_modal" Title="@_title">
     <BodyTemplate>
-        <EditForm Model="@part" OnValidSubmit="@AddNewPart">
+        <EditForm Model="@_part" OnValidSubmit="@AddNewPart">
             <DataAnnotationsValidator />
             <ValidationSummary />
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
                         <label for="part-number">Part Number:</label>
-                        <InputText @bind-Value="part.PartCode" type="text" class="form-control" id="part-number"></InputText>
-                        <ValidationMessage For="() => part.PartCode" />
+                        <InputText @bind-Value="_part.PartCode" type="text" class="form-control" id="part-number"></InputText>
+                        <ValidationMessage For="() => _part.PartCode" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="description">Description:</label>
-                        <InputText @bind-Value="part.PartDescription" type="text" class="form-control" id="description"></InputText>
-                        <ValidationMessage For="() => part.PartDescription" />
+                        <InputText @bind-Value="_part.PartDescription" type="text" class="form-control" id="description"></InputText>
+                        <ValidationMessage For="() => _part.PartDescription" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="warehouse">Warehouse:</label>
-                        <InputText @bind-Value="part.Warehouse.WarehouseCode" type="text" class="form-control" id="warehouse"></InputText>
-                        <ValidationMessage For="() => part.Warehouse.WarehouseCode" />
+                        <InputText @bind-Value="_part.Warehouse.WarehouseCode" type="text" class="form-control" id="warehouse"></InputText>
+                        <ValidationMessage For="() => _part.Warehouse.WarehouseCode" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="bin">Bin:</label>
-                        <InputText @bind-Value="part.Bin" type="text" class="form-control" id="bin"></InputText>
-                        <ValidationMessage For="() => part.Bin" />
+                        <InputText @bind-Value="_part.Bin" type="text" class="form-control" id="bin"></InputText>
+                        <ValidationMessage For="() => _part.Bin" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="supplier-code">Supplier Code:</label>
-                        <InputText @bind-Value="part.SupplierCode" type="text" class="form-control" id="supplier-code"></InputText>
-                        <ValidationMessage For="() => part.SupplierCode" />
+                        <InputText @bind-Value="_part.SupplierCode" type="text" class="form-control" id="supplier-code"></InputText>
+                        <ValidationMessage For="() => _part.SupplierCode" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="product-class">Product Class:</label>
-                        <InputText @bind-Value="part.ProductClass" type="text" class="form-control" id="product-class"></InputText>
-                        <ValidationMessage For="() => part.ProductClass" />
+                        <InputText @bind-Value="_part.ProductClass" type="text" class="form-control" id="product-class"></InputText>
+                        <ValidationMessage For="() => _part.ProductClass" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="cycle-count">Cycle Count:</label>
-                        <NumberInput @bind-Value="part.CycleCount" type="text" class="form-control" id="cycle-count"></NumberInput>
-                        <ValidationMessage For="() => part.CycleCount" />
+                        <NumberInput @bind-Value="_part.CycleCount" type="text" class="form-control" id="cycle-count"></NumberInput>
+                        <ValidationMessage For="() => _part.CycleCount" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="qty-on-hand">Qty On Hand:</label>
-                        <NumberInput @bind-Value="part.QtyOnHand" class="form-control" id="qty-on-hand"></NumberInput>
-                        <ValidationMessage For="() => part.QtyOnHand" />
+                        <NumberInput @bind-Value="_part.QtyOnHand" class="form-control" id="qty-on-hand"></NumberInput>
+                        <ValidationMessage For="() => _part.QtyOnHand" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="cost-price">Cost Price:</label>
-                        <NumberInput TValue="double" @bind-Value="@part.CostPrice" class="form-control" id="cost-price" Step=".01" />
-                        <ValidationMessage For="() => part.CostPrice" /> 
+                        <NumberInput TValue="double" @bind-Value="@_part.CostPrice" class="form-control" id="cost-price" Step=".01" />
+                        <ValidationMessage For="() => _part.CostPrice" /> 
                     </div>
                 </div>
                 <div class="row">
@@ -89,7 +87,51 @@
     </BodyTemplate>
 </Modal>
 
-<div class="container-fluid">
+<ListTemplate TItem="PartModel"
+              Title="Parts"
+              Items="_parts"
+              PageSize="15"
+              SearchPredicate="MatchesSearch"
+              ShowAddButton="true"
+              OnAdd="OnAddPartClick">
+    <HeaderTemplate>
+        <tr>
+            <th>Part Number</th>
+            <th>Description</th>
+            <th>Warehouse</th>
+            <th>Bin</th>
+            <th>Supplier Code</th>
+            <th>Product Class</th>
+            <th>Cycle Count</th>
+            <th>Qty On Hand</th>
+            <th>Cost Price</th>
+            <th>Total Value</th>
+            <th>Action</th>
+        </tr>
+    </HeaderTemplate>
+    <RowTemplate Context="part">
+        <tr>
+            <td>@part.PartCode</td>
+            <td class="part-description">@part.PartDescription</td>
+            <td>@part.Warehouse?.WarehouseCode</td>
+            <td>@part.Bin</td>
+            <td>@part.SupplierCode</td>
+            <td>@part.ProductClass</td>
+            <td>@part.CycleCount</td>
+            <td>@part.QtyOnHand</td>
+            <td>@part.CostPrice.ToString("C", CultureInfo.CurrentCulture)</td>
+            <td>@((part.QtyOnHand * part.CostPrice).ToString("C", CultureInfo.CurrentCulture))</td>
+            <td>
+                <div style="min-width: 65px">
+                    <Icon Name="IconName.Trash3" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeletePart(part)" Class="me-2" Style="cursor: pointer" />
+                    <Icon Name="IconName.Pencil" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditPartClick(part)" Style="cursor: pointer" />
+                </div>
+            </td>
+        </tr>
+    </RowTemplate>
+</ListTemplate>
+
+@* <div class="container-fluid">
     <div class="row">
         <div class="col-6 header">
             <h1>Parts</h1>
@@ -146,4 +188,4 @@
                 </tr>
             }
         </tbody>
-    </table>
+    </table> *@

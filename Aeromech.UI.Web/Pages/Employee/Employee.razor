@@ -1,123 +1,92 @@
 ﻿@page "/employees"
-@using AeroMech.Models
-@using BlazorBootstrap
-@using Newtonsoft.Json
 
 <PageTitle>Employees</PageTitle>
-@*
-<Modal @ref="rateModal" Title="Employee Rates">
-	<BodyTemplate>
-		<Grid @ref="employeeRatesGrid" TItem="EmployeeRateModel" class="table table-hover table-bordered table-striped" Data="employeeRates">
-			<GridColumn TItem="EmployeeRateModel" HeaderText="Effective Date" PropertyName="EffectiveDate">
-				@context.EffectiveDate
-			</GridColumn>
-			<GridColumn TItem="EmployeeRateModel" HeaderText="Rate" PropertyName="Rate">
-				@context.Rate
-			</GridColumn>
-			<GridColumn TItem="EmployeeRateModel" HeaderText="Active" PropertyName="IsActive">
-				@context.IsActive
-			</GridColumn>
-		</Grid>
-	</BodyTemplate>
-	<FooterTemplate>
-		<Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
-		<Button Color="ButtonColor.Primary" @onclick="AddNewEmployee">Save changes</Button>
-	</FooterTemplate>
-
-</Modal>  *@
 
 <Modal @ref="modal" Title="@title">
     <BodyTemplate>
-        <EditForm Model="@employee" OnValidSubmit="@AddNewEmployee">
+        <EditForm Model="@_employee" OnValidSubmit="@AddNewEmployee">
             <DataAnnotationsValidator />
             <ValidationSummary />
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
                         <label for="title">Title</label>
-                        <select class="form-select" @bind="employee.Title" aria-label="Select Title" id="title">
+                        <select class="form-select" @bind="_employee.Title" aria-label="Select Title" id="title">
                             <option selected>Select Title</option>
                             <option value="Mr">Mr</option>
                             <option value="Ms">Ms</option>
                             <option value="Mrs">Mrs</option>
                         </select>
-                        <ValidationMessage For="() => employee.Title" />
+                        <ValidationMessage For="() => _employee.Title" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="name">Name:</label>
-                        <InputText @bind-Value="employee.FirstName" type="text" class="form-control" id="name"></InputText>
-                        <ValidationMessage For="() => employee.FirstName" />
+                        <InputText @bind-Value="_employee.FirstName" type="text" class="form-control" id="name"></InputText>
+                        <ValidationMessage For="() => _employee.FirstName" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="last-name">Surname:</label>
-                        <InputText @bind-Value="employee.LastName" type="text" class="form-control" id="last-name"></InputText>
-                        <ValidationMessage For="() => employee.LastName" />
+                        <InputText @bind-Value="_employee.LastName" type="text" class="form-control" id="last-name"></InputText>
+                        <ValidationMessage For="() => _employee.LastName" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="id-number">ID Number:</label>
-                        <InputText @bind-Value="employee.IDNumber" type="text" class="form-control" id="id-number"></InputText>
-                        <ValidationMessage For="() => employee.IDNumber" />
+                        <InputText @bind-Value="_employee.IDNumber" type="text" class="form-control" id="id-number"></InputText>
+                        <ValidationMessage For="() => _employee.IDNumber" />
                     </div>
                 </div>
-                @*  <div class="row mt-3">
-                    <div class="form-group">
-                        <label for="rate">Rate:</label>
-                        <NumberInput TValue="double?" @bind-Value="employee.Rate" class="form-control" id="rate" Step=".01" />
-                        <ValidationMessage For="() => employee.Rate" />
-                    </div>
-                </div> *@
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="phone-number">Phone Number:</label>
-                        <InputText @bind-Value="employee.PhoneNumber" type="phone" class="form-control" id="phone-number"></InputText>
-                        <ValidationMessage For="() => employee.PhoneNumber" />
+                        <InputText @bind-Value="_employee.PhoneNumber" type="phone" class="form-control" id="phone-number"></InputText>
+                        <ValidationMessage For="() => _employee.PhoneNumber" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="email">Email:</label>
-                        <InputText @bind-Value="employee.Email" type="text" class="form-control" id="email"></InputText>
-                        <ValidationMessage For="() => employee.Email" />
+                        <InputText @bind-Value="_employee.Email" type="text" class="form-control" id="email"></InputText>
+                        <ValidationMessage For="() => _employee.Email" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="addressLine1">Address Line 1:</label>
-                        <InputText @bind-Value="employee.AddressLine1" type="text" class="form-control" id="addressLine1"></InputText>
-                        <ValidationMessage For="() => employee.AddressLine1" />
+                        <InputText @bind-Value="_employee.AddressLine1" type="text" class="form-control" id="addressLine1"></InputText>
+                        <ValidationMessage For="() => _employee.AddressLine1" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="addressLine2">Address Line 2:</label>
-                        <InputText @bind-Value="employee.AddressLine2" type="text" class="form-control" id="addressLine2"></InputText>
-                        <ValidationMessage For="() => employee.AddressLine2" />
+                        <InputText @bind-Value="_employee.AddressLine2" type="text" class="form-control" id="addressLine2"></InputText>
+                        <ValidationMessage For="() => _employee.AddressLine2" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="city">City:</label>
-                        <InputText @bind-Value="employee.City" type="text" class="form-control" id="city"></InputText>
-                        <ValidationMessage For="() => employee.City" />
+                        <InputText @bind-Value="_employee.City" type="text" class="form-control" id="city"></InputText>
+                        <ValidationMessage For="() => _employee.City" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="postalCode">Post Code:</label>
-                        <InputText @bind-Value="employee.PostalCode" type="text" class="form-control" id="postalCode"></InputText>
-                        <ValidationMessage For="() => employee.PostalCode" />
+                        <InputText @bind-Value="_employee.PostalCode" type="text" class="form-control" id="postalCode"></InputText>
+                        <ValidationMessage For="() => _employee.PostalCode" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="birth-date">Date of Birth:</label>
-                        <DateInput TValue="DateOnly?" @bind-Value="@employee.BirthDate" id="birth-date" />
+                        <DateInput TValue="DateOnly?" @bind-Value="@_employee.BirthDate" id="birth-date" />
                     </div>
                 </div>
             </div>
@@ -130,32 +99,19 @@
                         <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
                     </div>
                 </div>
-
             </div>
         </EditForm>
     </BodyTemplate>
 </Modal>
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-6 header">
-            <h1>Employees</h1>
-            <span class="add-icon">
-                <Icon Name="IconName.PersonFillAdd" Size="IconSize.x2" Color="IconColor.Primary" @onclick="OnShowModalClick" Style="cursor: pointer" />
-            </span>
-        </div>
-        <div class="col-1">
-        </div>
-        <div class="col-5 text-right"></div>
-    </div>
-</div>
-
-<div class="mb-3">
-    <input type="text" class="form-control" placeholder="Search..."
-           @oninput="(e) => SearchTerm = e.Value.ToString()" />
-</div>
-<table class="table">
-    <thead>
+<ListTemplate TItem="EmployeeModel"
+              Title="Employee"
+              Items="_employees"
+              PageSize="15"
+              SearchPredicate="MatchesSearch"
+              ShowAddButton="true"
+              OnAdd="OnShowModalClick">
+    <HeaderTemplate>
         <tr>
             <th>Title</th>
             <th>Name</th>
@@ -165,33 +121,21 @@
             <th>Email</th>
             <th>Action</th>
         </tr>
-    </thead>
-    <tbody>
-        @foreach (var employee in FilteredEmpoyees)
-        {
-            <tr>
-                <td>@employee.Title</td>
-                <td>@employee.FirstName</td>
-                <td>@employee.LastName</td>
-                <td>@employee.IDNumber</td>
-                <td>@employee.PhoneNumber</td>
-                <td>@employee.Email</td>
-                @* <td>
-            <div>
-            @((employee.Rate ?? 0.00).ToString("N2"))
-            <span class="edit-rate">
-            <Icon Name="IconName.Gear" Size="IconSize.x5" Color="IconColor.Info" @onclick="() => EditEmployeeRate(employee)" Style="cursor: pointer" />
-            </span>
-            </div>
-            </td> *@
-                <td>
-                    <Icon Name="IconName.PersonFillDash" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteEmployee(employee)" Class="me-2" Style="cursor: pointer" />
-                    <Icon Name="IconName.PersonFillGear" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditEmployeeClick(employee)" Style="cursor: pointer" />
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    </HeaderTemplate>
+    <RowTemplate Context="employee">
+        <tr>
+            <td>@employee.Title</td>
+            <td>@employee.FirstName</td>
+            <td>@employee.LastName</td>
+            <td>@employee.IDNumber</td>
+            <td>@employee.PhoneNumber</td>
+            <td>@employee.Email</td>
 
-
-
+            <td>
+                <Icon Name="IconName.PersonFillDash" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteEmployee(employee)" Class="me-2" Style="cursor: pointer" />
+                <Icon Name="IconName.PersonFillGear" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditEmployeeClick(employee)" Style="cursor: pointer" />
+            </td>
+        </tr>
+    </RowTemplate>
+</ListTemplate>
+  
