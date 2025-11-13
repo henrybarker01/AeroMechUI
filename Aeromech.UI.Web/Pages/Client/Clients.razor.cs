@@ -7,13 +7,13 @@ namespace AeroMech.UI.Web.Pages.Client
 {
     public partial class Clients
     {
-        [Inject] ClientService clientService { get; set; }
-        [Inject] protected LoaderService _loaderService { get; set; }
-        [Inject] protected ConfirmationService _confirmationService { get; set; }
+        [Inject] private ClientService clientService { get; set; }
+        [Inject] private LoaderService _loaderService { get; set; }
+        [Inject] private ConfirmationService _confirmationService { get; set; }
 
-        private string title = string.Empty;
-        private Modal modal = default!;
-        private ClientModel client = new ClientModel();
+        private string _title = string.Empty;
+        private Modal _modal = default!;
+        private ClientModel _client = new ClientModel();
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -55,36 +55,36 @@ namespace AeroMech.UI.Web.Pages.Client
 
         private async Task OnShowModalClick()
         {
-            title = "Add Client";
-            client = new ClientModel();
-            await modal.ShowAsync();
+            _title = "Add Client";
+            _client = new ClientModel();
+            await _modal.ShowAsync();
         }
 
         private async Task OnEditClientClick(ClientModel clientModel)
         {
-            title = "Edit Client";
-            client = clientModel;
+            _title = "Edit Client";
+            _client = clientModel;
 
-            clientRatesOvertime = client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime) ?? new ClientRateModel() { RateType = Models.Enums.RateType.Overtime };
-            clientRatesWeekdaysOvertime = client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime) ?? new ClientRateModel() { RateType = Models.Enums.RateType.WeekdaysOvertime };
-            clientRatesWeekdays = client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays) ?? new ClientRateModel() { RateType = Models.Enums.RateType.Weekdays };
-            clientRatesSundaysAndPublicHolidays = client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays) ?? new ClientRateModel() { RateType = Models.Enums.RateType.SundaysAndPublicHolidays };
+            clientRatesOvertime = _client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime) ?? new ClientRateModel() { RateType = Models.Enums.RateType.Overtime };
+            clientRatesWeekdaysOvertime = _client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime) ?? new ClientRateModel() { RateType = Models.Enums.RateType.WeekdaysOvertime };
+            clientRatesWeekdays = _client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays) ?? new ClientRateModel() { RateType = Models.Enums.RateType.Weekdays };
+            clientRatesSundaysAndPublicHolidays = _client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays) ?? new ClientRateModel() { RateType = Models.Enums.RateType.SundaysAndPublicHolidays };
 
-            await modal.ShowAsync();
+            await _modal.ShowAsync();
         }
 
         private async Task OnHideModalClick()
         {
             await GetClients();
             StateHasChanged();
-            await modal.HideAsync();
+            await _modal.HideAsync();
         }
 
         private async void AddNewClient()
         {
-            if (client.Id == 0)
+            if (_client.Id == 0)
             {
-                client.Rates =
+                _client.Rates =
                 [
                     clientRatesOvertime,
                     clientRatesWeekdaysOvertime,
@@ -93,7 +93,7 @@ namespace AeroMech.UI.Web.Pages.Client
                 ];
 
                 _loaderService.ShowLoader();
-                var result = await clientService.AddClient(client);
+                var result = await clientService.AddClient(_client);
                 _loaderService.HideLoader();
                 if (result != 0)
                 {
@@ -102,16 +102,16 @@ namespace AeroMech.UI.Web.Pages.Client
             }
             else
             {
-                if (client.Rates != null && client.Rates.Count > 0)
+                if (_client.Rates != null && _client.Rates.Count > 0)
                 {
-                    client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime).Rate = clientRatesOvertime.Rate;
-                    client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime).Rate = clientRatesWeekdaysOvertime.Rate;
-                    client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays).Rate = clientRatesWeekdays.Rate;
-                    client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays).Rate = clientRatesSundaysAndPublicHolidays.Rate;
+                    _client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime).Rate = clientRatesOvertime.Rate;
+                    _client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime).Rate = clientRatesWeekdaysOvertime.Rate;
+                    _client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays).Rate = clientRatesWeekdays.Rate;
+                    _client.Rates.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays).Rate = clientRatesSundaysAndPublicHolidays.Rate;
                 }
                 else
                 {
-                    client.Rates =
+                    _client.Rates =
                     [
                         clientRatesOvertime,
                         clientRatesWeekdaysOvertime,
@@ -121,7 +121,7 @@ namespace AeroMech.UI.Web.Pages.Client
                 }
 
                 _loaderService.ShowLoader();
-                var result = await clientService.EditClient(client);
+                var result = await clientService.EditClient(_client);
                 _loaderService.HideLoader();
                 if (result != 0)
                 {

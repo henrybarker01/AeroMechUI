@@ -8,23 +8,24 @@ namespace AeroMech.UI.Web.Pages.Users
 {
     public partial class Users
     {
+        [Inject] private UserService _userService { get; set; }
+        [Inject] private LoaderService _loaderService { get; set; }
+        [Inject] private ConfirmationService _confirmationService { get; set; }
 
-        [Inject] UserService userService { get; set; }
-        [Inject] protected LoaderService _loaderService { get; set; }
-        [Inject] protected ConfirmationService _confirmationService { get; set; }
+        private string _title = "";
+        private Modal _modal = default!;
+        private IdentityUser _user = new IdentityUser();
+        private List<IdentityUser>? _users = new List<IdentityUser>();
 
-        private string title = "";
-        private Modal modal = default!;
-        private IdentityUser user = new IdentityUser();
-        private List<IdentityUser>? users = new List<IdentityUser>();
+        private bool MatchesSearch(IdentityUser user, string term)
+        {
+            if (string.IsNullOrWhiteSpace(term)) return true;
+            var t = term.Trim();
 
-        private string SearchTerm { get; set; } = string.Empty;
-        private IEnumerable<IdentityUser> FilteredUsers =>
-        users.Where(user =>
-            string.IsNullOrEmpty(SearchTerm) ||
-            user.Email.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            user.UserName.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
-        );
+            return
+                (user.Email ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                (user.UserName ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase);
+        }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
@@ -35,27 +36,26 @@ namespace AeroMech.UI.Web.Pages.Users
         private async Task GetUsers()
         {
             _loaderService.ShowLoader();
-            users = await userService.GetUsers();
+            _users = await _userService.GetUsers();
             await InvokeAsync(StateHasChanged);
             _loaderService.HideLoader();
         }
 
         private async Task AddUserClick()
         {
-            title = "Add User";
-            //client = new UserModel();
-            await modal.ShowAsync();
+            _title = "Add User";
+            await _modal.ShowAsync();
         }
 
         private async void AddUser()
         {
-            user.EmailConfirmed = true;
-            user.LockoutEnabled = true;
-            user.PhoneNumberConfirmed = true;
-            user.TwoFactorEnabled = false;
+            _user.EmailConfirmed = true;
+            _user.LockoutEnabled = true;
+            _user.PhoneNumberConfirmed = true;
+            _user.TwoFactorEnabled = false;
 
             _loaderService.ShowLoader();
-            var result = await userService.CreateUser(user);
+            var result = await _userService.CreateUser(_user);
             if (result.Succeeded)
             {
                 await OnHideModalClick();
@@ -69,8 +69,8 @@ namespace AeroMech.UI.Web.Pages.Users
             if (confirmed)
             {
                 _loaderService.ShowLoader();
-                await userService.DeleteUser(user);
-                users?.Remove(user);
+                await _userService.DeleteUser(user);
+                _users?.Remove(user);
                 _loaderService.HideLoader();
             }
         }
@@ -85,7 +85,7 @@ namespace AeroMech.UI.Web.Pages.Users
         {
             await GetUsers();
             StateHasChanged();
-            await modal.HideAsync();
+            await _modal.HideAsync();
         }
     }
 }

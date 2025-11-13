@@ -2,72 +2,72 @@
 
 <PageTitle>Clients</PageTitle>
 
-<Modal @ref="modal" Title="@title">
+<Modal @ref="_modal" Title="@_title">
     <BodyTemplate>
-        <EditForm Model="@client" OnValidSubmit=@AddNewClient>
+        <EditForm Model="@_client" OnValidSubmit=@AddNewClient>
             <DataAnnotationsValidator />
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
                         <label for="Name">Name</label>
-                        <InputText @bind-Value=client.Name class="form-control" id="Name" />
-                        <ValidationMessage For="() => client.Name" />
+                        <InputText @bind-Value=_client.Name class="form-control" id="Name" />
+                        <ValidationMessage For="() => _client.Name" />
                     </div>
                 </div>
                 <div class="row mt-5">
                     <div class="form-group">
                         <label for="contact-person-name">Contact Person Name:</label>
-                        <InputText @bind-Value="client.ContactPersonName" type="text" class="form-control" id="contact-person-name"></InputText>
-                        <ValidationMessage For="() => client.ContactPersonName" />
+                        <InputText @bind-Value="_client.ContactPersonName" type="text" class="form-control" id="contact-person-name"></InputText>
+                        <ValidationMessage For="() => _client.ContactPersonName" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="contact-person-number">Contact Person Number:</label>
-                        <InputText @bind-Value="client.ContactPersonNumber" type="phone" class="form-control" id="contact-person-nunmer"></InputText>
-                        <ValidationMessage For="() => client.ContactPersonNumber" />
+                        <InputText @bind-Value="_client.ContactPersonNumber" type="phone" class="form-control" id="contact-person-nunmer"></InputText>
+                        <ValidationMessage For="() => _client.ContactPersonNumber" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="contact-person-email">Contact Person email:</label>
-                        <InputText @bind-Value="client.ContactPersonEmail" type="email" class="form-control" id="contact-person-email"></InputText>
-                        <ValidationMessage For="() => client.ContactPersonEmail" />
+                        <InputText @bind-Value="_client.ContactPersonEmail" type="email" class="form-control" id="contact-person-email"></InputText>
+                        <ValidationMessage For="() => _client.ContactPersonEmail" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="contact-person-birthdate">Contact Person birth date:</label>
-                        <DateInput TValue="DateOnly?" @bind-Value="@client.ContactPersonBirthDate" id="contact-person-birthdate" />
-                        <ValidationMessage For="() => client.ContactPersonBirthDate" />
+                        <DateInput TValue="DateOnly?" @bind-Value="@_client.ContactPersonBirthDate" id="contact-person-birthdate" />
+                        <ValidationMessage For="() => _client.ContactPersonBirthDate" />
                     </div>
                 </div>
                 <div class="row mt-5">
                     <div class="form-group">
                         <label for="addressLine1">Address Line 1:</label>
-                        <InputText @bind-Value="client.AddressLine1" type="text" class="form-control" id="addressLine1"></InputText>
-                        <ValidationMessage For="() => client.AddressLine1" />
+                        <InputText @bind-Value="_client.AddressLine1" type="text" class="form-control" id="addressLine1"></InputText>
+                        <ValidationMessage For="() => _client.AddressLine1" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="addressLine2">Address Line 2:</label>
-                        <InputText @bind-Value="client.AddressLine2" type="text" class="form-control" id="addressLine2"></InputText>
-                        <ValidationMessage For="() => client.AddressLine2" />
+                        <InputText @bind-Value="_client.AddressLine2" type="text" class="form-control" id="addressLine2"></InputText>
+                        <ValidationMessage For="() => _client.AddressLine2" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="city">City:</label>
-                        <InputText @bind-Value="client.City" type="text" class="form-control" id="city"></InputText>
-                        <ValidationMessage For="() => client.City" />
+                        <InputText @bind-Value="_client.City" type="text" class="form-control" id="city"></InputText>
+                        <ValidationMessage For="() => _client.City" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
                         <label for="postalCode">Post Code:</label>
-                        <InputText @bind-Value="client.PostalCode" type="text" class="form-control" id="postalCode"></InputText>
-                        <ValidationMessage For="() => client.PostalCode" />
+                        <InputText @bind-Value="_client.PostalCode" type="text" class="form-control" id="postalCode"></InputText>
+                        <ValidationMessage For="() => _client.PostalCode" />
                     </div>
                 </div>
 
@@ -143,7 +143,7 @@
             <th class="rate">Weekdays Overtime</th>
             <th class="rate">Overtime</th>
             <th class="rate">Sundays & Public Holidays</th>
-            <th>Action</th>
+            <th></th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="client">
