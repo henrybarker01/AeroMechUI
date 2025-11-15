@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
-using System.Reflection;
+using AeroMech.Models;
 using AeroMech.Areas.Identity;
 using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Components.Server;
@@ -49,7 +49,9 @@ builder.Services.AddScoped<Quote, Quote>();
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddMemoryCache();
 
-builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AeroMech.Models.AutomapperProfiles.PartsProfile)));
+//builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AeroMech.Models.AutomapperProfiles.PartsProfile)));
+builder.Services.AddAutomapperProfiles();
+
 builder.Services.AddAuthentication("Cookies")
     .AddCookie(options =>
     {

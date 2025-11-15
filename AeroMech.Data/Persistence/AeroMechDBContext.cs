@@ -26,7 +26,7 @@ namespace AeroMech.Data.Persistence
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            Database.Migrate();
+           // Database.Migrate();
 
             base.OnModelCreating(modelBuilder);
         }
