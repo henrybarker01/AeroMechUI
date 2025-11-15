@@ -1,13 +1,14 @@
 using AeroMech.API.Reports;
+using AeroMech.Areas.Identity;
 using AeroMech.Data.Persistence;
+using AeroMech.Models;
+using AeroMech.UI.Web.Extentions;
+using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
-using AeroMech.Models;
-using AeroMech.Areas.Identity;
-using AeroMech.UI.Web.Services;
-using Microsoft.AspNetCore.Components.Server;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -49,7 +50,6 @@ builder.Services.AddScoped<Quote, Quote>();
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddMemoryCache();
 
-//builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AeroMech.Models.AutomapperProfiles.PartsProfile)));
 builder.Services.AddAutomapperProfiles();
 
 builder.Services.AddAuthentication("Cookies")
@@ -76,6 +76,9 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 
+// Apply EF Core migrations at startup (abstracted)
+app.MigrateDatabase<AeroMechDBContext>();
+
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -85,8 +88,6 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseRouting();
-
-
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -100,13 +101,11 @@ app.MapFallbackToPage("/_Host");
 
 app.Use(async (context, next) =>
 {
-	var culture = CultureInfo.CurrentCulture.Clone() as CultureInfo;// Set user culture here
+	var culture = CultureInfo.CurrentCulture.Clone() as CultureInfo;
     culture.NumberFormat.CurrencySymbol = "R ";
-	//culture.DateTimeFormat.ShortDatePattern = "dd-yyyy-m";
 	CultureInfo.CurrentCulture = culture;
 	CultureInfo.CurrentUICulture = culture;
 
-	// Call the next delegate/middleware in the pipeline
 	await next();
 });
 
