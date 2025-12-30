@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.9.34616.47
+# Visual Studio Version 18
+VisualStudioVersion = 18.0.11205.157 d18.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AeroMech.Api", "AeroMech.Api\AeroMech.Api.csproj", "{8C9C61CE-1163-4A26-8002-D5199B808A07}"
 EndProject
@@ -12,6 +12,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AeroMech.UI.Web", "Aeromech.UI.Web\AeroMech.UI.Web.csproj", "{952488D1-0650-4782-9201-96F11B51C3F9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuestPDFGenerator", "QuestPDFGenerator\QuestPDFGenerator.csproj", "{D1D19C57-FDBE-4FB1-85D0-271AA1C03172}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AeroMech.Backup", "..\VMI\AeroMech\AeroMech.Backup\AeroMech.Backup.csproj", "{99DDA1C9-39A4-4141-A5BC-BA4803F3209E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -39,6 +41,10 @@ Global
 		{D1D19C57-FDBE-4FB1-85D0-271AA1C03172}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D1D19C57-FDBE-4FB1-85D0-271AA1C03172}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D1D19C57-FDBE-4FB1-85D0-271AA1C03172}.Release|Any CPU.Build.0 = Release|Any CPU
+		{99DDA1C9-39A4-4141-A5BC-BA4803F3209E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{99DDA1C9-39A4-4141-A5BC-BA4803F3209E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{99DDA1C9-39A4-4141-A5BC-BA4803F3209E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{99DDA1C9-39A4-4141-A5BC-BA4803F3209E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
