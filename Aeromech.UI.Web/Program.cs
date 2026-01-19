@@ -1,6 +1,11 @@
 using AeroMech.API.Reports;
+using AeroMech.Areas.Identity;
 using AeroMech.Data.Persistence;
+using AeroMech.Models;
+using AeroMech.UI.Web.Extentions;
+using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
@@ -82,6 +87,9 @@ builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AeroMech.Models.Autom
 QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
+
+// Apply EF Core migrations at startup (abstracted)
+app.MigrateDatabase<AeroMechDBContext>();
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

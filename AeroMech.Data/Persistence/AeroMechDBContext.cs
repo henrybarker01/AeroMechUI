@@ -16,18 +16,11 @@ namespace AeroMech.Data.Persistence
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-#if DEBUG
-            var connection = "Server=localhost;Database=vmi;User Id=sa;password=P@ssw0rd;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=true;";
-            optionsBuilder.UseSqlServer(connection, b => b.MigrationsAssembly("AeroMech.Data"));
-#endif
-
             base.OnConfiguring(optionsBuilder);
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            Database.Migrate();
-
+        {        
             base.OnModelCreating(modelBuilder);
         }
 
