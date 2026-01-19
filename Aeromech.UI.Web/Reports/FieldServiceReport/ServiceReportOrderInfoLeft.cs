@@ -46,7 +46,7 @@ namespace AeroMech.API.Reports
                 });
                 column.Item().Row(row =>
                 {
-                    row.ConstantColumn(80).Text("Instructions :").Style(style);
+                    row.ConstantColumn(80).Text("Description :").Style(style);
                     row.RelativeItem().Text(_orderInfo.Instructions).Style(style);
                 });
                 column.Spacing(10);

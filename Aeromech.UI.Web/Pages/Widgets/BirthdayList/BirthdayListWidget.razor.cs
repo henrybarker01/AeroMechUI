@@ -14,31 +14,38 @@ namespace AeroMech.UI.Web.Pages.Widgets.BirthdayList
         {
             if (firstRender)
             {
-                (await ClientService.GetClients()).ForEach(client =>
+                var clients = await ClientService.GetClients();
+                foreach (var client in clients)
                 {
                     if (client.ContactPersonBirthDate != null)
+                    {
                         birthdays.Add(new BirthdayList()
                         {
                             Name = client.ContactPersonName,
                             Email = client.ContactPersonEmail,
                             PhoneNumber = client.ContactPersonNumber,
                             BirthDate = client.ContactPersonBirthDate?.ToString("dd/MM/yyyy"),
-
                         });
-                });
-                    (await EmployeeService.GetEmployees()).ForEach(employee =>
-                    {
-                        if (employee.BirthDate != null)
-                            birthdays.Add(new BirthdayList()
-                            {
-                                Name = $"{employee.FirstName} {employee.LastName}",
-                                Email = employee.Email,
-                                PhoneNumber = employee.PhoneNumber,
-                                BirthDate = employee.BirthDate?.ToString("dd/MM/yyyy")
-                            });
-                    });
+                    }
                 }
-            await InvokeAsync(StateHasChanged);
+
+                var employees = await EmployeeService.GetEmployees();
+                foreach (var employee in employees)
+                {
+                    if (employee.BirthDate != null)
+                    {
+                        birthdays.Add(new BirthdayList()
+                        {
+                            Name = $"{employee.FirstName} {employee.LastName}",
+                            Email = employee.Email,
+                            PhoneNumber = employee.PhoneNumber,
+                            BirthDate = employee.BirthDate?.ToString("dd/MM/yyyy")
+                        });
+                    }
+                }
+
+                await InvokeAsync(StateHasChanged);
+            }
         }
     }
 

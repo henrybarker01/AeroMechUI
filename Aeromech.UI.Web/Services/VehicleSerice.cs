@@ -9,15 +9,18 @@ namespace AeroMech.UI.Web.Services
     public class VehicleService
     {
         private readonly IMapper _mapper;
-        private readonly AeroMechDBContext _aeroMechDBContext;
-        public VehicleService(AeroMechDBContext context, IMapper mapper)
+        private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
+        
+        public VehicleService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper)
         {
-            _aeroMechDBContext = context;
+            _contextFactory = contextFactory;
             _mapper = mapper;
         }
 
         public async Task<List<VehicleModel>> GetVehicles(int clientId)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             List<Vehicle> vehicles = await _aeroMechDBContext.Vehicles.AsNoTracking()
                 .Where(x => x.IsDeleted == false && x.ClientId == clientId)
                 .ToListAsync();
@@ -26,13 +29,20 @@ namespace AeroMech.UI.Web.Services
 
         public async Task DeleteVehicle(VehicleModel vehicle)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             var part = await _aeroMechDBContext.Vehicles.FindAsync(vehicle.Id);
-            part.IsDeleted = true;
-            await _aeroMechDBContext.SaveChangesAsync();
+            if (part != null)
+            {
+                part.IsDeleted = true;
+                await _aeroMechDBContext.SaveChangesAsync();
+            }
         }
 
         public async Task<int> AddNewVehicle(VehicleModel vehicle)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             if (vehicle.Id == 0)
             {
                 Vehicle vhl = _mapper.Map<Vehicle>(vehicle);
@@ -42,8 +52,9 @@ namespace AeroMech.UI.Web.Services
             }
             else
             {
-                Vehicle vehicleToEdit = _aeroMechDBContext.Vehicles
-                .Single(x => x.Id == vehicle.Id);
+                Vehicle vehicleToEdit = await _aeroMechDBContext.Vehicles
+                    .SingleAsync(x => x.Id == vehicle.Id);
+                    
                 vehicleToEdit.SerialNumber = vehicle.SerialNumber;
                 vehicleToEdit.ChassisNumber = vehicle.ChassisNumber;
                 vehicleToEdit.JobNumber = vehicle.JobNumber;
@@ -53,7 +64,6 @@ namespace AeroMech.UI.Web.Services
                 vehicleToEdit.DateInService = vehicle.DateInService;
                 vehicleToEdit.Description = vehicle.Description;
                 vehicleToEdit.MachineType = vehicle.MachineType;
-
 
                 await _aeroMechDBContext.SaveChangesAsync();
                 return vehicle.Id;

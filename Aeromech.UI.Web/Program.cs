@@ -7,12 +7,9 @@ using QuestPDF.Infrastructure;
 using System.Reflection;
 using AeroMech.Areas.Identity;
 using AeroMech.UI.Web.Services;
-using Microsoft.AspNetCore.Components.Server;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
-
-//builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri("https://84.26.82.48:443/api/") });
 
 builder.Services.AddScoped<ClientService, ClientService>();
 builder.Services.AddScoped<EmployeeService, EmployeeService>();
@@ -24,51 +21,63 @@ builder.Services.AddScoped<LoaderService, LoaderService>();
 builder.Services.AddSingleton<ConfirmationService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
+
+// Add DbContextFactory for Blazor Server scenarios
 builder.Services.AddDbContextFactory<AeroMechDBContext>(options =>
 {
     options.UseSqlServer(connectionString);
-}, ServiceLifetime.Transient);
+}, ServiceLifetime.Scoped);
 
-//builder.Services.AddDbContext<AuthenticationDbContext>(options =>
-//    options.UseSqlServer(connectionString));
+// Add DbContext for Identity and other services that require it
+builder.Services.AddDbContext<AeroMechDBContext>(options =>
+{
+    options.UseSqlServer(connectionString);
+}, ServiceLifetime.Scoped);
+
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-    .AddEntityFrameworkStores<AeroMechDBContext>();
 
-builder.Services.AddScoped<IHostEnvironmentAuthenticationStateProvider>(sp =>
-                (ServerAuthenticationStateProvider)sp.GetRequiredService<AuthenticationStateProvider>()
-            );
+// Configure ASP.NET Core Identity with persistent cookies
+builder.Services.AddDefaultIdentity<IdentityUser>(options => 
+{
+    options.SignIn.RequireConfirmedAccount = false;
+})
+.AddEntityFrameworkStores<AeroMechDBContext>();
+
+// Configure application cookie for persistent authentication
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.LoginPath = "/login";
+    options.LogoutPath = "/logout";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() 
+        ? CookieSecurePolicy.SameAsRequest 
+        : CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.ExpireTimeSpan = TimeSpan.FromDays(30);
+    options.SlidingExpiration = true;
+});
 
 // Add services to the container.
-builder.Services.AddRazorPages();
+builder.Services.AddControllers();
+builder.Services.AddRazorPages(options =>
+{
+    // Disable antiforgery validation for the SignIn page
+    options.Conventions.ConfigureFilter(new Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryTokenAttribute());
+});
 builder.Services.AddServerSideBlazor();
+
+// Register the authentication state provider
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
+
 builder.Services.AddScoped<FieldServiceReport, FieldServiceReport>();
 builder.Services.AddScoped<Quote, Quote>();
 
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddMemoryCache();
+builder.Services.AddHttpClient();
 
 builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AeroMech.Models.AutomapperProfiles.PartsProfile)));
-builder.Services.AddAuthentication("Cookies")
-    .AddCookie(options =>
-    {
-        options.LoginPath = "/login";  // Redirect to login page if not authenticated
-        options.ExpireTimeSpan = TimeSpan.FromDays(30);  // Cookie expiration time
-        options.SlidingExpiration = true;  // Reset expiration on activity
-    });
-
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.LoginPath = "/login";  // Redirect if not logged in
-    options.LogoutPath = "/logout";
-    options.Cookie.HttpOnly = true;
-    options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    options.ExpireTimeSpan = TimeSpan.FromDays(30);  // Keep session for 30 days
-    options.SlidingExpiration = true;
-});
-
 
 QuestPDF.Settings.License = LicenseType.Community;
 
@@ -78,35 +87,31 @@ var app = builder.Build();
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
+app.UseHttpsRedirection();
+app.UseStaticFiles();
+
+// Culture middleware before routing
+app.Use(async (context, next) =>
+{
+    var culture = CultureInfo.CurrentCulture.Clone() as CultureInfo;
+    culture.NumberFormat.CurrencySymbol = "R ";
+    CultureInfo.CurrentCulture = culture;
+    CultureInfo.CurrentUICulture = culture;
+
+    await next();
+});
+
 app.UseRouting();
-
-
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-app.UseHttpsRedirection();
-app.UseStaticFiles();
-//app.UseAuthorization();
-
+app.MapControllers();
+app.MapRazorPages();
 app.MapBlazorHub();
 app.MapFallbackToPage("/_Host");
-
-app.Use(async (context, next) =>
-{
-	var culture = CultureInfo.CurrentCulture.Clone() as CultureInfo;// Set user culture here
-    culture.NumberFormat.CurrencySymbol = "R ";
-	//culture.DateTimeFormat.ShortDatePattern = "dd-yyyy-m";
-	CultureInfo.CurrentCulture = culture;
-	CultureInfo.CurrentUICulture = culture;
-
-	// Call the next delegate/middleware in the pipeline
-	await next();
-});
-
 
 app.Run();

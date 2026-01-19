@@ -14,15 +14,14 @@ namespace AeroMech.UI.Web.Services
     public class ServiceReportService
     {
         private readonly IMapper _mapper;
-        private readonly AeroMechDBContext _aeroMechDBContext;
+        private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly FieldServiceReport _fieldServiceReport;
         private readonly Quote _quote;
         private readonly IMemoryCache _memoryCache;
 
-        public ServiceReportService(AeroMechDBContext context, IMapper mapper, FieldServiceReport fieldServiceReport, Quote quote, IMemoryCache memoryCache)
+        public ServiceReportService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, FieldServiceReport fieldServiceReport, Quote quote, IMemoryCache memoryCache)
         {
-
-            _aeroMechDBContext = context;
+            _contextFactory = contextFactory;
             _mapper = mapper;
             _fieldServiceReport = fieldServiceReport;
             _quote = quote;
@@ -31,6 +30,8 @@ namespace AeroMech.UI.Web.Services
 
         public async Task<int> AddServiceReport(ServiceReportModel serviceReport, bool isQuote)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             ServiceReport sr = _mapper.Map<ServiceReport>(serviceReport);
 
             if (serviceReport.VehicleId > 0)
@@ -46,72 +47,68 @@ namespace AeroMech.UI.Web.Services
 
             sr.AdHockParts = new List<ServiceReportAdHockPart>();
 
-            serviceReport.Parts.ForEach(part =>
-             {
-                 if (part.IsAdHockPart)
-                 {
-                     sr.AdHockParts.Add(new ServiceReportAdHockPart()
-                     {
-                         Id = 0,
-                         CostPrice = Convert.ToDouble(part.CostPrice),
-                         Discount = part.Discount,
-                         IsDeleted = false,
-                         PartDescription = part.PartDescription,
-                         PartCode = part.PartCode,
-                         Qty = part.QTY
-                     });
+            foreach (var part in serviceReport.Parts.ToList())
+            {
+                if (part.IsAdHockPart)
+                {
+                    sr.AdHockParts.Add(new ServiceReportAdHockPart()
+                    {
+                        Id = 0,
+                        CostPrice = Convert.ToDouble(part.CostPrice),
+                        Discount = part.Discount,
+                        IsDeleted = false,
+                        PartDescription = part.PartDescription,
+                        PartCode = part.PartCode,
+                        Qty = part.QTY
+                    });
 
-                     sr.Parts.Remove(sr.Parts.First(x => x.Id == part.Id));
-                 }
-                 else
-                 {
-                     var adjustment = new StockAdjustment()
-                     {
-                         PartId = part.Id,
-                         AdjustementDate = DateTime.Now,
-                         WarehouseId = 1, //TODO - HB this needs to be added
-                         QTY = part.QTY * -1,
-                         AdjustedById = new Guid(), //TODO - get the user id
-                         StockAdjustmentType = StockAdjustmentType.ServiceReport
-                     };
-                     _aeroMechDBContext.StockAdjustment.Add(adjustment);
+                    sr.Parts.Remove(sr.Parts.First(x => x.Id == part.Id));
+                }
+                else
+                {
+                    var adjustment = new StockAdjustment()
+                    {
+                        PartId = part.Id,
+                        AdjustementDate = DateTime.Now,
+                        WarehouseId = 1,
+                        QTY = part.QTY * -1,
+                        AdjustedById = new Guid(),
+                        StockAdjustmentType = StockAdjustmentType.ServiceReport
+                    };
+                    _aeroMechDBContext.StockAdjustment.Add(adjustment);
 
-                     var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == part.Id);
-                     partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
-                 }
-             });
+                    var partToUpdate = await _aeroMechDBContext.Parts.SingleAsync(x => x.Id == part.Id);
+                    partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
+                }
+            }
 
             sr.Parts.ForEach(x => x.Id = 0);
 
-            sr.ServiceReportNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => x.ServiceReportNumber)) + 1;
+            sr.ServiceReportNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => (int?)x.ServiceReportNumber) ?? 0) + 1;
 
             if (isQuote && sr.QuoteNumber == 0)
             {
-                sr.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => x.QuoteNumber)) + 1;
+                sr.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => (int?)x.QuoteNumber) ?? 0) + 1;
             }
 
             if (serviceReport.VehicleId == 0)
             {
                 sr.VehicleId = null;
-
             }
 
             if (serviceReport.ClientId == 0)
             {
                 sr.ClientId = null;
-
             }
 
             _aeroMechDBContext.ServiceReports.Add(sr);
-
             await _aeroMechDBContext.SaveChangesAsync();
 
-            sr.Employees.ForEach(employee =>
+            foreach (var employee in sr.Employees)
             {
-                var actualEmployee = _aeroMechDBContext.Employees.AsNoTracking().Single(x => x.Id == employee.EmployeeId);
+                var actualEmployee = await _aeroMechDBContext.Employees.AsNoTracking().SingleAsync(x => x.Id == employee.EmployeeId);
                 employee.Employee = actualEmployee;
-            });
-
+            }
 
             _memoryCache.Set(sr.Id, _mapper.Map<ServiceReportModel>(sr), TimeSpan.FromMinutes(30));
 
@@ -120,15 +117,15 @@ namespace AeroMech.UI.Web.Services
 
         public async Task<int> EditServiceReport(ServiceReportModel serviceReport, bool isQuote)
         {
-            ServiceReport serviceReportToEdit = _aeroMechDBContext.ServiceReports
-            .Include(x => x.Vehicle)
-            .Include(x => x.Client)
-            .Include(x => x.Parts)
-            //.ThenInclude(x => x.Part)
-            .Include(x => x.AdHockParts)
-            .Include(r => r.Employees)
-            //.ThenInclude(e => e.Employee)
-            .Single(x => x.Id == serviceReport.Id);
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
+            ServiceReport serviceReportToEdit = await _aeroMechDBContext.ServiceReports
+                .Include(x => x.Vehicle)
+                .Include(x => x.Client)
+                .Include(x => x.Parts)
+                .Include(x => x.AdHockParts)
+                .Include(r => r.Employees)
+                .SingleAsync(x => x.Id == serviceReport.Id);
 
             serviceReportToEdit.ReportDate = serviceReport.ReportDate;
             serviceReportToEdit.DetailedServiceReport = serviceReport.DetailedServiceReport;
@@ -148,7 +145,7 @@ namespace AeroMech.UI.Web.Services
                 serviceReportToEdit.Parts = new List<ServiceReportPart>();
             }
 
-            serviceReport.Parts.ForEach(part =>
+            foreach (var part in serviceReport.Parts)
             {
                 if (part.IsAdHockPart)
                 {
@@ -186,27 +183,26 @@ namespace AeroMech.UI.Web.Services
 
                         if (p.Qty != part.QTY)
                         {
-                            //update the qty on hand first with the original qty
                             _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
                             {
                                 PartId = p.PartId,
                                 AdjustementDate = DateTime.Now,
-                                WarehouseId = 1, //TODO - HB this needs to be added
+                                WarehouseId = 1,
                                 QTY = p.Qty,
-                                AdjustedById = new Guid(), //TODO - get the user id
+                                AdjustedById = new Guid(),
                                 StockAdjustmentType = StockAdjustmentType.ServiceReportReversal
                             });
 
-                            var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == p.PartId);
+                            var partToUpdate = await _aeroMechDBContext.Parts.SingleAsync(x => x.Id == p.PartId);
                             partToUpdate.QtyOnHand = partToUpdate.QtyOnHand + p.Qty;
 
                             _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
                             {
                                 PartId = p.PartId,
                                 AdjustementDate = DateTime.Now,
-                                WarehouseId = 1, //TODO - HB this needs to be added
+                                WarehouseId = 1,
                                 QTY = part.QTY * -1,
-                                AdjustedById = new Guid(), //TODO - get the user id
+                                AdjustedById = new Guid(),
                                 StockAdjustmentType = StockAdjustmentType.ServiceReportEdit
                             });
 
@@ -218,21 +214,19 @@ namespace AeroMech.UI.Web.Services
                             {
                                 PartId = p.PartId,
                                 AdjustementDate = DateTime.Now,
-                                WarehouseId = 1, //TODO - HB this needs to be added
+                                WarehouseId = 1,
                                 QTY = part.QTY,
-                                AdjustedById = new Guid(), //TODO - get the user id
+                                AdjustedById = new Guid(),
                                 StockAdjustmentType = StockAdjustmentType.ServiceReportReversal
                             });
-                            var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == p.PartId);
+                            var partToUpdate = await _aeroMechDBContext.Parts.SingleAsync(x => x.Id == p.PartId);
                             partToUpdate.QtyOnHand = partToUpdate.QtyOnHand + part.QTY;
                         }
 
                         p.Qty = part.QTY;
                         p.Discount = part.Discount;
-                        //p.Id = part.Id;
                         p.CostPrice = Convert.ToDouble(part.CostPrice);
                         p.IsDeleted = part.IsDeleted;
-
                     }
                     else
                     {
@@ -250,25 +244,24 @@ namespace AeroMech.UI.Web.Services
                         {
                             PartId = part.Id,
                             AdjustementDate = DateTime.Now,
-                            WarehouseId = 1, //TODO - HB this needs to be added
+                            WarehouseId = 1,
                             QTY = part.QTY * -1,
-                            AdjustedById = new Guid(), //TODO - get the user id
+                            AdjustedById = new Guid(),
                             StockAdjustmentType = StockAdjustmentType.ServiceReport
                         });
 
-                        var partToUpdate = _aeroMechDBContext.Parts.Single(x => x.Id == part.Id);
+                        var partToUpdate = await _aeroMechDBContext.Parts.SingleAsync(x => x.Id == part.Id);
                         partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
                     }
                 }
-            });
-
+            }
 
             if (serviceReportToEdit.Employees == null)
             {
                 serviceReportToEdit.Employees = new List<ServiceReportEmployee>();
             }
 
-            serviceReport.Employees.ForEach(employee =>
+            foreach (var employee in serviceReport.Employees)
             {
                 if (employee.Id != 0 && serviceReportToEdit.Employees.Any(x => x.Id == employee.Id))
                 {
@@ -289,25 +282,27 @@ namespace AeroMech.UI.Web.Services
 
                     serviceReportToEdit.Employees.Add(employeeToAdd);
                 }
-            });
+            }
 
             if (isQuote && serviceReportToEdit.QuoteNumber == 0)
             {
-                serviceReportToEdit.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => x.QuoteNumber)) + 1;
+                serviceReportToEdit.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => (int?)x.QuoteNumber) ?? 0) + 1;
             }
 
             await _aeroMechDBContext.SaveChangesAsync();
 
-            serviceReportToEdit.Employees.ForEach(employee =>
+            foreach (var employee in serviceReportToEdit.Employees)
             {
-                var actualEmployee = _aeroMechDBContext.Employees.AsNoTracking().Single(x => x.Id == employee.EmployeeId);
+                var actualEmployee = await _aeroMechDBContext.Employees.AsNoTracking().SingleAsync(x => x.Id == employee.EmployeeId);
                 employee.Employee = actualEmployee;
-            });
-            serviceReportToEdit.Parts.ForEach(part =>
+            }
+            
+            foreach (var part in serviceReportToEdit.Parts)
             {
-                var actualPart = _aeroMechDBContext.Parts.AsNoTracking().Single(x => x.Id == part.PartId);
+                var actualPart = await _aeroMechDBContext.Parts.AsNoTracking().SingleAsync(x => x.Id == part.PartId);
                 part.Part = actualPart;
-            });
+            }
+            
             _memoryCache.Set(serviceReport.Id, _mapper.Map<ServiceReportModel>(serviceReportToEdit), TimeSpan.FromMinutes(30));
 
             return serviceReportToEdit.Id;
@@ -317,6 +312,8 @@ namespace AeroMech.UI.Web.Services
         {
             if (!_memoryCache.TryGetValue(Id, out ServiceReportModel serviceReportModel))
             {
+                using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+                
                 var serviceReport = await _aeroMechDBContext.ServiceReports
                     .AsNoTracking()
                     .Include(a => a.Parts)
@@ -339,10 +336,13 @@ namespace AeroMech.UI.Web.Services
 
             return serviceReportModel;
         }
+        
         public async Task<byte[]> DownloadServiceReport(int serviceReportId)
         {
             if (!_memoryCache.TryGetValue(serviceReportId, out ServiceReportModel serviceReportModel))
             {
+                using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+                
                 var serviceResport = await _aeroMechDBContext.ServiceReports
                 .AsNoTracking()
                .Include(x => x.Vehicle)
@@ -369,6 +369,8 @@ namespace AeroMech.UI.Web.Services
 
         public async Task<byte[]> DownloadQuote(int serviceReportId)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             var serviceResport = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
            .Include(x => x.Vehicle)
@@ -390,6 +392,8 @@ namespace AeroMech.UI.Web.Services
             if (fromDate == default)
                 fromDate = DateTime.MinValue;
 
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
                  .Include(x => x.Vehicle)
@@ -409,6 +413,8 @@ namespace AeroMech.UI.Web.Services
             if (fromDate == default)
                 fromDate = DateTime.MinValue;
 
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
                .Include(x => x.Vehicle)

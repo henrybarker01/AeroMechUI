@@ -1,11 +1,10 @@
-﻿using QuestPDF.Fluent;
+﻿using AeroMech.Data.Models;
+using AeroMech.Models;
+using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-using AeroMech.Data.Models;
 using System.Globalization;
 using IDocument = AeroMech.UI.Web.Reports.IDocument;
-using AeroMech.Models;
-using AeroMech.UI.Web.Pages.ServiceReport;
 
 namespace AeroMech.API.Reports
 {
@@ -67,20 +66,11 @@ namespace AeroMech.API.Reports
                         text.Span($"Field Service Report No:  AEM{serviceReport.ServiceReportNumber}").SemiBold().FontSize(12);
                     });
                 });
-
-                //row.RelativeItem().ContentFromRightToLeft().Column(column =>
-                //{
-                //    column.Item().Text(text =>
-                //        {
-                //            text.Span($"Report No:  AEM{serviceReport.Id}").SemiBold().FontSize(12);
-                //        });
-                //});
             });
         }
 
         void ComposeContent(IContainer container)
         {
-
             container.PaddingVertical(20).Column(column =>
             {
                 column.Spacing(5);
@@ -97,12 +87,8 @@ namespace AeroMech.API.Reports
                         Instructions = serviceReport.Instruction
                     }));
 
-                    //row.ConstantItem(5);
-                    //row.ConstantItem(55, Unit.Millimetre).Component(new QuoteOrderInfoMiddle(serviceReport.SalesOrderNumber));
                     row.ConstantItem(5);
-                    
                 });
-
 
                 column.Item().Element(ComposeLabourTable);
 
@@ -142,36 +128,6 @@ namespace AeroMech.API.Reports
                     row.ConstantItem(0);
                     row.RelativeItem().Text("Customer");
                 });
-
-
-                //column.Item().PaddingTop(10).Row(row =>
-                //{
-                //    row.RelativeItem().Text("We accept that the work detailed above is satisfactory, and the\r\nlabour and materials reflected are correct.").FontSize(10);
-                //    row.ConstantItem(50);
-
-
-                //    row.RelativeItem().Column(col =>
-                //    {
-                //        var totalLabour = serviceReport.Employees.Sum(x => CalulatePercentageOf(x.Rate, x.Hours, x.Discount));
-                //        var totalParts = serviceReport.Parts.Sum(x => CalulatePercentageOf(x.CostPrice, x.Qty, x.Discount));
-
-                //        col.Item().Row(r =>
-                //        {
-                //            r.RelativeColumn().PaddingTop(10).Text("Labour :");
-                //            r.RelativeColumn().AlignRight().PaddingTop(10).Text(totalLabour);
-                //        });
-                //        col.Item().Row(r =>
-                //        {
-                //            r.RelativeColumn().PaddingTop(10).Text("Parts:");
-                //            r.RelativeColumn().AlignRight().PaddingTop(10).Text(totalParts);
-                //        });
-                //        col.Item().Row(r =>
-                //        {
-                //            r.RelativeColumn(4).PaddingTop(12).Text("Total Cost :").Bold();
-                //            r.RelativeColumn(4).AlignRight().PaddingTop(10).BorderTop(1).BorderBottom(1).Text(totalLabour + totalParts).LineHeight(2).Bold();
-                //        });
-                //    });
-                //});
             });
 
             static IContainer Block(IContainer container)
@@ -185,59 +141,6 @@ namespace AeroMech.API.Reports
                     .AlignCenter()
                     .AlignMiddle();
             }
-        }
-
-        public double CalulatePercentageOf(double value, double multiplier, double discount)
-        {
-            return (multiplier * value) - ((multiplier * value) * (discount / 100));
-        }
-
-        void ComposePartsTable(IContainer container)
-        {
-            container.PaddingBottom(20).Table(table =>
-            {
-                table.ColumnsDefinition(columns =>
-                {
-                    columns.RelativeColumn(2);
-                    columns.RelativeColumn(3);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
-                    columns.RelativeColumn(1);
-
-                });
-                table.Header(header =>
-                {
-                    header.Cell().Element(CellStyle).Text("Part Number");
-                    header.Cell().Element(CellStyle).Text("Description");
-                    header.Cell().Element(CellStyle).AlignRight().Text("C.P.U.");
-                    header.Cell().Element(CellStyle).AlignRight().Text("Qty");
-                    header.Cell().Element(CellStyle).AlignRight().Text("Actual");
-                    header.Cell().Element(CellStyle).AlignRight().Text("Disc");
-                    header.Cell().Element(CellStyle).AlignRight().Text("Total");
-
-                    static IContainer CellStyle(IContainer container)
-                    {
-                        return container.DefaultTextStyle(x => x.SemiBold().FontSize(12)).PaddingVertical(5).BorderBottom(1).BorderColor(Colors.Black);
-                    }
-                });
-
-                static IContainer CellStyle(IContainer container)
-                {
-                    return container.DefaultTextStyle(x => x.FontSize(10)).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
-                }
-                foreach (var part in serviceReport.Parts)
-                {
-                    table.Cell().Element(CellStyle).Text(part.PartCode);
-                    table.Cell().Element(CellStyle).Text(part.PartDescription);
-                    table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice);
-                    table.Cell().Element(CellStyle).AlignRight().Text(part.QTY);
-                    table.Cell().Element(CellStyle).AlignRight().Text(part.CostPrice * part.QTY);
-                    table.Cell().Element(CellStyle).AlignRight().Text(part.Discount);
-                    table.Cell().Element(CellStyle).AlignRight().Text(CalulatePercentageOf(Convert.ToDouble(part.CostPrice), part.QTY, part.Discount));
-                }
-            });
         }
 
         void ComposeLabourTable(IContainer container)
@@ -259,7 +162,7 @@ namespace AeroMech.API.Reports
                     header.Cell().Element(CellStyle).Text("QTY");
                     header.Cell().Element(CellStyle).Text("P/number");
                     header.Cell().Element(CellStyle).Text("Unit");
-                    header.Cell().Element(CellStyle).AlignRight().Text("Description");
+                    header.Cell().Element(CellStyle).AlignRight().Text("Parts");
                     header.Cell().Element(CellStyle).AlignRight().Text("Unit Price");
                     header.Cell().Element(CellStyle).AlignRight().Text("Total Value Ex VAT");
 
@@ -284,7 +187,7 @@ namespace AeroMech.API.Reports
                     table.Cell().Element(CellStyle).Text(x.Hours.ToString());
                     table.Cell().Element(CellStyle).Text("Labour");
                     table.Cell().Element(CellStyle).Text("EA");
-                    table.Cell().Element(CellStyle).AlignRight().Text(serviceReport.ServiceType);
+                    table.Cell().Element(CellStyle).AlignRight().Text(string.Empty);// serviceReport.ServiceType
                     table.Cell().Element(CellStyle).AlignRight().Text(x.Rate.ToString("C", CultureInfo.CurrentCulture));
                     table.Cell().Element(CellStyle).AlignRight().Text((x.Hours * x.Rate)?.ToString("C", CultureInfo.CurrentCulture));
                 });

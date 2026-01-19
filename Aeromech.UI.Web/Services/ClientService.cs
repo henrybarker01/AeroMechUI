@@ -8,28 +8,32 @@ namespace AeroMech.UI.Web.Services
 {
     public class ClientService
     {
-        private readonly AeroMechDBContext _aeroMechDBContext;
+        private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly IMapper _mapper;
 
-        public ClientService(AeroMechDBContext context, IMapper mapper)
+        public ClientService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper)
         {
-            _aeroMechDBContext = context;
+            _contextFactory = contextFactory;
             _mapper = mapper;
         }
 
         public async Task<List<ClientModel>> GetClients()
         {
-            var clients = _aeroMechDBContext.Clients.AsNoTracking()
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
+            var clients = await _aeroMechDBContext.Clients.AsNoTracking()
                 .Include(a => a.Address)
                 .Include(r => r.Rates)
                 .Where(x => x.IsDeleted == false)
-                .ToList();
+                .ToListAsync();
 
             return _mapper.Map<List<ClientModel>>(clients);
         }
 
         public async Task<int> AddClient(ClientModel client)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             Data.Models.Client newClient = new Data.Models.Client
             {
                 Id = client.Id,
@@ -67,6 +71,8 @@ namespace AeroMech.UI.Web.Services
 
         public async Task<int> EditClient(ClientModel client)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             var clientToEdit = await _aeroMechDBContext.Clients
                 .Include(x => x.Address)
                 .Include(r => r.Rates)
@@ -118,11 +124,12 @@ namespace AeroMech.UI.Web.Services
 
         public async Task Delete(int id)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             var client = await _aeroMechDBContext.Clients.FindAsync(id);
             if (client != null)
             {
                 client.IsDeleted = true;
-                //_aeroMechDBContext.Clients.Remove(client);
                 await _aeroMechDBContext.SaveChangesAsync();
             }
         }
