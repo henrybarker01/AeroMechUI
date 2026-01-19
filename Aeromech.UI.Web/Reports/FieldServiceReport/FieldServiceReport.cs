@@ -30,7 +30,6 @@ namespace AeroMech.API.Reports
                     page.Header().Element(ComposeHeader);
                     page.Content().Element(ComposeContent);
 
-
                     page.Footer().AlignCenter().Text(x =>
                     {
                         x.CurrentPageNumber();
@@ -102,9 +101,24 @@ namespace AeroMech.API.Reports
                 column.Item().Row(row =>
                 {
                     row.ConstantItem(85);
-                    row.RelativeItem().Text("Employees Signature");
+                    row.RelativeItem().Text("Name & Surname");
                     row.ConstantItem(0);
-                    row.RelativeItem().Text("Customers Signature");
+                    row.RelativeItem().Text("Name & Surname");
+                });
+
+                column.Item().PaddingTop(60).Row(row =>
+                {
+                    row.ConstantItem(50);
+                    row.ConstantItem(180).LineHorizontal(1);
+                    row.ConstantItem(50);
+                    row.ConstantItem(180).LineHorizontal(1);
+                });
+                column.Item().Row(row =>
+                {
+                    row.ConstantItem(85);
+                    row.RelativeItem().Text("Aeromech");
+                    row.ConstantItem(0);
+                    row.RelativeItem().Text("Customer");
                 });
 
                 column.Item().PaddingTop(10).Row(row =>

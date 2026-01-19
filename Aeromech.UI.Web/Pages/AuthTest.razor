@@ -1,0 +1,42 @@
+@page "/authtest"
+@using Microsoft.AspNetCore.Components.Authorization
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+<h3>Authentication Test</h3>
+
+<AuthorizeView>
+    <Authorized>
+        <div class="alert alert-success">
+            <h4>? You are AUTHORIZED</h4>
+            <p>User: @context.User.Identity?.Name</p>
+            <p>Is Authenticated: @context.User.Identity?.IsAuthenticated</p>
+            <p>Claims:</p>
+            <ul>
+                @foreach (var claim in context.User.Claims)
+                {
+                    <li>@claim.Type: @claim.Value</li>
+                }
+            </ul>
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <div class="alert alert-danger">
+            <h4>? You are NOT AUTHORIZED</h4>
+            <p>No user authenticated</p>
+        </div>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    private string authState = "";
+
+    protected override async Task OnInitializedAsync()
+    {
+        var state = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        authState = $"User: {state.User.Identity?.Name ?? "None"}, IsAuth: {state.User.Identity?.IsAuthenticated}";
+    }
+}
+
+<div class="mt-3">
+    <p><strong>AuthState Direct:</strong> @authState</p>
+</div>

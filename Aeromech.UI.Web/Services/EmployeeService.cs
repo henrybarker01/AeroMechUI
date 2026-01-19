@@ -9,15 +9,18 @@ namespace AeroMech.UI.Web.Services
     public class EmployeeService
     {
         private readonly IMapper _mapper;
-        private readonly AeroMechDBContext _aeroMechDBContext;
-        public EmployeeService(AeroMechDBContext context, IMapper mapper)
+        private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
+        
+        public EmployeeService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper)
         {
-            _aeroMechDBContext = context;
+            _contextFactory = contextFactory;
             _mapper = mapper;
         }
 
         public async Task<List<EmployeeModel>> GetEmployees()
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             List<Employee> employees = await _aeroMechDBContext.Employees.AsNoTracking()
                 .Where(x => x.IsDeleted == false)
                 .Include(a => a.Address)
@@ -27,13 +30,20 @@ namespace AeroMech.UI.Web.Services
 
         public async Task DeleteEmployee(EmployeeModel emp)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             var employee = await _aeroMechDBContext.Employees.FindAsync(emp.Id);
-            employee.IsDeleted = true;
-            await _aeroMechDBContext.SaveChangesAsync();
+            if (employee != null)
+            {
+                employee.IsDeleted = true;
+                await _aeroMechDBContext.SaveChangesAsync();
+            }
         }
 
         public async Task<int> AddNewEmployee(EmployeeModel employee)
         {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+            
             if (employee.Id == 0)
             {
                 Data.Models.Employee emp = _mapper.Map<Data.Models.Employee>(employee);
@@ -44,9 +54,9 @@ namespace AeroMech.UI.Web.Services
             }
             else
             {
-                Data.Models.Employee employeeToEdit = _aeroMechDBContext.Employees
-                .Include(x => x.Address)
-                .Single(x => x.Id == employee.Id);
+                Data.Models.Employee employeeToEdit = await _aeroMechDBContext.Employees
+                    .Include(x => x.Address)
+                    .SingleAsync(x => x.Id == employee.Id);
 
                 employeeToEdit.PhoneNumber = employee.PhoneNumber;
                 employeeToEdit.IDNumber = employee.IDNumber;

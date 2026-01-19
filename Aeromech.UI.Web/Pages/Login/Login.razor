@@ -16,21 +16,29 @@
                     <div class="col-md-2">
                     </div>
                     <div class="col-md-8">
-                        <EditForm class="form-signin mb-4" Model="@_credential" OnSubmit="@Authenticate">
+                        @if (!string.IsNullOrEmpty(_errorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                @_errorMessage
+                            </div>
+                        }
+                        
+                        <!-- Traditional HTML form that posts to Razor Page -->
+                        <form method="post" action="/Account/SignIn" id="loginForm" @onsubmit="HandleSubmit" @onsubmit:preventDefault="true">
                             <div class="form-group">
                                 <label for="user-name">User name</label>
-                                <InputText class="form-control" id="user-name" aria-describedby="emailHelp" placeholder="e-mail" @bind-Value=@_credential.UserName />
+                                <input type="text" class="form-control" id="user-name" name="UserName" @bind="_credential.UserName" placeholder="e-mail" />
                             </div>
                             <br />
                             <div class="form-group">
                                 <label for="password">Password</label>
-                                <InputText type="password" class="form-control" id="password" placeholder="Password" @bind-Value=@_credential.Password />
+                                <input type="password" class="form-control" id="password" name="Password" @bind="_credential.Password" placeholder="Password" />
                             </div>
                             <br />
                             <div class="form-group">
                                 <button type="submit" id="login" name="login" class="btn btn-primary">Login</button>
                             </div>
-                        </EditForm>
+                        </form>
                     </div>
                     <div class="col-md-2">
                     </div>
@@ -43,54 +51,39 @@
                     <div class="col-md-2">
                     </div>
                     <div class="col-md-8">
-                        <EditForm class="form-signin mb-4" Model="@_credential" OnSubmit="@Authenticate">
+                        @if (!string.IsNullOrEmpty(_errorMessage))
+                        {
+                            <div class="alert alert-danger" role="alert">
+                                @_errorMessage
+                            </div>
+                        }
+                        
+                        <!-- Traditional HTML form for mobile -->
+                        <form method="post" action="/Account/SignIn" id="loginFormMobile" @onsubmit="HandleSubmit" @onsubmit:preventDefault="true">
                             <div class="form-group">
-                                <label for="user-name">User name</label>
-                                <InputText class="form-control" id="user-name" aria-describedby="emailHelp" placeholder="e-mail" @bind-Value=@_credential.UserName />
+                                <label for="user-name-mobile">User name</label>
+                                <input type="text" class="form-control" id="user-name-mobile" name="UserName" @bind="_credential.UserName" placeholder="e-mail" />
                             </div>
                             <br />
                             <div class="form-group">
-                                <label for="password">Password</label>
-                                <InputText type="password" class="form-control" id="password" placeholder="Password" @bind-Value=@_credential.Password />
+                                <label for="password-mobile">Password</label>
+                                <input type="password" class="form-control" id="password-mobile" name="Password" @bind="_credential.Password" placeholder="Password" />
                             </div>
                             <br />
                             <div class="form-group">
-                                <button type="submit" id="login" name="login" class="btn btn-primary">Login</button>
+                                <button type="submit" id="login-mobile" name="login" class="btn btn-primary">Login</button>
                             </div>
-                        </EditForm>
+                        </form>
                     </div>
                     <div class="col-md-2">
                     </div>
                 </div>
-
-
             </div>
         </div>
         <div class="row d-block d-sm-none">
             <img src="./images/AeroMechNotInline.jpeg" style="max-width: 400px" />
         </div>
     </div>
-
-
 </center>
-
-
-	@* <div class="text-center">
-	... your logo or whatever
-	<EditForm class="form-signin mb-4" Model="@_credential" OnSubmit="@Authenticate">
-	<div class="form-group">
-	<label for="user-name">User name</label>
-	<InputText class="form-control" id="user-name" aria-describedby="emailHelp" placeholder="e-mail" @bind-Value=@_credential.UserName />
-	</div>
-	<div class="form-group">
-	<label for="password">Password</label>
-	<InputText type="password" class="form-control" id="password" placeholder="Password" @bind-Value=@_credential.Password />
-	</div>
-	<div class="form-group">
-	<button type="submit" id="login" name="login" class="btn btn-primary">Login</button>
-	</div>
-	... other stuff, like "forgot my password", etc...
-	</EditForm>
-	</div> *@
 
 

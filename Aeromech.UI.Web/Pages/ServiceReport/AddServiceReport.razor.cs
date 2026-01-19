@@ -97,12 +97,16 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
         private void RemoveLabour(int Id)
         {
-            _serviceReport.Employees.Single(x => x.Id == Id).IsDeleted = true;
+            var employee = _serviceReport.Employees.SingleOrDefault(x => x.Id == Id);
+            if (employee != null)
+                employee.IsDeleted = true;
         }
 
         private void RemovePart(int Id)
         {
-            _serviceReport.Parts.Single(x => x.Id == Id).IsDeleted = true;
+            var part = _serviceReport.Parts.SingleOrDefault(x => x.Id == Id);
+            if (part != null)
+                part.IsDeleted = true;
         }
 
         private double getTotal(ServiceReportEmployeeModel employee)
@@ -115,7 +119,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
         {
             if (employee.RateType == RateType.None || _serviceReport.ClientId == 0) return 0;
 
-            var clientRate = _serviceReport.Client.Rates.SingleOrDefault(x => x.RateType == employee.RateType);
+            var clientRate = _serviceReport.Client?.Rates?.SingleOrDefault(x => x.RateType == employee.RateType);
             employee.RateType = clientRate?.RateType ?? employee.RateType;
             employee.Rate = clientRate?.Rate ?? 0;
             return employee.Rate;
@@ -128,25 +132,26 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
         //}
         void HandleOnChangeUnbound(int employeeId)
         {
-            var employee = new ServiceReportEmployeeModel();
-            var emp = employees.First(x => x.Id == employeeId);
-            employee.FirstName = emp.FirstName;
-            employee.LastName = emp.LastName;
-            // employee.Id = emp.Id;
-            employee.EmployeeId = emp.Id;
-            //employee.Rates = emp.Rate;
-            employee.BirthDate = emp.BirthDate;
-            employee.Email = emp.Email;
-            employee.City = emp.City;
-            employee.AddressId = emp.AddressId;
-            employee.AddressLine1 = emp.AddressLine1;
-            employee.AddressLine2 = emp.AddressLine2;
-            employee.IDNumber = emp.IDNumber;
-            employee.PhoneNumber = emp.PhoneNumber;
-            employee.PostalCode = emp.PostalCode;
-            employee.Title = emp.Title;
-            employee.DutyDate = DateOnly.FromDateTime(DateTime.Now);
+            var emp = employees.FirstOrDefault(x => x.Id == employeeId);
+            if (emp == null) return;
 
+            var employee = new ServiceReportEmployeeModel
+            {
+                FirstName = emp.FirstName,
+                LastName = emp.LastName,
+                EmployeeId = emp.Id,
+                BirthDate = emp.BirthDate,
+                Email = emp.Email,
+                City = emp.City,
+                AddressId = emp.AddressId,
+                AddressLine1 = emp.AddressLine1,
+                AddressLine2 = emp.AddressLine2,
+                IDNumber = emp.IDNumber,
+                PhoneNumber = emp.PhoneNumber,
+                PostalCode = emp.PostalCode,
+                Title = emp.Title,
+                DutyDate = DateOnly.FromDateTime(DateTime.Now)
+            };
 
             _serviceReport.Employees.Add(employee);
             selectedEmployee = new ServiceReportEmployeeModel();
@@ -155,9 +160,10 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
         private async Task HandleOnChangeClient(int clientId)
         {
             _serviceReport.ClientId = clientId;
-            _serviceReport.Client = clients.Single(x => x.Id == clientId);
+            _serviceReport.Client = clients.SingleOrDefault(x => x.Id == clientId);
             _serviceReport.VehicleId = 0;
             vehicles = await VehicleService.GetVehicles(clientId);
+            
             if (_serviceReport.Client == null)
             {
                 _serviceReport.Client = new ClientModel();
@@ -171,7 +177,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             var isValid = editContext.Validate();
             if (isValid)
             {
-                _serviceReport.IsComplete = true;//serviceReport.SalesOrderNumber != null;
+                _serviceReport.IsComplete = true;
             }
             var serviceReportId = await SaveServiceReport(_serviceReport, false);
 
@@ -191,7 +197,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             var isValid = editContext.Validate();
             if (isValid)
             {
-                _serviceReport.IsComplete = true;// serviceReport.SalesOrderNumber != null;
+                _serviceReport.IsComplete = true;
                 var serviceReportId = await SaveServiceReport(_serviceReport, true);
 
                 if (serviceReportId != 0)
@@ -205,7 +211,6 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
                     ToastService.Notify(new(ToastType.Danger, $"Service report could not be saved."));
                 }
             }
-
         }
 
         private async void SaveAndNew()
@@ -213,8 +218,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             var isValid = editContext.Validate();
             if (isValid)
             {
-                _serviceReport.IsComplete = true;// serviceReport.SalesOrderNumber != null; ;
-
+                _serviceReport.IsComplete = true;
             }
             var result = await SaveServiceReport(_serviceReport, false);
             if (result != 0)
@@ -227,7 +231,6 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             {
                 ToastService.Notify(new(ToastType.Danger, $"Service report could not be saved."));
             }
-
         }
 
         private async void SaveAndGenerateServiceReport()
@@ -242,7 +245,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             var isValid = editContext.Validate();
             if (isValid)
             {
-                _serviceReport.IsComplete = true;// serviceReport.SalesOrderNumber != null;
+                _serviceReport.IsComplete = true;
                 var serviceReportId = await SaveServiceReport(_serviceReport, false);
 
                 if (serviceReportId != 0)
@@ -261,10 +264,9 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
         private string SearchTerm { get; set; } = string.Empty;
         private IEnumerable<PartModel> FilteredParts =>
-        parts.Where(p => string.IsNullOrEmpty(SearchTerm) ||
-                         p.PartCode.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-                         p.PartDescription.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
-
+            parts.Where(p => string.IsNullOrEmpty(SearchTerm) ||
+                             p.PartCode.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
+                             p.PartDescription.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase));
 
         private async Task<int> SaveServiceReport(ServiceReportModel serviceReport, bool isQuote)
         {
@@ -296,19 +298,20 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             SearchTerm = "";
             if (partId == 999999)
             {
-                var part = new ServiceReportPartModel { Id = partId };
-
-                part.PartCode = "AdHock";
-                part.PartDescription = "";
-                part.SellingPrice = 0;
-                part.CostPrice = 0;
-                part.ProductClass = "";
-                part.Bin = "";
-                part.CycleCount = 0;
-                part.QtyOnHand = 0;
-                //part.Warehouse = ;
-                part.SupplierCode = "";
-                part.IsAdHockPart = true;
+                var part = new ServiceReportPartModel
+                {
+                    Id = partId,
+                    PartCode = "AdHock",
+                    PartDescription = "",
+                    SellingPrice = 0,
+                    CostPrice = 0,
+                    ProductClass = "",
+                    Bin = "",
+                    CycleCount = 0,
+                    QtyOnHand = 0,
+                    SupplierCode = "",
+                    IsAdHockPart = true
+                };
 
                 _serviceReport.Parts.Add(part);
                 selectedPart = new ServiceReportPartModel();
@@ -320,32 +323,35 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
                     return;
                 }
 
-                var part = new ServiceReportPartModel { Id = partId };
-                var prt = parts.First(x => x.Id == partId);
-                part.Id = prt.Id;
-                part.PartId = partId;
-                part.PartCode = prt.PartCode;
-                part.PartDescription = prt.PartDescription;
-                part.SellingPrice = Convert.ToDouble(prt.CostPrice);
-                part.CostPrice = prt.CostPrice;
-                part.ProductClass = prt.ProductClass;
-                part.Bin = prt.Bin;
-                part.CycleCount = prt.CycleCount;
-                part.QtyOnHand = prt.QtyOnHand;
-                part.Warehouse = prt.Warehouse;
-                part.SupplierCode = prt.SupplierCode;
-                part.IsAdHockPart = false;
+                var prt = parts.FirstOrDefault(x => x.Id == partId);
+                if (prt == null) return;
+
+                var part = new ServiceReportPartModel
+                {
+                    Id = prt.Id,
+                    PartId = partId,
+                    PartCode = prt.PartCode,
+                    PartDescription = prt.PartDescription,
+                    SellingPrice = Convert.ToDouble(prt.CostPrice),
+                    CostPrice = prt.CostPrice,
+                    ProductClass = prt.ProductClass,
+                    Bin = prt.Bin,
+                    CycleCount = prt.CycleCount,
+                    QtyOnHand = prt.QtyOnHand,
+                    Warehouse = prt.Warehouse,
+                    SupplierCode = prt.SupplierCode,
+                    IsAdHockPart = false
+                };
 
                 _serviceReport.Parts.Add(part);
                 selectedPart = new ServiceReportPartModel();
             }
-
         }
 
         void HandleOnChangeVehicle(int vehicleId)
         {
             _serviceReport.VehicleId = vehicleId;
-            _serviceReport.Vehicle = vehicles.First(x => x.Id == vehicleId);
+            _serviceReport.Vehicle = vehicles.FirstOrDefault(x => x.Id == vehicleId);
         }
 
         private async Task OnHideModalClick()
