@@ -31,7 +31,7 @@ namespace AeroMech.UI.Web.Services
         public async Task<int> AddServiceReport(ServiceReportModel serviceReport, bool isQuote)
         {
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-            
+
             ServiceReport sr = _mapper.Map<ServiceReport>(serviceReport);
 
             if (serviceReport.VehicleId > 0)
@@ -118,7 +118,7 @@ namespace AeroMech.UI.Web.Services
         public async Task<int> EditServiceReport(ServiceReportModel serviceReport, bool isQuote)
         {
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-            
+
             ServiceReport serviceReportToEdit = await _aeroMechDBContext.ServiceReports
                 .Include(x => x.Vehicle)
                 .Include(x => x.Client)
@@ -289,6 +289,12 @@ namespace AeroMech.UI.Web.Services
                 serviceReportToEdit.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => (int?)x.QuoteNumber) ?? 0) + 1;
             }
 
+            var currentVehicleHours = serviceReportToEdit?.Vehicle?.EngineHours ?? 0;
+
+            serviceReportToEdit?.Vehicle?.EngineHours =
+                currentVehicleHours < serviceReport.VehicleHours ?
+                   serviceReport.VehicleHours : currentVehicleHours;
+
             await _aeroMechDBContext.SaveChangesAsync();
 
             foreach (var employee in serviceReportToEdit.Employees)
@@ -296,13 +302,14 @@ namespace AeroMech.UI.Web.Services
                 var actualEmployee = await _aeroMechDBContext.Employees.AsNoTracking().SingleAsync(x => x.Id == employee.EmployeeId);
                 employee.Employee = actualEmployee;
             }
-            
+
             foreach (var part in serviceReportToEdit.Parts)
             {
                 var actualPart = await _aeroMechDBContext.Parts.AsNoTracking().SingleAsync(x => x.Id == part.PartId);
                 part.Part = actualPart;
             }
-            
+
+
             _memoryCache.Set(serviceReport.Id, _mapper.Map<ServiceReportModel>(serviceReportToEdit), TimeSpan.FromMinutes(30));
 
             return serviceReportToEdit.Id;
@@ -313,7 +320,7 @@ namespace AeroMech.UI.Web.Services
             if (!_memoryCache.TryGetValue(Id, out ServiceReportModel serviceReportModel))
             {
                 using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-                
+
                 var serviceReport = await _aeroMechDBContext.ServiceReports
                     .AsNoTracking()
                     .Include(a => a.Parts)
@@ -336,13 +343,13 @@ namespace AeroMech.UI.Web.Services
 
             return serviceReportModel;
         }
-        
+
         public async Task<byte[]> DownloadServiceReport(int serviceReportId)
         {
             if (!_memoryCache.TryGetValue(serviceReportId, out ServiceReportModel serviceReportModel))
             {
                 using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-                
+
                 var serviceResport = await _aeroMechDBContext.ServiceReports
                 .AsNoTracking()
                .Include(x => x.Vehicle)
@@ -370,7 +377,7 @@ namespace AeroMech.UI.Web.Services
         public async Task<byte[]> DownloadQuote(int serviceReportId)
         {
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-            
+
             var serviceResport = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
            .Include(x => x.Vehicle)
@@ -393,7 +400,7 @@ namespace AeroMech.UI.Web.Services
                 fromDate = DateTime.MinValue;
 
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-            
+
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
                  .Include(x => x.Vehicle)
@@ -414,7 +421,7 @@ namespace AeroMech.UI.Web.Services
                 fromDate = DateTime.MinValue;
 
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-            
+
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
                .Include(x => x.Vehicle)

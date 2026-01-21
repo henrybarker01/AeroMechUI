@@ -81,7 +81,7 @@ namespace AeroMech.API.Reports
                     {
                         Date = serviceReport.ReportDate.ToString("dd/MM/yyyy"),
                         Client = serviceReport.Client.Name,
-                        EngineHours = serviceReport.Vehicle.EngineHours.ToString(),
+                        EngineHours = serviceReport.VehicleHours.ToString() ?? "0", //serviceReport.Vehicle.EngineHours.ToString(),
                         MachineType = serviceReport.Vehicle.MachineType,
                         SerialNumber = serviceReport.Vehicle.SerialNumber,
                         Instructions = serviceReport.Instruction

@@ -1,18 +1,14 @@
 using AeroMech.API.Reports;
 using AeroMech.Areas.Identity;
 using AeroMech.Data.Persistence;
-using AeroMech.Models;
 using AeroMech.UI.Web.Extentions;
 using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
-using System.Reflection;
-using AeroMech.Areas.Identity;
-using AeroMech.UI.Web.Services;
 using System.Globalization;
+using AeroMech.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -82,7 +78,7 @@ builder.Services.AddBlazorBootstrap();
 builder.Services.AddMemoryCache();
 builder.Services.AddHttpClient();
 
-builder.Services.AddAutoMapper(Assembly.GetAssembly(typeof(AeroMech.Models.AutomapperProfiles.PartsProfile)));
+builder.Services.AddAutomapperProfiles();
 
 QuestPDF.Settings.License = LicenseType.Community;
 
