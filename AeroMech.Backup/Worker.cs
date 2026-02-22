@@ -11,7 +11,7 @@ namespace AeroMech.Backup
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            logger.LogInformation("SqlBackupToOneDriveWorker starting...");
+            logger.LogInformation("DatabaseBackupWorker starting...");
 
             if (_options.BackupAtStartup)
             {
@@ -21,7 +21,7 @@ namespace AeroMech.Backup
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                var now = DateTimeOffset.Now;
+                var now = DateTimeOffset.UtcNow;
                 var nextRun = GetNextRunTime(now, _options.RunAtHour, _options.RunAtMinute);
                 var delay = nextRun - now;
 

@@ -69,7 +69,7 @@ namespace AeroMech.UI.Web.Services
                     var adjustment = new StockAdjustment()
                     {
                         PartId = part.Id,
-                        AdjustementDate = DateTime.Now,
+                        AdjustementDate = DateTimeOffset.UtcNow,
                         WarehouseId = 1,
                         QTY = part.QTY * -1,
                         AdjustedById = new Guid(),
@@ -186,7 +186,7 @@ namespace AeroMech.UI.Web.Services
                             _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
                             {
                                 PartId = p.PartId,
-                                AdjustementDate = DateTime.Now,
+                                AdjustementDate = DateTimeOffset.UtcNow,
                                 WarehouseId = 1,
                                 QTY = p.Qty,
                                 AdjustedById = new Guid(),
@@ -199,7 +199,7 @@ namespace AeroMech.UI.Web.Services
                             _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
                             {
                                 PartId = p.PartId,
-                                AdjustementDate = DateTime.Now,
+                                AdjustementDate = DateTimeOffset.UtcNow,
                                 WarehouseId = 1,
                                 QTY = part.QTY * -1,
                                 AdjustedById = new Guid(),
@@ -213,7 +213,7 @@ namespace AeroMech.UI.Web.Services
                             _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
                             {
                                 PartId = p.PartId,
-                                AdjustementDate = DateTime.Now,
+                                AdjustementDate = DateTimeOffset.UtcNow,
                                 WarehouseId = 1,
                                 QTY = part.QTY,
                                 AdjustedById = new Guid(),
@@ -243,7 +243,7 @@ namespace AeroMech.UI.Web.Services
                         _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
                         {
                             PartId = part.Id,
-                            AdjustementDate = DateTime.Now,
+                            AdjustementDate = DateTimeOffset.UtcNow,
                             WarehouseId = 1,
                             QTY = part.QTY * -1,
                             AdjustedById = new Guid(),
@@ -394,10 +394,10 @@ namespace AeroMech.UI.Web.Services
             return Document.Create(_quote.Compose).GeneratePdf();
         }
 
-        public async Task<List<ServiceReportModel>> GetRecentServiceReports(DateTime fromDate = default)
+        public async Task<List<ServiceReportModel>> GetRecentServiceReports(DateTimeOffset fromDate = default)
         {
             if (fromDate == default)
-                fromDate = DateTime.MinValue;
+                fromDate = DateTimeOffset.MinValue;
 
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
@@ -415,10 +415,10 @@ namespace AeroMech.UI.Web.Services
             return _mapper.Map<IEnumerable<ServiceReportModel>>(serviceReports).ToList();
         }
 
-        public async Task<List<ServiceReportModel>> GetRecentQuotes(DateTime fromDate = default)
+        public async Task<List<ServiceReportModel>> GetRecentQuotes(DateTimeOffset fromDate = default)
         {
             if (fromDate == default)
-                fromDate = DateTime.MinValue;
+                fromDate = DateTimeOffset.MinValue;
 
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 

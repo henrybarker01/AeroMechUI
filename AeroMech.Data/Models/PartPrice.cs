@@ -22,7 +22,7 @@ namespace AeroMech.Data.Models
 		public double SellingPrice { get; set; }
 
 		[Required]
-		public DateTime EffectiveDate { get; set; }
+		public DateTimeOffset EffectiveDate { get; set; }
 
 		public bool IsDeleted { get; set; }
 	}

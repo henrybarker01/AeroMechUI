@@ -37,32 +37,36 @@ namespace AeroMech.UI.Web.Pages.Login
 
             try
             {
-                // Use traditional window navigation for proper cookie handling
-                var script = $@"
-                    fetch('/Account/SignIn', {{
-                        method: 'POST',
-                        headers: {{ 'Content-Type': 'application/json' }},
-                        body: JSON.stringify({{ userName: '{_credential.UserName}', password: '{_credential.Password}' }}),
-                        credentials: 'same-origin'
-                    }})
-                    .then(response => response.json())
-                    .then(data => {{
-                        if (data.success) {{
-                            window.location.href = '/';
-                        }} else {{
-                            console.error('Login failed:', data.message);
-                        }}
-                    }})
-                    .catch(error => console.error('Error:', error));
-                ";
+                var result = await JSRuntime.InvokeAsync<SignInResult>(
+                    "aeroMechAuth.signIn",
+                    _credential.UserName,
+                    _credential.Password);
 
-                await JSRuntime.InvokeVoidAsync("eval", script);
+                if (result?.Success == true)
+                {
+                    _navigationManager.NavigateTo(result.RedirectUrl ?? "/", forceLoad: true);
+                    return;
+                }
+
+                _errorMessage = string.IsNullOrWhiteSpace(result?.Message)
+                    ? "Invalid username or password."
+                    : result!.Message;
             }
             catch (Exception ex)
             {
-                _errorMessage = $"An error occurred during login: {ex.Message}";
+                _errorMessage = "An error occurred during login.";
+            }
+            finally
+            {
                 _loaderService.HideLoader();
             }
+        }
+
+        private sealed class SignInResult
+        {
+            public bool Success { get; set; }
+            public string? Message { get; set; }
+            public string? RedirectUrl { get; set; }
         }
     }
 }

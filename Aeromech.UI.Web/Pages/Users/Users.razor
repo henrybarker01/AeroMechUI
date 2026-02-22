@@ -7,6 +7,16 @@
         <EditForm Model="@_user" OnValidSubmit=@AddUser>
             <DataAnnotationsValidator />
             <div class="container-fluid">
+                @if (!string.IsNullOrWhiteSpace(_modalErrorMessage))
+                {
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="alert alert-danger" role="alert">
+                                @_modalErrorMessage
+                            </div>
+                        </div>
+                    </div>
+                }
                 <div class="row">
                     <div class="form-group">
                         <label for="email">Email:</label>
@@ -26,6 +36,18 @@
                         <label for="phone-number">Phone Number:</label>
                         <InputText @bind-Value="_user.PhoneNumber" type="phone" class="form-control" id="phone-nunmer"></InputText>
                         <ValidationMessage For="() => _user.PhoneNumber" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="password">Password:</label>
+                        <InputText @bind-Value="_password" type="password" class="form-control" id="password"></InputText>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="confirm-password">Confirm Password:</label>
+                        <InputText @bind-Value="_confirmPassword" type="password" class="form-control" id="confirm-password"></InputText>
                     </div>
                 </div>
             </div>

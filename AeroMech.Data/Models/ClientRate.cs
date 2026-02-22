@@ -10,7 +10,7 @@ namespace AeroMech.Data.Models
 		public int Id { get; set; }
 
 		[Required]
-		public DateTime EffectiveDate { get; set; }
+		public DateTimeOffset EffectiveDate { get; set; }
 
 		[Required]
 		[Column(TypeName = "decimal(8, 2)")]

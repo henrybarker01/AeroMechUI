@@ -9,36 +9,28 @@ using Microsoft.EntityFrameworkCore;
 using QuestPDF.Infrastructure;
 using System.Globalization;
 using AeroMech.Models;
+using AeroMech.UI.Web.DependencyInjection;
 
 var builder = WebApplication.CreateBuilder(args);
-
-builder.Services.AddScoped<ClientService, ClientService>();
-builder.Services.AddScoped<EmployeeService, EmployeeService>();
-builder.Services.AddScoped<PartsService, PartsService>();
-builder.Services.AddScoped<VehicleService, VehicleService>();
-builder.Services.AddTransient<ServiceReportService, ServiceReportService>();
-builder.Services.AddScoped<UserService, UserService>();
-builder.Services.AddScoped<LoaderService, LoaderService>();
-builder.Services.AddSingleton<ConfirmationService>();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection") ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
 
 // Add DbContextFactory for Blazor Server scenarios
 builder.Services.AddDbContextFactory<AeroMechDBContext>(options =>
 {
-    options.UseSqlServer(connectionString);
+    options.UseNpgsql(connectionString);
 }, ServiceLifetime.Scoped);
 
 // Add DbContext for Identity and other services that require it
-builder.Services.AddDbContext<AeroMechDBContext>(options =>
-{
-    options.UseSqlServer(connectionString);
-}, ServiceLifetime.Scoped);
+//builder.Services.AddDbContext<AeroMechDBContext>(options =>
+//{
+//    options.UseNpgsql(connectionString);
+//}, ServiceLifetime.Scoped);
 
-builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+//builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
 // Configure ASP.NET Core Identity with persistent cookies
-builder.Services.AddDefaultIdentity<IdentityUser>(options => 
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false;
 })
@@ -51,8 +43,8 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LogoutPath = "/logout";
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() 
-        ? CookieSecurePolicy.SameAsRequest 
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+        ? CookieSecurePolicy.SameAsRequest
         : CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Lax;
     options.ExpireTimeSpan = TimeSpan.FromDays(30);
@@ -71,8 +63,7 @@ builder.Services.AddServerSideBlazor();
 // Register the authentication state provider
 builder.Services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<IdentityUser>>();
 
-builder.Services.AddScoped<FieldServiceReport, FieldServiceReport>();
-builder.Services.AddScoped<Quote, Quote>();
+builder.Services.AddServices();
 
 builder.Services.AddBlazorBootstrap();
 builder.Services.AddMemoryCache();
@@ -84,8 +75,8 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 var app = builder.Build();
 
-// Apply EF Core migrations at startup (abstracted)
-app.MigrateDatabase<AeroMechDBContext>();
+app.MigrateDatabase();
+
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

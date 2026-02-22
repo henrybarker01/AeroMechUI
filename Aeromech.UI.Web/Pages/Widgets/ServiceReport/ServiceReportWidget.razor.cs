@@ -15,7 +15,7 @@ namespace AeroMech.UI.Web.Pages.Widgets.ServiceReport
         {
             if (firstRender)
             {
-                serviceReports = await ServiceReportService.GetRecentServiceReports(DateTime.Now.AddMonths(-1));
+                serviceReports = await ServiceReportService.GetRecentServiceReports(DateTimeOffset.UtcNow.AddMonths(-1));
                 await InvokeAsync(StateHasChanged);
             }
         }

@@ -10,10 +10,9 @@ namespace AeroMech.UI.Web.Pages.Widgets.BirthdayList
 
         List<BirthdayList> birthdays { get; set; } = new List<BirthdayList>();
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
+        protected override async Task OnInitializedAsync()
         {
-            if (firstRender)
-            {
+            
                 var clients = await ClientService.GetClients();
                 foreach (var client in clients)
                 {
@@ -45,7 +44,7 @@ namespace AeroMech.UI.Web.Pages.Widgets.BirthdayList
                 }
 
                 await InvokeAsync(StateHasChanged);
-            }
+             
         }
     }
 

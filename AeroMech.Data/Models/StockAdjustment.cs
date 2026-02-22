@@ -17,7 +17,7 @@ namespace AeroMech.Data.Models
         public int WarehouseId { get; set; }
 
         public int QTY {  get; set; }
-        public DateTime AdjustementDate { get; set; }
+        public DateTimeOffset AdjustementDate { get; set; }
 
         public Guid AdjustedById { get; set; }
 

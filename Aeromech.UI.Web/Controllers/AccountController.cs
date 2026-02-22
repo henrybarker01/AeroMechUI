@@ -35,35 +35,6 @@ namespace AeroMech.UI.Web.Controllers
                 return BadRequest(new { success = false, message = "Username and password are required." });
             }
 
-            // Check if any users exist, if not create default admin
-            var hasUsers = await _context.Users.AnyAsync();
-            if (!hasUsers)
-            {
-                var defaultUser = new IdentityUser()
-                {
-                    NormalizedEmail = "AEMADMINISTRATOR@VMI.COM",
-                    NormalizedUserName = "AEMADMINISTRATOR",
-                    PhoneNumber = "1234567890",
-                    UserName = "AEMAdministrator",
-                    TwoFactorEnabled = false,
-                    Email = "AEMAdministrator@vmi.com",
-                    EmailConfirmed = true,
-                    PhoneNumberConfirmed = true,
-                    LockoutEnabled = false,
-                };
-                
-                var createResult = await _userStore.CreateAsync(defaultUser, CancellationToken.None);
-                if (createResult.Succeeded)
-                {
-                    var addedUser = await _context.Users.SingleAsync(x => x.Email == defaultUser.Email);
-                    await _userManager.AddPasswordAsync(addedUser, "P@ssw0rd");
-                }
-                
-                // Auto-login with default credentials
-                credential.UserName = "AEMAdministrator";
-                credential.Password = "P@ssw0rd";
-            }
-
             var user = await _userManager.FindByNameAsync(credential.UserName);
             if (user == null)
             {

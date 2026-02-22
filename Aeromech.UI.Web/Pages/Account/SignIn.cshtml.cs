@@ -42,16 +42,16 @@ namespace AeroMech.UI.Web.Pages.Account
             try
             {
                 Credential credential;
-                
+
                 // Try to read from JSON body first (for AJAX calls)
                 if (Request.ContentType?.Contains("application/json") == true)
                 {
                     using var reader = new StreamReader(Request.Body);
                     var body = await reader.ReadToEndAsync();
                     _logger.LogInformation("SignIn request received (JSON). Body length: {Length}", body.Length);
-                    credential = JsonSerializer.Deserialize<Credential>(body, new JsonSerializerOptions 
-                    { 
-                        PropertyNameCaseInsensitive = true 
+                    credential = JsonSerializer.Deserialize<Credential>(body, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
                     });
                 }
                 else
@@ -66,9 +66,9 @@ namespace AeroMech.UI.Web.Pages.Account
                     _logger.LogWarning("Invalid credential data received");
                     if (Request.ContentType?.Contains("application/json") == true)
                     {
-                        return new JsonResult(new { success = false, message = "Username and password are required." }) 
-                        { 
-                            StatusCode = 400 
+                        return new JsonResult(new { success = false, message = "Username and password are required." })
+                        {
+                            StatusCode = 400
                         };
                     }
                     return RedirectToPage("/Login");
@@ -76,51 +76,15 @@ namespace AeroMech.UI.Web.Pages.Account
 
                 _logger.LogInformation("Attempting login for user: {UserName}", credential.UserName);
 
-                // Check if any users exist, if not create default admin
-                var hasUsers = await _context.Users.AnyAsync();
-                if (!hasUsers)
-                {
-                    _logger.LogInformation("No users found, creating default administrator");
-                    
-                    var defaultUser = new IdentityUser()
-                    {
-                        NormalizedEmail = "AEMADMINISTRATOR@VMI.COM",
-                        NormalizedUserName = "AEMADMINISTRATOR",
-                        PhoneNumber = "1234567890",
-                        UserName = "AEMAdministrator",
-                        TwoFactorEnabled = false,
-                        Email = "AEMAdministrator@vmi.com",
-                        EmailConfirmed = true,
-                        PhoneNumberConfirmed = true,
-                        LockoutEnabled = false,
-                    };
-                    
-                    var createResult = await _userStore.CreateAsync(defaultUser, CancellationToken.None);
-                    if (createResult.Succeeded)
-                    {
-                        var addedUser = await _context.Users.SingleAsync(x => x.Email == defaultUser.Email);
-                        await _userManager.AddPasswordAsync(addedUser, "P@ssw0rd");
-                        _logger.LogInformation("Default administrator created successfully");
-                    }
-                    else
-                    {
-                        _logger.LogError("Failed to create default administrator: {Errors}", 
-                            string.Join(", ", createResult.Errors.Select(e => e.Description)));
-                    }
-                    
-                    credential.UserName = "AEMAdministrator";
-                    credential.Password = "P@ssw0rd";
-                }
-
                 var user = await _userManager.FindByNameAsync(credential.UserName);
                 if (user == null)
                 {
                     _logger.LogWarning("User not found: {UserName}", credential.UserName);
                     if (Request.ContentType?.Contains("application/json") == true)
                     {
-                        return new JsonResult(new { success = false, message = "Invalid username or password." }) 
-                        { 
-                            StatusCode = 401 
+                        return new JsonResult(new { success = false, message = "Invalid username or password." })
+                        {
+                            StatusCode = 401
                         };
                     }
                     return RedirectToPage("/Login");
@@ -132,9 +96,9 @@ namespace AeroMech.UI.Web.Pages.Account
                     _logger.LogWarning("Password check failed for user: {UserName}", credential.UserName);
                     if (Request.ContentType?.Contains("application/json") == true)
                     {
-                        return new JsonResult(new { success = false, message = "Invalid username or password." }) 
-                        { 
-                            StatusCode = 401 
+                        return new JsonResult(new { success = false, message = "Invalid username or password." })
+                        {
+                            StatusCode = 401
                         };
                     }
                     return RedirectToPage("/Login");
@@ -150,7 +114,7 @@ namespace AeroMech.UI.Web.Pages.Account
                 {
                     return new JsonResult(new { success = true, message = "Login successful.", redirectUrl = "/" });
                 }
-                
+
                 return Redirect("/");
             }
             catch (Exception ex)
@@ -158,9 +122,9 @@ namespace AeroMech.UI.Web.Pages.Account
                 _logger.LogError(ex, "Error during sign-in");
                 if (Request.ContentType?.Contains("application/json") == true)
                 {
-                    return new JsonResult(new { success = false, message = "An error occurred during login." }) 
-                    { 
-                        StatusCode = 500 
+                    return new JsonResult(new { success = false, message = "An error occurred during login." })
+                    {
+                        StatusCode = 500
                     };
                 }
                 return RedirectToPage("/Login");

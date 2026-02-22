@@ -15,7 +15,7 @@ namespace AeroMech.UI.Web.Pages.Widgets.Quotes
         {
             if (firstRender)
             {
-                quotes = await ServiceReportService.GetRecentQuotes(DateTime.Now.AddMonths(-1));
+                quotes = await ServiceReportService.GetRecentQuotes(DateTimeOffset.UtcNow.AddMonths(-1));
                 await InvokeAsync(StateHasChanged);
             }
         }

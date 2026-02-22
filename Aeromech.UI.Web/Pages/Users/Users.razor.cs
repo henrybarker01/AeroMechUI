@@ -16,6 +16,9 @@ namespace AeroMech.UI.Web.Pages.Users
         private Modal _modal = default!;
         private IdentityUser _user = new IdentityUser();
         private List<IdentityUser>? _users = new List<IdentityUser>();
+        private string _password = string.Empty;
+        private string _confirmPassword = string.Empty;
+        private string _modalErrorMessage = string.Empty;
 
         private bool MatchesSearch(IdentityUser user, string term)
         {
@@ -44,23 +47,51 @@ namespace AeroMech.UI.Web.Pages.Users
         private async Task AddUserClick()
         {
             _title = "Add User";
+            _user = new IdentityUser();
+            _password = string.Empty;
+            _confirmPassword = string.Empty;
+            _modalErrorMessage = string.Empty;
             await _modal.ShowAsync();
         }
 
-        private async void AddUser()
+        private async Task AddUser()
         {
+            _modalErrorMessage = string.Empty;
+
+            if (string.IsNullOrWhiteSpace(_password))
+            {
+                _modalErrorMessage = "Password is required.";
+                return;
+            }
+
+            if (!string.Equals(_password, _confirmPassword, StringComparison.Ordinal))
+            {
+                _modalErrorMessage = "Passwords do not match.";
+                return;
+            }
+
             _user.EmailConfirmed = true;
             _user.LockoutEnabled = true;
             _user.PhoneNumberConfirmed = true;
             _user.TwoFactorEnabled = false;
 
             _loaderService.ShowLoader();
-            var result = await _userService.CreateUser(_user);
-            if (result.Succeeded)
+
+            try
             {
-                await OnHideModalClick();
+                var result = await _userService.CreateUser(_user, _password);
+                if (result.Succeeded)
+                {
+                    await OnHideModalClick();
+                    return;
+                }
+
+                _modalErrorMessage = string.Join(" ", result.Errors.Select(e => e.Description));
             }
-            _loaderService.HideLoader();
+            finally
+            {
+                _loaderService.HideLoader();
+            }
         }
 
         private async Task DeleteUser(IdentityUser user)

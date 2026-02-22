@@ -9,7 +9,7 @@ namespace AeroMech.Models
         public int Id { get; set; }
 
         [Required(ErrorMessage = "Report Date is required")]
-        public DateTime ReportDate { get; set; }
+        public DateTimeOffset ReportDate { get; set; }
 
        // [Required(ErrorMessage = "Sales Order Number is required")]
         public string SalesOrderNumber { get; set; }

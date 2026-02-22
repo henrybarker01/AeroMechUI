@@ -6,7 +6,7 @@ namespace AeroMech.Models
 	{
 		public int Id { get; set; }
 
-		public DateTime EffectiveDate { get; set; }
+		public DateTimeOffset EffectiveDate { get; set; }
 
 		public double Rate { get; set; }
 		 

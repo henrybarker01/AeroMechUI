@@ -10,7 +10,7 @@ namespace AeroMech.Models.Models
 {
     public class StockTakeModel
     {
-        public DateTime StockTakeDate { get; set; }
+        public DateTimeOffset StockTakeDate { get; set; }
         public string StockTakeBy { get; set; }
         public string Type { get; set; }
         public StockTakeStatus Status { get; set; }
@@ -19,7 +19,7 @@ namespace AeroMech.Models.Models
 
         public int WarehouseId { get; set; }
         public virtual Warehouse Warehouse { get; set; }
-        public DateTime CompletedDate { get; set; }
+        public DateTimeOffset CompletedDate { get; set; }
 
         public virtual ICollection<StockTakeParts> StockTakeParts { get; set; }
 

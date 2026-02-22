@@ -35,7 +35,7 @@ namespace AeroMech.Models.AutomapperProfiles
                         new ClientRateModel()
                             {
                                 Rate = e.Rates.FirstOrDefault().Rate,
-                                EffectiveDate = DateTime.Now,
+                                EffectiveDate = DateTimeOffset.UtcNow,
                                 ClientId = e.Id,
                                 IsActive = true,
                                 RateType =  e.Rates.FirstOrDefault().RateType,

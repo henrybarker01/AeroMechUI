@@ -7,7 +7,7 @@ namespace AeroMech.Data.Models
 		[Key]
 		public int Id { get; set; }
 
-		public DateTime ReportDate { get; set; }
+		public DateTimeOffset ReportDate { get; set; }
 
 		public string? SalesOrderNumber { get; set; }
 

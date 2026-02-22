@@ -52,7 +52,7 @@ namespace AeroMech.UI.Web.Services
                 AeroMech.Data.Models.Part prt = _mapper.Map<AeroMech.Data.Models.Part>(part);
                 prt.Prices = new List<PartPrice>() { new PartPrice() {
                     CostPrice = Convert.ToDouble(part.CostPrice),
-                    EffectiveDate = DateTime.Now,
+                    EffectiveDate = DateTimeOffset.UtcNow,
                     IsDeleted = false,
                     SellingPrice = 0
                 }};
@@ -80,7 +80,7 @@ namespace AeroMech.UI.Web.Services
                 {
                     partToEdit.Prices = new List<PartPrice>() { new PartPrice() {
                         CostPrice = Convert.ToDouble(part.CostPrice),
-                        EffectiveDate = DateTime.Now,
+                        EffectiveDate = DateTimeOffset.UtcNow,
                         IsDeleted = false,
                         SellingPrice = 0
                     }};

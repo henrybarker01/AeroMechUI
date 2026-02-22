@@ -46,7 +46,7 @@ namespace AeroMech.UI.Web.Services
                 WarehouseId = stockTake.WarehouseId,
                 Remarks = stockTake.Remarks,
                // CreatedBy = stockTake.CreatedBy,
-                CreatedAt = DateTime.Now,
+                CreatedAt = DateTimeOffset.UtcNow,
                 Status = StockTakeStatus.Pending,
                 Type = "StockTake",
                 StockTakeBy = stockTake.StockTakeBy,

@@ -57,7 +57,7 @@ namespace AeroMech.UI.Web.Services
                 newClient.Rates.Add(new ClientRate()
                 {
                     Rate = Convert.ToDecimal(rate.Rate),
-                    EffectiveDate = DateTime.Now,
+                    EffectiveDate = DateTimeOffset.UtcNow,
                     ClientId = client.Id,
                     RateType = rate.RateType,
                     IsActive = true,
@@ -101,7 +101,7 @@ namespace AeroMech.UI.Web.Services
                     clientToEdit.Rates.Add(new ClientRate()
                     {
                         Rate = Convert.ToDecimal(rate.Rate),
-                        EffectiveDate = DateTime.Now,
+                        EffectiveDate = DateTimeOffset.UtcNow,
                         ClientId = client.Id,
                         RateType = rate.RateType,
                         IsActive = true,
@@ -113,7 +113,7 @@ namespace AeroMech.UI.Web.Services
                 clientToEdit.Rates.ForEach(rate =>
                 {
                     rate.Rate = Convert.ToDecimal(client.Rates.FirstOrDefault(x => x.RateType == rate.RateType).Rate);
-                    rate.EffectiveDate = DateTime.Now;
+                    rate.EffectiveDate = DateTimeOffset.UtcNow;
                     rate.IsActive = true;
                 });
             }

@@ -1,30 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using AeroMech.Data.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 namespace AeroMech.UI.Web.Extentions
 {
     public static class WebApplicationExtensions
     {
-        /// <summary>
-        /// Create a scope, resolve an IDbContextFactory for TContext, create the context and apply pending migrations.
-        /// Throws on error after logging.
-        /// </summary>
-        public static WebApplication MigrateDatabase<TContext>(this WebApplication app) where TContext : DbContext
+        public static WebApplication MigrateDatabase(this WebApplication app)
         {
-            using var scope = app.Services.CreateScope();
-            var services = scope.ServiceProvider;
-            var logger = services.GetService<ILogger<TContext>>() ?? services.GetRequiredService<ILoggerFactory>().CreateLogger(typeof(TContext));
-
-            try
+            using (var scope = app.Services.CreateScope())
             {
-                var dbFactory = services.GetRequiredService<IDbContextFactory<TContext>>();
-                using var context = dbFactory.CreateDbContext();
-                context.Database.Migrate();
-                logger.LogInformation("Database migrations applied for {Context}.", typeof(TContext).Name);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex, "An error occurred while migrating the database for {Context}.", typeof(TContext).Name);
-                throw;
+                var db = scope.ServiceProvider.GetRequiredService<AeroMechDBContext>();
+                db.Database.Migrate();
             }
 
             return app;
