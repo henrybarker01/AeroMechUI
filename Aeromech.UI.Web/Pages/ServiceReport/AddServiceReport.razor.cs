@@ -90,7 +90,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
             _serviceReport.Parts = new List<ServiceReportPartModel>();
 
-            _serviceReport.ReportDate = DateTimeOffset.UtcNow;
+            _serviceReport.ReportDate = new DateTimeOffset(DateTime.UtcNow.Date, TimeSpan.Zero); 
 
             StateHasChanged();
         }

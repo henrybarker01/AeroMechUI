@@ -28,11 +28,17 @@ namespace AeroMech.UI.Web.Services
             _memoryCache = memoryCache;
         }
 
+        // Date picker is date-only. Persist as UTC midnight for the selected calendar date (no timezone day-shift).
+        private static DateTimeOffset NormalizeDateOnlyToUtc(DateTimeOffset value)
+            => new DateTimeOffset(value.Date, TimeSpan.Zero);
+
         public async Task<int> AddServiceReport(ServiceReportModel serviceReport, bool isQuote)
         {
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
             ServiceReport sr = _mapper.Map<ServiceReport>(serviceReport);
+
+            sr.ReportDate = NormalizeDateOnlyToUtc(serviceReport.ReportDate);
 
             if (serviceReport.VehicleId > 0)
             {
@@ -127,7 +133,7 @@ namespace AeroMech.UI.Web.Services
                 .Include(r => r.Employees)
                 .SingleAsync(x => x.Id == serviceReport.Id);
 
-            serviceReportToEdit.ReportDate = serviceReport.ReportDate;
+            serviceReportToEdit.ReportDate = NormalizeDateOnlyToUtc(serviceReport.ReportDate);
             serviceReportToEdit.DetailedServiceReport = serviceReport.DetailedServiceReport;
             serviceReportToEdit.VehicleHours = serviceReport.VehicleHours;
             serviceReportToEdit.VehicleId = serviceReport.VehicleId;
@@ -398,6 +404,8 @@ namespace AeroMech.UI.Web.Services
         {
             if (fromDate == default)
                 fromDate = DateTimeOffset.MinValue;
+            else
+                fromDate = fromDate.ToUniversalTime();
 
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
@@ -419,6 +427,8 @@ namespace AeroMech.UI.Web.Services
         {
             if (fromDate == default)
                 fromDate = DateTimeOffset.MinValue;
+            else
+                fromDate = fromDate.ToUniversalTime();
 
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
