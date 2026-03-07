@@ -22,6 +22,11 @@ namespace AeroMech.Data.Persistence
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {        
             base.OnModelCreating(modelBuilder);
+
+            // Configure TimesheetGapTypes enum to be stored as string in database
+            modelBuilder.Entity<TimesheetEmployeeDetail>()
+                .Property(e => e.Description)
+                .HasConversion<string>();
         }
 
         public DbSet<Client> Clients { get; set; }

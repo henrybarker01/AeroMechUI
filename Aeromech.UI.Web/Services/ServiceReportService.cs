@@ -411,14 +411,13 @@ namespace AeroMech.UI.Web.Services
 
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
+                 .Where(x => x.ReportDate >= fromDate && x.Client.IsDeleted == false)
+                 .OrderByDescending(x => x.ReportDate)
                  .Include(x => x.Vehicle)
                  .Include(x => x.Parts)
                  .Include(x => x.AdHockParts)
                  .Include(r => r.Employees)
                  .Include(x => x.Client)
-                 .ThenInclude(x => x.Vehicles)
-                 .Where(x => x.ReportDate >= fromDate && x.Client.IsDeleted == false)
-                 .OrderByDescending(x => x.ReportDate)
                  .ToListAsync();
             return _mapper.Map<IEnumerable<ServiceReportModel>>(serviceReports).ToList();
         }
@@ -434,15 +433,14 @@ namespace AeroMech.UI.Web.Services
 
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
-               .Include(x => x.Vehicle)
-               .Include(x => x.Parts)
-               .Include(x => x.AdHockParts)
-               .Include(r => r.Employees)
-               .Include(x => x.Client)
-               .ThenInclude(x => x.Vehicles)
-               .Where(x => x.QuoteNumber > 0 && x.ReportDate >= fromDate)
-               .OrderByDescending(x => x.ReportDate)
-               .ToListAsync();
+                 .Where(x => x.QuoteNumber > 0 && x.ReportDate >= fromDate)
+                 .OrderByDescending(x => x.ReportDate)
+                 .Include(x => x.Vehicle)
+                 .Include(x => x.Parts)
+                 .Include(x => x.AdHockParts)
+                 .Include(r => r.Employees)
+                 .Include(x => x.Client)
+                 .ToListAsync();
             return _mapper.Map<IEnumerable<ServiceReportModel>>(serviceReports).ToList();
         }
 

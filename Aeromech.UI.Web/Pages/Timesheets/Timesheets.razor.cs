@@ -11,6 +11,8 @@ namespace AeroMech.UI.Web.Pages.Timesheets
         [Inject] private TimesheetService _timesheetService { get; set; }
         [Inject] private LoaderService _loaderService { get; set; }
 
+        [Parameter] public string? SelectedDate { get; set; }
+
         private List<TimesheetDateModel> _timesheets = new();
         private DateOnly _startDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-30));
         private List<TimesheetEmployeeHoursModel> _timesheetEmployeeHours = new();
@@ -29,6 +31,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
             {
                 _loaderService.ShowLoader();
                 await LoadTimesheetsAsync();
+                await AutoSelectDateIfProvided();
                 _loaderService.HideLoader();
             }
         }
@@ -43,6 +46,19 @@ namespace AeroMech.UI.Web.Pages.Timesheets
             await InvokeAsync(StateHasChanged);
         }
 
+        private async Task AutoSelectDateIfProvided()
+        {
+            if (!string.IsNullOrWhiteSpace(SelectedDate) && DateOnly.TryParse(SelectedDate, out var parsedDate))
+            {
+                var timesheet = _timesheets.FirstOrDefault(t => t.Date == parsedDate);
+                if (timesheet != null)
+                {
+                    await ViewDayAsync(timesheet);
+                    await InvokeAsync(StateHasChanged);
+                }
+            }
+        }
+
         private async Task ViewDayAsync(TimesheetDateModel timesheet)
         {
             _loaderService.ShowLoader();
@@ -51,6 +67,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
             _timesheetEmployeeDetails = new();
             _timesheetDateModel = timesheet;
             _timesheetEmployeeHours = await _timesheetService.GetTimesheetEmployeeDetailAsync(timesheet.Date);
+            await InvokeAsync(StateHasChanged);
             _loaderService.HideLoader();
         }
 
@@ -73,7 +90,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
             }
             else
             {
-                _timesheetEmployeeDetail.Description = string.Empty;
+                _timesheetEmployeeDetail.Description = AeroMech.Data.Enums.TimesheetGapTypes.General;
                 _timesheetEmployeeDetail.Hours = 0;
             }
 

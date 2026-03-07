@@ -203,7 +203,7 @@ namespace AeroMech.UI.Web.Services
                     x.EmployeeId,
                     x.Employee!.FirstName,
                     x.Employee!.LastName,
-                    x.Description,
+                    x.Description.ToString(),
                     x.Hours))
                 .ToListAsync();
 
@@ -256,7 +256,7 @@ namespace AeroMech.UI.Web.Services
                     x.EmployeeId,
                     x.Employee!.FirstName,
                     x.Employee!.LastName,
-                    x.Description,
+                    x.Description.ToString(),
                     x.Hours))
                 .ToListAsync();
 
@@ -312,7 +312,7 @@ namespace AeroMech.UI.Web.Services
                     x.EmployeeId,
                     x.Employee!.FirstName,
                     x.Employee!.LastName,
-                    x.Description,
+                    x.Description.ToString(),
                     x.Hours))
                 .ToListAsync();
 
@@ -458,7 +458,7 @@ namespace AeroMech.UI.Web.Services
                     x.EmployeeId,
                     x.Employee!.FirstName,
                     x.Employee!.LastName,
-                    x.Description,
+                    x.Description.ToString(),
                     x.Hours))
                 .ToListAsync();
 
@@ -507,7 +507,7 @@ namespace AeroMech.UI.Web.Services
                     x.EmployeeId,
                     x.Employee!.FirstName,
                     x.Employee!.LastName,
-                    x.Description,
+                    x.Description.ToString(),
                     x.Hours))
                 .ToListAsync();
 
@@ -559,7 +559,7 @@ namespace AeroMech.UI.Web.Services
                     x.EmployeeId,
                     x.Employee!.FirstName,
                     x.Employee!.LastName,
-                    x.Description,
+                    x.Description.ToString(),
                     x.Hours))
                 .ToListAsync();
 

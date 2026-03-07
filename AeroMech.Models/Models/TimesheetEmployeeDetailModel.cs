@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using AeroMech.Data.Enums;
 
 namespace AeroMech.Models.Models
 {
@@ -9,7 +10,7 @@ namespace AeroMech.Models.Models
         public int EmployeeId { get; set; }
 
         [Required]
-        public string Description { get; set; } = string.Empty;
+        public TimesheetGapTypes Description { get; set; }
 
         [Required]
         public double Hours { get; set; }

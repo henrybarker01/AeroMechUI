@@ -1,0 +1,99 @@
+
+.widger-container {
+    overflow: auto;
+}
+
+.widget-data-table {
+    width: 100%;
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+.widget-data-header {
+    border-bottom: 1px solid black;
+    font-weight: 600;
+}
+
+    .widget-data-header td {
+        padding: 5px 8px;
+    }
+
+.widget-data-body:before {
+    content: "@";
+    display: block;
+    line-height: 10px;
+    text-indent: -99999px;
+}
+
+.widget-data-row {
+    color: black;
+    cursor: pointer;
+}
+
+    .widget-data-row:hover {
+        background-color: lightgray;
+    }
+
+.widget-data-col {
+    text-align: left;
+    padding: 5px 8px;
+    font-size: 14px;
+    vertical-align: middle;
+}
+
+.day-name {
+    font-weight: 500;
+    width: 25%;
+}
+
+.hours-col {
+    text-align: right;
+    width: 20%;
+}
+
+.hours-badge {
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-weight: 500;
+    display: inline-block;
+    min-width: 40px;
+    text-align: center;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-end;
+    width: 15%;
+    padding-left: 45px;
+}
+
+.status-badge {
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.status-complete {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-incomplete {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-missing {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.week-summary {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #ddd;
+    font-size: 14px;
+    text-align: right;
+}

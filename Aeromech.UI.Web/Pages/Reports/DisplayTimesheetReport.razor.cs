@@ -136,23 +136,5 @@ namespace AeroMech.UI.Web.Pages.Reports
             using var streamRef = new DotNetStreamReference(stream: fileStream);
             await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         }
-
-        private async Task DownloadFileFromStream()
-        {
-            if (_pdfBytes is null || _pdfBytes.Length == 0)
-                return;
-
-            var fileStream = new MemoryStream(_pdfBytes);
-            var fileName = _reportType switch
-            {
-                ReportType.Weekly => $"TimesheetReport_Week_{_weekStart:yyyyMMdd}.pdf",
-                ReportType.Daily => $"TimesheetReport_Daily_{_selectedDate:yyyyMMdd}.pdf",
-                ReportType.DateRange => $"TimesheetReport_{_fromDate:yyyyMMdd}_to_{_toDate:yyyyMMdd}.pdf",
-                _ => "TimesheetReport.pdf"
-            };
-
-            using var streamRef = new DotNetStreamReference(stream: fileStream);
-            await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
-        }
     }
 }
