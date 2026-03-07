@@ -18,8 +18,7 @@ namespace AeroMech.UI.Web.Pages.ListTemplate
         [EditorRequired]
         [Parameter] public RenderFragment<TItem> RowTemplate { get; set; }
 
-        [EditorRequired]
-        [Parameter] public Func<TItem, string, bool> SearchPredicate { get; set; }
+        [Parameter] public Func<TItem, string, bool>? SearchPredicate { get; set; }
 
         [Parameter] public EventCallback OnAdd { get; set; }
 

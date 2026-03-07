@@ -39,5 +39,6 @@ namespace AeroMech.Data.Persistence
         public DbSet<StockAdjustment> StockAdjustment { get; set; }
         public DbSet<StockTake> StockTakes { get; set; }
         public DbSet<StockTakeParts> StockTakeParts { get; set; }
+        public DbSet<TimesheetEmployeeDetail> TimesheetEmployeeDetails { get; set; }
     }
 }

@@ -1,0 +1,171 @@
+﻿@page "/timesheets"
+@using AeroMech.Models.Models
+
+<PageTitle>Time Sheet Data</PageTitle>
+
+<Modal @ref="_modal" Title="@_title">
+    <BodyTemplate>
+        <EditForm Model="@_timesheetEmployeeDetail" OnValidSubmit="AddLineToEmployeeTimesheetDetailAsync">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="form-group">
+                        <label for="description">Description</label>
+                        <InputText @bind-Value="_timesheetEmployeeDetail.Description" type="text" class="form-control" id="description"></InputText>
+                        <ValidationMessage For="() => _timesheetEmployeeDetail.Description" />
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-group">
+                        <label for="hours">Hours:</label>
+                        <NumberInput @bind-Value="_timesheetEmployeeDetail.Hours" type="text" class="form-control" id="hours"></NumberInput>
+                        <ValidationMessage For="() => _timesheetEmployeeDetail.Hours" />
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="footer-buttons">
+                    <div class="close">
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                    </div>
+                    <div>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </BodyTemplate>
+</Modal>
+
+<div class="timesheets d-flex">
+    <div class="col-6 time-sheet-data">
+        <div class="form-group pe-2">
+            <h1>Time sheet data</h1>
+            <InputDate TValue="DateOnly"
+                       @bind-Value="_startDate"
+                       @bind-Value:after="LoadTimesheetsAsync"
+                       class="form-control"
+                       id="from-date" />
+        </div>
+        <ListTemplate TItem="TimesheetDateModel"
+                      Title=""
+                      Items="_timesheets"
+                      PageSize="15"
+                      ShowAddButton="false">
+            <HeaderTemplate>
+                <tr>
+                    <th>Date</th>
+                    <th>Day</th>
+                    <th>Total Hours</th>
+                    <th></th>
+                </tr>
+            </HeaderTemplate>
+            <RowTemplate Context="timesheet">
+                <tr class="@(timesheet.Date == _selectedTimesheetDate ? "selected-row" : string.Empty)">
+                    <td>@timesheet.Date</td>
+                    <td>@timesheet.DayOfWeek</td>
+                    <td>@timesheet.TotalWorked</td>
+                    <td>
+                        <div style="min-width: 65px">
+                            <Icon Name="IconName.Eye"
+                                  Size="IconSize.x5"
+                                  Color="IconColor.Primary"
+                                  @onclick="async () => await ViewDayAsync(timesheet)"
+                                  Class="me-2"
+                                  Style="cursor: pointer" />
+                        </div>
+                    </td>
+                </tr>
+            </RowTemplate>
+        </ListTemplate>
+    </div>
+    <div class="col-6">
+        <div class="d-flex flex-column h-100">
+            <div class="col-12 flex-fill half-view-height">
+                <ListTemplate TItem="TimesheetEmployeeHoursModel"
+                              Title=""
+                              Items="_timesheetEmployeeHours"
+                              PageSize="15"
+                              ShowAddButton="false">
+                    <HeaderTemplate>
+                        <tr>
+                            <th>Employee #</th>
+                            <th>Name</th>
+                            <th>SR Hours</th>
+                            <th>Other Hours</th>
+                            <th>Total Hours</th>
+                            <th></th>
+                        </tr>
+                    </HeaderTemplate>
+                    <RowTemplate Context="timesheetEmployee">
+                        <tr class="@(timesheetEmployee.EmployeeId == _selectedEmployeeId ? "selected-row" : string.Empty)">
+                            <td>@timesheetEmployee.EmployeeNumber</td>
+                            <td>@timesheetEmployee.EmployeeName</td>
+                            <td>@timesheetEmployee.ServiceReportHours</td>
+                            <td>@timesheetEmployee.TimesheetHours</td>
+                            <td>@(timesheetEmployee.ServiceReportHours + timesheetEmployee.TimesheetHours)</td>
+                            <td>
+                                <div>
+                                    <Icon Name="IconName.Eye"
+                                          Size="IconSize.x5"
+                                          Color="IconColor.Primary"
+                                          @onclick="async () => await ViewEmplyeeTimesheetDetail(timesheetEmployee.EmployeeId)"
+                                          Class="me-2"
+                                          Style="cursor: pointer" />
+                                    <Icon Name="IconName.Plus"
+                                          Size="IconSize.x5"
+                                          Color="IconColor.Danger"
+                                          @onclick="(async () => await AddToEmployeeTimesheetAsync(timesheetEmployee))"
+                                          Class="me-2"
+                                          Style="cursor: pointer" />
+                                </div>
+                            </td>
+                        </tr>
+                    </RowTemplate>
+                </ListTemplate>
+            </div>
+            <div class="col-12 flex-fill half-view-height">
+                <ListTemplate TItem="TimesheetEmployeeDetailModel"
+                              Title=""
+                              Items="_timesheetEmployeeDetails"
+                              PageSize="15"
+                              ShowAddButton="true"
+                              OnAdd="@(async () => await AddToEmployeeTimesheetAsync())">
+                    <HeaderTemplate>
+                        <tr>
+                            <th>Description</th>
+                            <th>Total Hours</th>
+                            <th></th>
+                        </tr>
+                    </HeaderTemplate>
+                    <RowTemplate Context="_timesheetEmployeeDetails">
+                        <tr>
+                            <td>@_timesheetEmployeeDetails.Description</td>
+                            <td>@_timesheetEmployeeDetails.Hours</td>
+
+                            <td>
+                                <div>
+                                       <Icon Name="IconName.Pencil"
+                                          Size="IconSize.x5"
+                                          Color="IconColor.Dark"
+                                          @onclick="async () => await EditEmployeeTimesheetAsync(_timesheetEmployeeDetails)"
+                                          Class="me-2"
+                                          Style="cursor: pointer" />  
+                                    <Icon Name="IconName.Trash"
+                                          Size="IconSize.x5"
+                                          Color="IconColor.Danger"
+                                          @onclick="async () => await DeleteEmployeeTimesheetDetailAsync(_timesheetEmployeeDetails)"
+                                          Class="me-2"
+                                          Style="cursor: pointer" />                                    
+                                </div>
+                            </td>
+                        </tr>
+                    </RowTemplate>
+                </ListTemplate>
+            </div>
+        </div>
+
+    </div>
+</div>
+

@@ -1,6 +1,6 @@
 ﻿@typeparam TItem
 
-<div class="container-fluid" style="height:90vh;">
+<div class="container-fluid" style="max-height:90vh;">
     <div class="row">
         <div class="col-6 header">
             <h1>@Title</h1>
@@ -14,12 +14,14 @@
         <div class="col-1"></div>
         <div class="col-5 text-right"></div>
     </div>
-
-    <div class="row">
-        <div class="mb-3">
-            <input type="text" class="form-control" placeholder="Search..." @bind-value="SearchTerm" @bind-value:event="oninput" />
+    @if (SearchPredicate is not null)
+    {
+        <div class="row">
+            <div class="mb-3">
+                <input type="text" class="form-control" placeholder="Search..." @bind-value="SearchTerm" @bind-value:event="oninput" />
+            </div>
         </div>
-    </div>
+    }
 
     <div class="row" style="height:70vh;">
         <div class="table-container" style="height:100%; overflow-y:auto; position:relative;">
