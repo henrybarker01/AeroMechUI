@@ -5,18 +5,67 @@
 
 <div class="container-fluid">
     <div class="row align-items-end mb-3">
-        <div class="col-4">
-            <label for="week-start" class="form-label">Week starting</label>
-            <InputDate TValue="DateOnly"
-                       Value="_weekStart"
-                       ValueChanged="OnWeekStartChanged"
-                       ValueExpression="(() => _weekStart)"
-                       class="form-control"
-                       id="week-start" />
+        <div class="col-3">
+            <label for="report-type" class="form-label">Report Type</label>
+            <InputSelect @bind-Value="_reportType" class="form-select" id="report-type">
+                <option value="@ReportType.Weekly">Weekly</option>
+                <option value="@ReportType.Daily">Daily</option>
+                <option value="@ReportType.DateRange">Date Range</option>
+            </InputSelect>
         </div>
-        <div class="col-8 text-end">
-            <Button Color="ButtonColor.Primary" @onclick="DownloadFileFromStream" disabled="@(_pdfBytes is null || _pdfBytes.Length == 0)">
-                Download
+
+        @if (_reportType == ReportType.Weekly)
+        {
+            <div class="col-3">
+                <label for="week-start" class="form-label">Week starting</label>
+                <InputDate TValue="DateOnly"
+                           Value="_weekStart"
+                           ValueChanged="OnWeekStartChanged"
+                           ValueExpression="(() => _weekStart)"
+                           class="form-control"
+                           id="week-start" />
+            </div>
+        }
+        else if (_reportType == ReportType.Daily)
+        {
+            <div class="col-3">
+                <label for="date" class="form-label">Date</label>
+                <InputDate TValue="DateOnly"
+                           Value="_selectedDate"
+                           ValueChanged="OnSelectedDateChanged"
+                           ValueExpression="(() => _selectedDate)"
+                           class="form-control"
+                           id="date" />
+            </div>
+        }
+        else if (_reportType == ReportType.DateRange)
+        {
+            <div class="col-3">
+                <label for="from-date" class="form-label">From Date</label>
+                <InputDate TValue="DateOnly"
+                           Value="_fromDate"
+                           ValueChanged="OnFromDateChanged"
+                           ValueExpression="(() => _fromDate)"
+                           class="form-control"
+                           id="from-date" />
+            </div>
+            <div class="col-3">
+                <label for="to-date" class="form-label">To Date</label>
+                <InputDate TValue="DateOnly"
+                           Value="_toDate"
+                           ValueChanged="OnToDateChanged"
+                           ValueExpression="(() => _toDate)"
+                           class="form-control"
+                           id="to-date" />
+            </div>
+        }
+
+        <div class="col text-end">
+            <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2">
+                <i class="bi bi-file-pdf me-1"></i>View Report
+            </Button>
+            <Button Color="ButtonColor.Success" @onclick="ExportToExcel">
+                <i class="bi bi-file-earmark-excel me-1"></i>Export to Excel
             </Button>
         </div>
     </div>

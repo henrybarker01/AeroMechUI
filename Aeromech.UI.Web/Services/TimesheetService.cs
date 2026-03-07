@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
 using System.Globalization;
+using ClosedXML.Excel;
 
 namespace AeroMech.UI.Web.Services
 {
@@ -220,6 +221,133 @@ namespace AeroMech.UI.Web.Services
                 })
                 .ToListAsync();
 
+            var rows = BuildReportRows(timesheetDetailItems, serviceReportItems, employees);
+
+            _timesheetReport.Data = new TimesheetReportDocumentData
+            {
+                WeekStartDate = weekStart,
+                WeekNumber = ISOWeek.GetWeekOfYear(weekStart.ToDateTime(TimeOnly.MinValue)),
+                Employees = employees,
+                Rows = rows
+            };
+
+            return Document.Create(_timesheetReport.Compose).GeneratePdf();
+        }
+
+        public async Task<byte[]> DownloadDailyTimesheetReportAsync(DateOnly date)
+        {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            var serviceReportItems = await _aeroMechDBContext.ServiceReportEmployees
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.DutyDate == date)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    $"{x.ServiceReport!.ServiceReportNumber} - {x.ServiceReport!.JobNumber ?? x.ServiceReport!.SalesOrderNumber}",
+                    x.Hours))
+                .ToListAsync();
+
+            var timesheetDetailItems = await _aeroMechDBContext.TimesheetEmployeeDetails
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.Date == date)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    x.Description,
+                    x.Hours))
+                .ToListAsync();
+
+            var employees = await _aeroMechDBContext.Employees
+                .AsNoTracking()
+                .Where(emp => !emp.IsDeleted)
+                .OrderBy(emp => emp.LastName)
+                .ThenBy(emp => emp.FirstName)
+                .Select(emp => new TimesheetReportEmployee
+                {
+                    EmployeeId = emp.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(emp.FirstName)
+                        ? emp.LastName
+                        : $"{emp.FirstName[0]} {emp.LastName}".Trim()
+                })
+                .ToListAsync();
+
+            var rows = BuildReportRows(timesheetDetailItems, serviceReportItems, employees);
+
+            _timesheetReport.Data = new TimesheetReportDocumentData
+            {
+                WeekStartDate = date,
+                WeekNumber = ISOWeek.GetWeekOfYear(date.ToDateTime(TimeOnly.MinValue)),
+                Employees = employees,
+                Rows = rows
+            };
+
+            return Document.Create(_timesheetReport.Compose).GeneratePdf();
+        }
+
+        public async Task<byte[]> DownloadDateRangeTimesheetReportAsync(DateOnly fromDate, DateOnly toDate)
+        {
+            if (toDate < fromDate)
+                (fromDate, toDate) = (toDate, fromDate);
+
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            var serviceReportItems = await _aeroMechDBContext.ServiceReportEmployees
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.DutyDate >= fromDate && x.DutyDate <= toDate)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    $"{x.ServiceReport!.ServiceReportNumber} - {x.ServiceReport!.JobNumber ?? x.ServiceReport!.SalesOrderNumber}",
+                    x.Hours))
+                .ToListAsync();
+
+            var timesheetDetailItems = await _aeroMechDBContext.TimesheetEmployeeDetails
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.Date >= fromDate && x.Date <= toDate)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    x.Description,
+                    x.Hours))
+                .ToListAsync();
+
+            var employees = await _aeroMechDBContext.Employees
+                .AsNoTracking()
+                .Where(emp => !emp.IsDeleted)
+                .OrderBy(emp => emp.LastName)
+                .ThenBy(emp => emp.FirstName)
+                .Select(emp => new TimesheetReportEmployee
+                {
+                    EmployeeId = emp.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(emp.FirstName)
+                        ? emp.LastName
+                        : $"{emp.FirstName[0]} {emp.LastName}".Trim()
+                })
+                .ToListAsync();
+
+            var rows = BuildReportRows(timesheetDetailItems, serviceReportItems, employees);
+
+            _timesheetReport.Data = new TimesheetReportDocumentData
+            {
+                WeekStartDate = fromDate,
+                WeekNumber = ISOWeek.GetWeekOfYear(fromDate.ToDateTime(TimeOnly.MinValue)),
+                Employees = employees,
+                Rows = rows
+            };
+
+            return Document.Create(_timesheetReport.Compose).GeneratePdf();
+        }
+
+        private static List<TimesheetReportRow> BuildReportRows(
+            List<TimesheetReportItem> timesheetDetailItems,
+            List<TimesheetReportItem> serviceReportItems,
+            List<TimesheetReportEmployee> employees)
+        {
             var rows = new List<TimesheetReportRow>();
 
             if (timesheetDetailItems.Count == 0)
@@ -231,7 +359,7 @@ namespace AeroMech.UI.Web.Services
                 items: timesheetDetailItems,
                 employees: employees);
 
-            if(serviceReportItems.Count == 0)
+            if (serviceReportItems.Count == 0)
                 serviceReportItems.Add(new(0, string.Empty, string.Empty, string.Empty, 0));
 
             AddSection(
@@ -240,7 +368,6 @@ namespace AeroMech.UI.Web.Services
                 items: serviceReportItems,
                 employees: employees);
 
-            // Grand total row
             rows.Add(new TimesheetReportRow
             {
                 SectionTitle = "Total",
@@ -253,15 +380,7 @@ namespace AeroMech.UI.Web.Services
                        + timesheetDetailItems.Where(x => x.EmployeeId == e.EmployeeId).Sum(x => x.Hours))
             });
 
-            _timesheetReport.Data = new TimesheetReportDocumentData
-            {
-                WeekStartDate = weekStart,
-                WeekNumber = ISOWeek.GetWeekOfYear(weekStart.ToDateTime(TimeOnly.MinValue)),
-                Employees = employees,
-                Rows = rows
-            };
-
-            return Document.Create(_timesheetReport.Compose).GeneratePdf();
+            return rows;
         }
 
         private static DateOnly GetWeekStart(DateOnly date)
@@ -312,6 +431,271 @@ namespace AeroMech.UI.Web.Services
                     e => grouped.Sum(g => g.Where(x => x.EmployeeId == e.EmployeeId).Sum(x => x.Hours)))
             };
             rows.Add(totalRow);
+        }
+
+        public async Task<byte[]> ExportWeeklyTimesheetToExcelAsync(DateOnly anyDateInWeek)
+        {
+            var weekStart = GetWeekStart(anyDateInWeek);
+            var weekEnd = weekStart.AddDays(7);
+
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            var serviceReportItems = await _aeroMechDBContext.ServiceReportEmployees
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.DutyDate >= weekStart && x.DutyDate < weekEnd)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    $"{x.ServiceReport!.ServiceReportNumber} - {x.ServiceReport!.JobNumber ?? x.ServiceReport!.SalesOrderNumber}",
+                    x.Hours))
+                .ToListAsync();
+
+            var timesheetDetailItems = await _aeroMechDBContext.TimesheetEmployeeDetails
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.Date >= weekStart && x.Date < weekEnd)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    x.Description,
+                    x.Hours))
+                .ToListAsync();
+
+            var employees = await _aeroMechDBContext.Employees
+                .AsNoTracking()
+                .Where(emp => !emp.IsDeleted)
+                .OrderBy(emp => emp.LastName)
+                .ThenBy(emp => emp.FirstName)
+                .Select(emp => new TimesheetReportEmployee
+                {
+                    EmployeeId = emp.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(emp.FirstName)
+                        ? emp.LastName
+                        : $"{emp.FirstName[0]} {emp.LastName}".Trim()
+                })
+                .ToListAsync();
+
+            var rows = BuildReportRows(timesheetDetailItems, serviceReportItems, employees);
+
+            return GenerateExcelFile(
+                employees,
+                rows,
+                weekStart,
+                ISOWeek.GetWeekOfYear(weekStart.ToDateTime(TimeOnly.MinValue)));
+        }
+
+        public async Task<byte[]> ExportDailyTimesheetToExcelAsync(DateOnly date)
+        {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            var serviceReportItems = await _aeroMechDBContext.ServiceReportEmployees
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.DutyDate == date)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    $"{x.ServiceReport!.ServiceReportNumber} - {x.ServiceReport!.JobNumber ?? x.ServiceReport!.SalesOrderNumber}",
+                    x.Hours))
+                .ToListAsync();
+
+            var timesheetDetailItems = await _aeroMechDBContext.TimesheetEmployeeDetails
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.Date == date)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    x.Description,
+                    x.Hours))
+                .ToListAsync();
+
+            var employees = await _aeroMechDBContext.Employees
+                .AsNoTracking()
+                .Where(emp => !emp.IsDeleted)
+                .OrderBy(emp => emp.LastName)
+                .ThenBy(emp => emp.FirstName)
+                .Select(emp => new TimesheetReportEmployee
+                {
+                    EmployeeId = emp.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(emp.FirstName)
+                        ? emp.LastName
+                        : $"{emp.FirstName[0]} {emp.LastName}".Trim()
+                })
+                .ToListAsync();
+
+            var rows = BuildReportRows(timesheetDetailItems, serviceReportItems, employees);
+
+            return GenerateExcelFile(
+                employees,
+                rows,
+                date,
+                ISOWeek.GetWeekOfYear(date.ToDateTime(TimeOnly.MinValue)));
+        }
+
+        public async Task<byte[]> ExportDateRangeTimesheetToExcelAsync(DateOnly fromDate, DateOnly toDate)
+        {
+            if (toDate < fromDate)
+                (fromDate, toDate) = (toDate, fromDate);
+
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            var serviceReportItems = await _aeroMechDBContext.ServiceReportEmployees
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.DutyDate >= fromDate && x.DutyDate <= toDate)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    $"{x.ServiceReport!.ServiceReportNumber} - {x.ServiceReport!.JobNumber ?? x.ServiceReport!.SalesOrderNumber}",
+                    x.Hours))
+                .ToListAsync();
+
+            var timesheetDetailItems = await _aeroMechDBContext.TimesheetEmployeeDetails
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.Date >= fromDate && x.Date <= toDate)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    x.Description,
+                    x.Hours))
+                .ToListAsync();
+
+            var employees = await _aeroMechDBContext.Employees
+                .AsNoTracking()
+                .Where(emp => !emp.IsDeleted)
+                .OrderBy(emp => emp.LastName)
+                .ThenBy(emp => emp.FirstName)
+                .Select(emp => new TimesheetReportEmployee
+                {
+                    EmployeeId = emp.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(emp.FirstName)
+                        ? emp.LastName
+                        : $"{emp.FirstName[0]} {emp.LastName}".Trim()
+                })
+                .ToListAsync();
+
+            var rows = BuildReportRows(timesheetDetailItems, serviceReportItems, employees);
+
+            return GenerateExcelFile(
+                employees,
+                rows,
+                fromDate,
+                ISOWeek.GetWeekOfYear(fromDate.ToDateTime(TimeOnly.MinValue)));
+        }
+
+        private static byte[] GenerateExcelFile(
+            List<TimesheetReportEmployee> employees,
+            List<TimesheetReportRow> rows,
+            DateOnly startDate,
+            int weekNumber)
+        {
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Timesheet Report");
+
+            int currentRow = 1;
+
+            worksheet.Cell(currentRow, 1).Value = "Timesheet Report";
+            worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+            worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
+            currentRow += 2;
+
+            worksheet.Cell(currentRow, 1).Value = "Week No:";
+            worksheet.Cell(currentRow, 2).Value = weekNumber;
+            worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+            currentRow++;
+
+            worksheet.Cell(currentRow, 1).Value = "Date:";
+            worksheet.Cell(currentRow, 2).Value = startDate.ToString("dd/MM/yyyy");
+            worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+            currentRow += 2;
+
+            int currentCol = 3;
+            foreach (var employee in employees)
+            {
+                worksheet.Cell(currentRow, currentCol).Value = employee.DisplayName;
+                worksheet.Cell(currentRow, currentCol).Style.Font.Bold = true;
+                worksheet.Cell(currentRow, currentCol).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+                worksheet.Cell(currentRow, currentCol).Style.Fill.BackgroundColor = XLColor.LightGray;
+                currentCol++;
+            }
+
+            worksheet.Cell(currentRow, currentCol).Value = "Total";
+            worksheet.Cell(currentRow, currentCol).Style.Font.Bold = true;
+            worksheet.Cell(currentRow, currentCol).Style.Alignment.Horizontal = XLAlignmentHorizontalValues.Center;
+            worksheet.Cell(currentRow, currentCol).Style.Fill.BackgroundColor = XLColor.LightGray;
+            currentRow++;
+
+            foreach (var row in rows)
+            {
+                if (row.ShowSectionTitle)
+                {
+                    worksheet.Cell(currentRow, 1).Value = row.SectionTitle;
+                    worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+
+                    if (!row.IsTotalRow)
+                    {
+                        worksheet.Cell(currentRow, 1).Style.Fill.BackgroundColor = XLColor.LightBlue;
+                    }
+                    else
+                    {
+                        worksheet.Cell(currentRow, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+                    }
+                }
+                else if (row.IsTotalRow)
+                {
+                    worksheet.Cell(currentRow, 1).Style.Fill.BackgroundColor = XLColor.LightGray;
+                }
+
+                worksheet.Cell(currentRow, 2).Value = row.RowTitle;
+                worksheet.Cell(currentRow, 2).Style.Font.Bold = row.IsTotalRow;
+
+                if (row.IsTotalRow)
+                {
+                    worksheet.Cell(currentRow, 2).Style.Fill.BackgroundColor = XLColor.LightGray;
+                }
+
+                currentCol = 3;
+                double rowTotal = 0;
+
+                foreach (var employee in employees)
+                {
+                    var hours = row.HoursByEmployeeId.GetValueOrDefault(employee.EmployeeId, 0);
+                    if (hours > 0)
+                    {
+                        worksheet.Cell(currentRow, currentCol).Value = hours;
+                        worksheet.Cell(currentRow, currentCol).Style.NumberFormat.Format = "0.00";
+                    }
+                    rowTotal += hours;
+
+                    if (row.IsTotalRow)
+                    {
+                        worksheet.Cell(currentRow, currentCol).Style.Font.Bold = true;
+                        worksheet.Cell(currentRow, currentCol).Style.Fill.BackgroundColor = XLColor.LightGray;
+                    }
+
+                    currentCol++;
+                }
+
+                worksheet.Cell(currentRow, currentCol).Value = rowTotal;
+                worksheet.Cell(currentRow, currentCol).Style.NumberFormat.Format = "0.00";
+                worksheet.Cell(currentRow, currentCol).Style.Font.Bold = true;
+
+                if (row.IsTotalRow)
+                {
+                    worksheet.Cell(currentRow, currentCol).Style.Fill.BackgroundColor = XLColor.LightGray;
+                }
+
+                currentRow++;
+            }
+
+            worksheet.Columns().AdjustToContents();
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            return stream.ToArray();
         }
     }
 }
