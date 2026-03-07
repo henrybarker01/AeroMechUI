@@ -1,0 +1,31 @@
+@page "/ShowTimesheetReport"
+@using BlazorBootstrap
+
+<PageTitle>Timesheet Report</PageTitle>
+
+<div class="container-fluid">
+    <div class="row align-items-end mb-3">
+        <div class="col-4">
+            <label for="week-start" class="form-label">Week starting</label>
+            <InputDate TValue="DateOnly"
+                       Value="_weekStart"
+                       ValueChanged="OnWeekStartChanged"
+                       ValueExpression="(() => _weekStart)"
+                       class="form-control"
+                       id="week-start" />
+        </div>
+        <div class="col-8 text-end">
+            <Button Color="ButtonColor.Primary" @onclick="DownloadFileFromStream" disabled="@(_pdfBytes is null || _pdfBytes.Length == 0)">
+                Download
+            </Button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_pdfBase64String))
+    {
+        <PdfViewer @key="_reportVersion" Class="mb-3"
+                   Url='@string.Format("data:application/pdf;base64,{0}", _pdfBase64String)'
+                   OnDocumentLoaded="OnDocumentLoaded"
+                   OnPageChanged="OnPageChanged" />
+    }
+</div>

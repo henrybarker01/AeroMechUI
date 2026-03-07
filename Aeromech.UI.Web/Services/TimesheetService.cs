@@ -1,21 +1,29 @@
 ﻿using AeroMech.Data.Persistence;
 using AeroMech.Models.Models;
+using AeroMech.API.Reports;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using QuestPDF.Fluent;
+using System.Globalization;
 
 namespace AeroMech.UI.Web.Services
 {
     public class TimesheetService
     {
+        private sealed record TimesheetReportItem(int EmployeeId, string FirstName, string LastName, string RowKey, double Hours);
+
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly IMapper _mapper;
+        private readonly TimesheetReport _timesheetReport;
 
         public TimesheetService(IDbContextFactory<AeroMechDBContext> contextFactory,
-            IMapper mapper
+            IMapper mapper,
+            TimesheetReport timesheetReport
             )
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
+            _timesheetReport = timesheetReport;
         }
 
         public async Task<List<TimesheetDateModel>> GetTimesheetDatesFrom(DateOnly startDate)
@@ -167,6 +175,143 @@ namespace AeroMech.UI.Web.Services
                 timesheetEmployeeDetail.UpdatedBy = string.Empty;
                 await _aeroMechDBContext.SaveChangesAsync();
             }
+        }
+
+        public async Task<byte[]> DownloadTimesheetReportAsync(DateOnly anyDateInWeek)
+        {
+            var weekStart = GetWeekStart(anyDateInWeek);
+            var weekEnd = weekStart.AddDays(7);
+
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            var serviceReportItems = await _aeroMechDBContext.ServiceReportEmployees
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.DutyDate >= weekStart && x.DutyDate < weekEnd)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    $"{x.ServiceReport!.ServiceReportNumber} - {x.ServiceReport!.JobNumber ?? x.ServiceReport!.SalesOrderNumber}",
+                    x.Hours))
+                .ToListAsync();
+
+            var timesheetDetailItems = await _aeroMechDBContext.TimesheetEmployeeDetails
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.Date >= weekStart && x.Date < weekEnd)
+                .Select(x => new TimesheetReportItem(
+                    x.EmployeeId,
+                    x.Employee!.FirstName,
+                    x.Employee!.LastName,
+                    x.Description,
+                    x.Hours))
+                .ToListAsync();
+
+            var employees = await _aeroMechDBContext.Employees
+                .AsNoTracking()
+                .Where(emp => !emp.IsDeleted)
+                .OrderBy(emp => emp.LastName)
+                .ThenBy(emp => emp.FirstName)
+                .Select(emp => new TimesheetReportEmployee
+                {
+                    EmployeeId = emp.Id,
+                    DisplayName = string.IsNullOrWhiteSpace(emp.FirstName)
+                        ? emp.LastName
+                        : $"{emp.FirstName[0]} {emp.LastName}".Trim()
+                })
+                .ToListAsync();
+
+            var rows = new List<TimesheetReportRow>();
+
+            if (timesheetDetailItems.Count == 0)
+                timesheetDetailItems.Add(new(0, string.Empty, string.Empty, string.Empty, 0));
+
+            AddSection(
+                rows,
+                sectionTitle: "Time Sheet Gaps",
+                items: timesheetDetailItems,
+                employees: employees);
+
+            if(serviceReportItems.Count == 0)
+                serviceReportItems.Add(new(0, string.Empty, string.Empty, string.Empty, 0));
+
+            AddSection(
+                rows,
+                sectionTitle: "Weekdays",
+                items: serviceReportItems,
+                employees: employees);
+
+            // Grand total row
+            rows.Add(new TimesheetReportRow
+            {
+                SectionTitle = "Total",
+                ShowSectionTitle = true,
+                RowTitle = string.Empty,
+                IsTotalRow = true,
+                HoursByEmployeeId = employees.ToDictionary(
+                    e => e.EmployeeId,
+                    e => serviceReportItems.Where(x => x.EmployeeId == e.EmployeeId).Sum(x => x.Hours)
+                       + timesheetDetailItems.Where(x => x.EmployeeId == e.EmployeeId).Sum(x => x.Hours))
+            });
+
+            _timesheetReport.Data = new TimesheetReportDocumentData
+            {
+                WeekStartDate = weekStart,
+                WeekNumber = ISOWeek.GetWeekOfYear(weekStart.ToDateTime(TimeOnly.MinValue)),
+                Employees = employees,
+                Rows = rows
+            };
+
+            return Document.Create(_timesheetReport.Compose).GeneratePdf();
+        }
+
+        private static DateOnly GetWeekStart(DateOnly date)
+        {
+            var dayOfWeek = (int)date.DayOfWeek;
+            var monday = (int)DayOfWeek.Monday;
+            var delta = (7 + (dayOfWeek - monday)) % 7;
+            return date.AddDays(-delta);
+        }
+
+        private static void AddSection(
+            List<TimesheetReportRow> rows,
+            string sectionTitle,
+            IEnumerable<TimesheetReportItem> items,
+            List<TimesheetReportEmployee> employees)
+        {
+            var grouped = items
+                .GroupBy(x => x.RowKey)
+                .OrderBy(g => g.Key, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var isFirst = true;
+            foreach (var g in grouped)
+            {
+                var row = new TimesheetReportRow
+                {
+                    SectionTitle = sectionTitle,
+                    ShowSectionTitle = isFirst,
+                    RowTitle = g.Key,
+                    IsTotalRow = false,
+                    HoursByEmployeeId = employees.ToDictionary(
+                        e => e.EmployeeId,
+                        e => g.Where(x => x.EmployeeId == e.EmployeeId).Sum(x => x.Hours))
+                };
+                rows.Add(row);
+                isFirst = false;
+            }
+
+            // Section total
+            var totalRow = new TimesheetReportRow
+            {
+                SectionTitle = sectionTitle,
+                ShowSectionTitle = false,
+                RowTitle = "Total",
+                IsTotalRow = true,
+                HoursByEmployeeId = employees.ToDictionary(
+                    e => e.EmployeeId,
+                    e => grouped.Sum(g => g.Where(x => x.EmployeeId == e.EmployeeId).Sum(x => x.Hours)))
+            };
+            rows.Add(totalRow);
         }
     }
 }
