@@ -1,0 +1,3 @@
+vmi.aeromech.co {
+	reverse_proxy web:8080
+}

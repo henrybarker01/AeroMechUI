@@ -1,0 +1,33 @@
+# Production overrides: run with
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d --build
+services:
+  web:
+    # Not exposed publicly; Caddy proxies to it on the internal network
+    ports: !override
+      - "127.0.0.1:8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      # Trust X-Forwarded-Proto/For from Caddy so Secure cookies and redirects work
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+    volumes:
+      # Persist DataProtection keys so logins survive container recreation
+      - dpkeys:/root/.aspnet/DataProtection-Keys
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - web
+
+volumes:
+  dpkeys:
+  caddy_data:
+  caddy_config:
