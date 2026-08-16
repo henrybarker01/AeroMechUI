@@ -363,3 +363,7 @@ MigrationBackup/
 FodyWeavers.xsd
 # Local secrets
 .env
+
+# Backup output and rclone credentials
+backups/
+rclone/
