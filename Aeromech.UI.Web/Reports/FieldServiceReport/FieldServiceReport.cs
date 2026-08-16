@@ -44,7 +44,7 @@ namespace AeroMech.API.Reports
             var titleStyle = TextStyle.Default.FontSize(22).Bold().FontColor(Colors.Black);
             container.Row(row =>
             {
-                var path = Path.Combine(Environment.CurrentDirectory, @"Reports\Images\", "AreoMechSmall.png");
+                var path = Path.Combine(AppContext.BaseDirectory, "Reports", "Images", "AreoMechSmall.png");
                 row.ConstantItem(200).Image(path); 
 
                 row.RelativeItem().ContentFromRightToLeft().Column(column =>

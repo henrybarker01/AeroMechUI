@@ -47,8 +47,7 @@ namespace AeroMech.API.Reports
             container.Row(row =>
             {
 
-                var path = Path.Combine(Environment.CurrentDirectory, @"Reports\Images\", "AreoMechSmall.png");
-                //var path = Path.Combine(@"C:\Projects\VMI\Aeromech.UI.Web\", @"Reports\Images\", "AreoMechSmall.png");
+                var path = Path.Combine(AppContext.BaseDirectory, "Reports", "Images", "AreoMechSmall.png");
 
                 row.ConstantItem(200).Image(path);
 
