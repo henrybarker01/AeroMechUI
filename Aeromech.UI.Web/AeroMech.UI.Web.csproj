@@ -11,6 +11,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="Reports\Images\**">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Blazor.Bootstrap" Version="3.5.0" />
     <PackageReference Include="bootstrap" Version="5.3.8" />
     <PackageReference Include="BootstrapBlazor" Version="10.3.2" />

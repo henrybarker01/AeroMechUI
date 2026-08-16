@@ -1,0 +1,14 @@
+**/bin/
+**/obj/
+**/.vs/
+**/node_modules/
+.git/
+.gitignore
+.gitattributes
+**/*.user
+**/appsettings.Development.json
+Config/
+*.bak
+VMI_DB_Backup*.bak
+docker-compose*.yml
+**/Dockerfile
