@@ -13,8 +13,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "QuestPDFGenerator", "QuestP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AeroMech.Backup", "AeroMech.Backup\AeroMech.Backup.csproj", "{77447EDB-3FB1-6E03-8FEF-26AE037E3CA2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AeroMech.Database.DataMigration", "AeroMech.Database.DataMigration\AeroMech.Database.DataMigration.csproj", "{EDA226E1-EF64-4B78-8558-F5F478DC7297}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -41,10 +39,6 @@ Global
 		{77447EDB-3FB1-6E03-8FEF-26AE037E3CA2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{77447EDB-3FB1-6E03-8FEF-26AE037E3CA2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{77447EDB-3FB1-6E03-8FEF-26AE037E3CA2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EDA226E1-EF64-4B78-8558-F5F478DC7297}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EDA226E1-EF64-4B78-8558-F5F478DC7297}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EDA226E1-EF64-4B78-8558-F5F478DC7297}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EDA226E1-EF64-4B78-8558-F5F478DC7297}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
