@@ -27,6 +27,43 @@ services:
     depends_on:
       - web
 
+  backup:
+    build:
+      context: .
+      dockerfile: AeroMech.Backup/Dockerfile
+    restart: unless-stopped
+    environment:
+      Backup__ConnectionString: "Host=db;Port=5432;Database=${POSTGRES_DB:-aeromech};Username=${POSTGRES_USER:-aeromech};Password=${POSTGRES_PASSWORD}"
+      Backup__LocalBackupFolder: /backups
+      Backup__BackupAtStartup: "true"
+      Backup__RetentionDays: "14"
+      # Worker schedules in UTC; 00:00 UTC = 02:00 SAST
+      Backup__RunAtHour: "0"
+      Backup__RunAtMinute: "0"
+    volumes:
+      - ./backups:/backups
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # Syncs ./backups to OneDrive hourly. Requires ./rclone/rclone.conf with an
+  # authorized "onedrive" remote (see deploy notes; create with `rclone config`).
+  rclone:
+    image: rclone/rclone:latest
+    restart: unless-stopped
+    volumes:
+      - ./backups:/data:ro
+      - ./rclone:/config/rclone
+    entrypoint: /bin/sh
+    command: >
+      -c 'while true; do
+            rclone copy /data onedrive:AeroMechBackups --min-age 2m --log-level INFO;
+            rclone delete onedrive:AeroMechBackups --min-age 14d --log-level INFO;
+            sleep 3600;
+          done'
+    depends_on:
+      - backup
+
 volumes:
   dpkeys:
   caddy_data:
