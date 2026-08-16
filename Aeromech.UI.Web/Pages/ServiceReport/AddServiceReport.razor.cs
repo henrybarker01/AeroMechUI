@@ -121,7 +121,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
             var clientRate = _serviceReport.Client?.Rates?.SingleOrDefault(x => x.RateType == employee.RateType);
             employee.RateType = clientRate?.RateType ?? employee.RateType;
-            employee.Rate = clientRate?.Rate ?? 0;
+            employee.Rate = employee.Rate > 0 ? employee.Rate : clientRate?.Rate ?? 0;
             return employee.Rate;
         }
 
