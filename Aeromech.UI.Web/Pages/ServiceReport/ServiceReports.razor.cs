@@ -32,12 +32,13 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             if (string.IsNullOrWhiteSpace(q)) return true;
             var term = q.Trim();
             return (sr.Description ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-            || (sr.DetailedServiceReport ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+            //|| (sr.DetailedServiceReport ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+            || (sr.Vehicle?.SerialNumber ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
             || (sr.Instruction ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
             || sr.QuoteNumber.ToString().Contains(term, StringComparison.OrdinalIgnoreCase)
             || (sr.SalesOrderNumber ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
             || (sr.JobNumber ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
-            || sr.Id.ToString().Contains(term, StringComparison.OrdinalIgnoreCase);
+            || sr.Id.ToString().Contains(term, StringComparison.OrdinalIgnoreCase);           
         }
 
         private void NavigateToAdd() => _navigationManager.NavigateTo("/add-service-report");

@@ -31,7 +31,8 @@ namespace AeroMech.UI.Web.Pages.Quote
             if (string.IsNullOrWhiteSpace(term)) return true;
             var t = term.Trim();
             return (quote.Description ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase)
-            || (quote.DetailedServiceReport ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase)
+            || (quote.Vehicle?.SerialNumber ?? string.Empty).Contains(term, StringComparison.OrdinalIgnoreCase)
+            // || (quote.DetailedServiceReport ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase)
             || (quote.Instruction ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase)
             || quote.QuoteNumber.ToString().Contains(t, StringComparison.OrdinalIgnoreCase)
             || (quote.SalesOrderNumber ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase)
