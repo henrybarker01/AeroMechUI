@@ -41,6 +41,15 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             || sr.Id.ToString().Contains(term, StringComparison.OrdinalIgnoreCase);           
         }
 
+        // Drives the accent bar on the leading edge of each row. A report only reaches
+        // the next stage once the previous number exists, so the later stage wins.
+        private static (string Css, string Label) RowStatus(ServiceReportModel sr)
+        {
+            if (!string.IsNullOrWhiteSpace(sr.SalesOrderNumber)) return ("sr-ordered", "Sales order raised");
+            if (sr.QuoteNumber != 0) return ("sr-quoted", "Quoted");
+            return ("sr-new", "New - not yet quoted");
+        }
+
         private void NavigateToAdd() => _navigationManager.NavigateTo("/add-service-report");
         private void Edit(int id) => _navigationManager.NavigateTo($"/add-service-report/{id}");
         private void Print(int id) => _navigationManager.NavigateTo($"/ShowPDF/{id}");

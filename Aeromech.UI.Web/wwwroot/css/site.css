@@ -92,6 +92,27 @@ a, .btn-link {
     margin-left: 10px;
 }
 
+/* Service report row status: a bar on the leading edge of the row only, so the accent
+   reads at a glance without competing with the striped rows. Inset shadow rather than a
+   border, so the cell keeps its width. */
+.sr-new > td:first-child,
+.sr-quoted > td:first-child,
+.sr-ordered > td:first-child {
+    padding-left: 1rem;
+}
+
+.sr-new > td:first-child {
+    box-shadow: inset 4px 0 0 0 #d9a406;
+}
+
+.sr-quoted > td:first-child {
+    box-shadow: inset 4px 0 0 0 #2e8b57;
+}
+
+.sr-ordered > td:first-child {
+    box-shadow: inset 4px 0 0 0 #b23b2e;
+}
+
 .toast-container {
     z-index: 99999 !important;
     margin-top: 60px !important;

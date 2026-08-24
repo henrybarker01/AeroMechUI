@@ -31,8 +31,11 @@
     </HeaderTemplate>
 
     <RowTemplate Context="sr">
-        <tr>
-            <td>@($"AEM {sr.ServiceReportNumber}")</td>
+        @{
+            var status = RowStatus(sr);
+        }
+        <tr class="@status.Css">
+            <td title="@status.Label">@($"AEM {sr.ServiceReportNumber}")</td>
             <td>@($"AEM {sr.QuoteNumber}")</td>
             <td>@sr.ReportDate.ToString("dd/MM/yyyy")</td>
             <td>@sr.SalesOrderNumber</td>
