@@ -64,24 +64,33 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
                 else
                 {
                     // pageTitle = "Edit Field Service Report";
-                    _serviceReport = await ServiceReportService.GetServiceReport(serviceReportId);
-
-                    if (_serviceReport.ClientId != 0)
-                    {
-                        var vehicleId = _serviceReport.VehicleId;
-                        await HandleOnChangeClient(_serviceReport.ClientId);
-
-                        if (vehicleId != 0)
-                        {
-                            HandleOnChangeVehicle(vehicleId);
-                        }
-                    }
-
-                    editContext = new(_serviceReport);
+                    await LoadServiceReport(serviceReportId);
                 }
                 await InvokeAsync(StateHasChanged);
                 _loaderService.HideLoader();
             }
+        }
+
+        private async Task LoadServiceReport(int id)
+        {
+            _serviceReport = await ServiceReportService.GetServiceReport(id);
+
+            if (_serviceReport.ClientId != 0)
+            {
+                var vehicleId = _serviceReport.VehicleId;
+                await HandleOnChangeClient(_serviceReport.ClientId);
+
+                if (vehicleId != 0)
+                {
+                    HandleOnChangeVehicle(vehicleId);
+                }
+            }
+
+            editContext = new(_serviceReport);
+
+            // _serviceReport is a new instance, so the grids must rebind to it. The save
+            // handlers are async void, so Blazor will not render for us once they resume.
+            await InvokeAsync(StateHasChanged);
         }
 
         private void InitServiceReport()
@@ -278,14 +287,18 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
             serviceReport.Description = "Description";
 
-            if (serviceReport.Id == 0)
+            var savedId = serviceReport.Id == 0
+                ? await ServiceReportService.AddServiceReport(serviceReport, isQuote)
+                : await ServiceReportService.EditServiceReport(serviceReport, isQuote);
+
+            if (savedId != 0)
             {
-                return await ServiceReportService.AddServiceReport(serviceReport, isQuote);
+                // Reload so labour and parts carry their database ids. Without them the
+                // next save cannot tell saved rows apart from new ones and inserts duplicates.
+                await LoadServiceReport(savedId);
             }
-            else
-            {
-                return await ServiceReportService.EditServiceReport(serviceReport, isQuote);
-            }
+
+            return savedId;
         }
 
         private void HandleOnServiceTypeChange(ServiceType serviceType)

@@ -110,14 +110,8 @@ namespace AeroMech.UI.Web.Services
             _aeroMechDBContext.ServiceReports.Add(sr);
             await _aeroMechDBContext.SaveChangesAsync();
 
-            foreach (var employee in sr.Employees)
-            {
-                var actualEmployee = await _aeroMechDBContext.Employees.AsNoTracking().SingleAsync(x => x.Id == employee.EmployeeId);
-                employee.Employee = actualEmployee;
-            }
-
-            _memoryCache.Set(sr.Id, _mapper.Map<ServiceReportModel>(sr), TimeSpan.FromMinutes(30));
-
+            // Deliberately not cached: sr has no Client, Vehicle or Part navigations loaded,
+            // so GetServiceReport must read the complete report back from the database.
             return sr.Id;
         }
 
