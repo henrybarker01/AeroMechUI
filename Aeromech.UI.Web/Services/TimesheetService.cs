@@ -126,15 +126,63 @@ namespace AeroMech.UI.Web.Services
                 .ToList();
         }
 
-        public async Task<List<TimesheetEmployeeDetailModel>> GetEmployeeTimesheetDataAsync(int employeeId, DateOnly date)
+        public async Task<List<TimesheetEmployeeLineModel>> GetEmployeeTimesheetDataAsync(int employeeId, DateOnly date)
         {
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            var serviceReportEmployees = await _aeroMechDBContext.ServiceReportEmployees.AsNoTracking()
+                .Where(sr => sr.EmployeeId == employeeId && sr.DutyDate == date && !sr.IsDeleted)
+                .Select(sr => new
+                {
+                    sr.Id,
+                    sr.EmployeeId,
+                    sr.Hours,
+                    sr.DutyDate,
+                    sr.ServiceReportId,
+                    sr.ServiceReport!.ServiceReportNumber,
+                    sr.ServiceReport!.JobNumber,
+                    sr.ServiceReport!.SalesOrderNumber
+                })
+                .ToListAsync();
 
             var employeeTimesheetDetail = await _aeroMechDBContext.TimesheetEmployeeDetails.AsNoTracking()
                 .Where(emp => emp.EmployeeId == employeeId && emp.Date == date && !emp.IsDeleted)
                 .ToListAsync();
 
-            return _mapper.Map<List<TimesheetEmployeeDetailModel>>(employeeTimesheetDetail);
+            var serviceReportLines = serviceReportEmployees
+                .Select(sr => new TimesheetEmployeeLineModel
+                {
+                    Id = sr.Id,
+                    EmployeeId = sr.EmployeeId,
+                    Description = BuildServiceReportDescription(sr.ServiceReportNumber, sr.JobNumber, sr.SalesOrderNumber),
+                    Hours = sr.Hours,
+                    Date = sr.DutyDate,
+                    ServiceReportId = sr.ServiceReportId
+                })
+                .OrderBy(x => x.Description, StringComparer.OrdinalIgnoreCase);
+
+            var timesheetLines = employeeTimesheetDetail
+                .Select(detail => new TimesheetEmployeeLineModel
+                {
+                    Id = detail.Id,
+                    EmployeeId = detail.EmployeeId,
+                    Description = detail.Description.ToString(),
+                    Hours = detail.Hours,
+                    Date = detail.Date,
+                    GapType = detail.Description
+                })
+                .OrderBy(x => x.Description, StringComparer.OrdinalIgnoreCase);
+
+            return serviceReportLines.Concat(timesheetLines).ToList();
+        }
+
+        private static string BuildServiceReportDescription(int serviceReportNumber, string? jobNumber, string? salesOrderNumber)
+        {
+            var reference = string.IsNullOrWhiteSpace(jobNumber) ? salesOrderNumber : jobNumber;
+
+            return string.IsNullOrWhiteSpace(reference)
+                ? $"AEM {serviceReportNumber}"
+                : $"AEM {serviceReportNumber} - {reference}";
         }
 
         public async Task AddLineToEmployeeTimesheetDetailAsync(TimesheetEmployeeDetailModel timesheetEmployeeDetailModel)

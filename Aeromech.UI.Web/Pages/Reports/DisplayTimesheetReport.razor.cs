@@ -23,6 +23,8 @@ namespace AeroMech.UI.Web.Pages.Reports
         [Inject] TimesheetService TimesheetService { get; set; } = default!;
         [Inject] IJSRuntime JS { get; set; } = default!;
 
+        [Parameter] public string? ReportDate { get; set; }
+
         private ReportType _reportType = ReportType.Weekly;
         private OutputFormat _outputFormat = OutputFormat.Pdf;
         private DateOnly _weekStart = DateOnly.FromDateTime(DateTime.UtcNow);
@@ -37,6 +39,12 @@ namespace AeroMech.UI.Web.Pages.Reports
 
         protected override async Task OnInitializedAsync()
         {
+            if (!string.IsNullOrWhiteSpace(ReportDate) && DateOnly.TryParse(ReportDate, out var parsedDate))
+            {
+                _reportType = ReportType.Daily;
+                _selectedDate = parsedDate;
+            }
+
             await LoadReportAsync();
         }
 

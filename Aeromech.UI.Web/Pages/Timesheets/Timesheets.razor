@@ -80,6 +80,11 @@
                                   @onclick="async () => await ViewDayAsync(timesheet)"
                                   Class="me-2"
                                   Style="cursor: pointer" />
+                            <Icon Name="IconName.Printer"
+                                  Size="IconSize.x5"
+                                  Color="IconColor.Secondary"
+                                  @onclick="() => PrintDay(timesheet)"
+                                  Style="cursor: pointer" />
                         </div>
                     </td>
                 </tr>
@@ -132,7 +137,7 @@
                 </ListTemplate>
             </div>
             <div class="col-12 flex-fill half-view-height">
-                <ListTemplate TItem="TimesheetEmployeeDetailModel"
+                <ListTemplate TItem="TimesheetEmployeeLineModel"
                               Title=""
                               Items="_timesheetEmployeeDetails"
                               PageSize="15"
@@ -141,29 +146,43 @@
                     <HeaderTemplate>
                         <tr>
                             <th>Description</th>
+                            <th>Source</th>
                             <th>Total Hours</th>
                             <th></th>
                         </tr>
                     </HeaderTemplate>
-                    <RowTemplate Context="_timesheetEmployeeDetails">
+                    <RowTemplate Context="timesheetLine">
                         <tr>
-                            <td>@_timesheetEmployeeDetails.Description</td>
-                            <td>@_timesheetEmployeeDetails.Hours</td>
+                            <td>@timesheetLine.Description</td>
+                            <td>@(timesheetLine.IsServiceReport ? "Service Report" : "Timesheet")</td>
+                            <td>@timesheetLine.Hours</td>
 
                             <td>
-                                <div>
-                                       <Icon Name="IconName.Pencil"
-                                          Size="IconSize.x5"
-                                          Color="IconColor.Dark"
-                                          @onclick="async () => await EditEmployeeTimesheetAsync(_timesheetEmployeeDetails)"
-                                          Class="me-2"
-                                          Style="cursor: pointer" />  
-                                    <Icon Name="IconName.Trash"
-                                          Size="IconSize.x5"
-                                          Color="IconColor.Danger"
-                                          @onclick="async () => await DeleteEmployeeTimesheetDetailAsync(_timesheetEmployeeDetails)"
-                                          Class="me-2"
-                                          Style="cursor: pointer" />                                    
+                                <div style="min-width: 65px">
+                                    @if (timesheetLine.IsServiceReport)
+                                    {
+                                        <Icon Name="IconName.Eye"
+                                              Size="IconSize.x5"
+                                              Color="IconColor.Primary"
+                                              @onclick="() => ViewServiceReport(timesheetLine.ServiceReportId!.Value)"
+                                              Class="me-2"
+                                              Style="cursor: pointer" />
+                                    }
+                                    else
+                                    {
+                                        <Icon Name="IconName.Pencil"
+                                              Size="IconSize.x5"
+                                              Color="IconColor.Dark"
+                                              @onclick="async () => await EditEmployeeTimesheetAsync(timesheetLine)"
+                                              Class="me-2"
+                                              Style="cursor: pointer" />
+                                        <Icon Name="IconName.Trash"
+                                              Size="IconSize.x5"
+                                              Color="IconColor.Danger"
+                                              @onclick="async () => await DeleteEmployeeTimesheetDetailAsync(timesheetLine)"
+                                              Class="me-2"
+                                              Style="cursor: pointer" />
+                                    }
                                 </div>
                             </td>
                         </tr>

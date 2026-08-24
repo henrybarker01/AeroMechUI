@@ -10,6 +10,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
     {
         [Inject] private TimesheetService _timesheetService { get; set; }
         [Inject] private LoaderService _loaderService { get; set; }
+        [Inject] private NavigationManager _navigationManager { get; set; }
 
         [Parameter] public string? SelectedDate { get; set; }
 
@@ -17,7 +18,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
         private DateOnly _startDate = DateOnly.FromDateTime(DateTime.Now.AddDays(-30));
         private List<TimesheetEmployeeHoursModel> _timesheetEmployeeHours = new();
         private TimesheetDateModel _timesheetDateModel;
-        private List<TimesheetEmployeeDetailModel> _timesheetEmployeeDetails = new();
+        private List<TimesheetEmployeeLineModel> _timesheetEmployeeDetails = new();
         private TimesheetEmployeeDetailModel _timesheetEmployeeDetail = new();
         private string _title = string.Empty;
         private Modal _modal = default!;
@@ -128,33 +129,39 @@ namespace AeroMech.UI.Web.Pages.Timesheets
             await _modal.HideAsync();
         }
 
-        private async Task EditEmployeeTimesheetAsync(TimesheetEmployeeDetailModel timesheetEmployeeHours)
+        private async Task EditEmployeeTimesheetAsync(TimesheetEmployeeLineModel timesheetLine)
         {
             _title = "Edit timesheet detail";
-            _timesheetEmployeeDetail.Id = timesheetEmployeeHours.Id;
-            _timesheetEmployeeDetail.EmployeeId = timesheetEmployeeHours.EmployeeId;
+            _timesheetEmployeeDetail.Id = timesheetLine.Id;
+            _timesheetEmployeeDetail.EmployeeId = timesheetLine.EmployeeId;
             _timesheetEmployeeDetail.Date = _timesheetDateModel.Date;
-            _timesheetEmployeeDetail.Description = timesheetEmployeeHours.Description;
-            _timesheetEmployeeDetail.Hours = timesheetEmployeeHours.Hours;
+            _timesheetEmployeeDetail.Description = timesheetLine.GapType ?? AeroMech.Data.Enums.TimesheetGapTypes.General;
+            _timesheetEmployeeDetail.Hours = timesheetLine.Hours;
 
             _timesheetEmployeeHours.First(x => x.EmployeeId == _timesheetEmployeeDetail.EmployeeId)?
-               .TimesheetHours -= timesheetEmployeeHours?.Hours ?? 0;
+               .TimesheetHours -= timesheetLine.Hours;
 
-            _timesheets.FirstOrDefault(x => x.Date == _timesheetEmployeeDetail.Date)?.TotalWorked -= timesheetEmployeeHours?.Hours ?? 0;
+            _timesheets.FirstOrDefault(x => x.Date == _timesheetEmployeeDetail.Date)?.TotalWorked -= timesheetLine.Hours;
 
             await _modal.ShowAsync();
         }
 
-        private async Task DeleteEmployeeTimesheetDetailAsync(TimesheetEmployeeDetailModel timesheetEmployeeHours)
+        private async Task DeleteEmployeeTimesheetDetailAsync(TimesheetEmployeeLineModel timesheetLine)
         {
             _loaderService.ShowLoader();
-            await _timesheetService.DeleteEmployeeTimesheetDetailAsync(timesheetEmployeeHours.Id);
+            await _timesheetService.DeleteEmployeeTimesheetDetailAsync(timesheetLine.Id);
             _timesheetEmployeeHours.First(x => x.EmployeeId == _timesheetEmployeeDetail.EmployeeId)?
-              .TimesheetHours -= timesheetEmployeeHours?.Hours ?? 0;
-            _timesheets.FirstOrDefault(x => x.Date == _timesheetEmployeeDetail.Date)?.TotalWorked -= timesheetEmployeeHours?.Hours ?? 0;
+              .TimesheetHours -= timesheetLine.Hours;
+            _timesheets.FirstOrDefault(x => x.Date == _timesheetEmployeeDetail.Date)?.TotalWorked -= timesheetLine.Hours;
             await ViewEmplyeeTimesheetDetail(_timesheetEmployeeDetail.EmployeeId);
             _loaderService.HideLoader();
             await _modal.HideAsync();
         }
+
+        private void ViewServiceReport(int serviceReportId)
+            => _navigationManager.NavigateTo($"/add-service-report/{serviceReportId}");
+
+        private void PrintDay(TimesheetDateModel timesheet)
+            => _navigationManager.NavigateTo($"/ShowTimesheetReport/{timesheet.Date:yyyy-MM-dd}");
     }
 }
