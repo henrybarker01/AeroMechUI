@@ -65,6 +65,9 @@
             <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2">
                 <i class="bi bi-file-pdf me-1"></i>View Report
             </Button>
+            <Button Color="ButtonColor.Secondary" @onclick="DownloadPdf" Class="me-2" Disabled="_pdfBytes is null">
+                <i class="bi bi-download me-1"></i>Download PDF
+            </Button>
             <Button Color="ButtonColor.Success" @onclick="ExportToExcel">
                 <i class="bi bi-file-earmark-excel me-1"></i>Export to Excel
             </Button>

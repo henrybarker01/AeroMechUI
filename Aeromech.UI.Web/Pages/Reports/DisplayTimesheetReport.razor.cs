@@ -132,15 +132,28 @@ namespace AeroMech.UI.Web.Pages.Reports
                     return;
             }
 
-            var fileStream = new MemoryStream(excelBytes);
-            var fileName = _reportType switch
-            {
-                ReportType.Weekly => $"TimesheetReport_Week_{_weekStart:yyyyMMdd}.xlsx",
-                ReportType.Daily => $"TimesheetReport_Daily_{_selectedDate:yyyyMMdd}.xlsx",
-                ReportType.DateRange => $"TimesheetReport_{_fromDate:yyyyMMdd}_to_{_toDate:yyyyMMdd}.xlsx",
-                _ => "TimesheetReport.xlsx"
-            };
+            await DownloadFileFromStream(excelBytes, GetReportFileName("xlsx"));
+        }
 
+        private async Task DownloadPdf()
+        {
+            if (_pdfBytes is null)
+                return;
+
+            await DownloadFileFromStream(_pdfBytes, GetReportFileName("pdf"));
+        }
+
+        private string GetReportFileName(string extension) => _reportType switch
+        {
+            ReportType.Weekly => $"TimesheetReport_Week_{_weekStart:yyyyMMdd}.{extension}",
+            ReportType.Daily => $"TimesheetReport_Daily_{_selectedDate:yyyyMMdd}.{extension}",
+            ReportType.DateRange => $"TimesheetReport_{_fromDate:yyyyMMdd}_to_{_toDate:yyyyMMdd}.{extension}",
+            _ => $"TimesheetReport.{extension}"
+        };
+
+        private async Task DownloadFileFromStream(byte[] fileBytes, string fileName)
+        {
+            var fileStream = new MemoryStream(fileBytes);
             using var streamRef = new DotNetStreamReference(stream: fileStream);
             await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         }
