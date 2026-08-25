@@ -131,18 +131,19 @@
               PageSize="15"
               SearchPredicate="MatchesSearch"
               ShowAddButton="true"
+              StorageKey="clients"
               OnAdd="OnShowModalClick">
     <HeaderTemplate>
         <tr>
-            <th>Name</th>
-            <th>Contact Person</th>
-            <th>Contact Number</th>
-            <th>Contact Email</th>
-            <th>Contact Birth Date</th>
-            <th class="rate">Weekdays</th>
-            <th class="rate">Weekdays Overtime</th>
-            <th class="rate">Overtime</th>
-            <th class="rate">Sundays & Public Holidays</th>
+            <SortHeader Title="Name" SortBy="c => c.Name" />
+            <SortHeader Title="Contact Person" SortBy="c => c.ContactPersonName" />
+            <SortHeader Title="Contact Number" SortBy="c => c.ContactPersonNumber" />
+            <SortHeader Title="Contact Email" SortBy="c => c.ContactPersonEmail" />
+            <SortHeader Title="Contact Birth Date" SortBy="c => c.ContactPersonBirthDate" />
+            <SortHeader Title="Weekdays" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Weekdays)?.Rate ?? 0" />
+            <SortHeader Title="Weekdays Overtime" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime)?.Rate ?? 0" />
+            <SortHeader Title="Overtime" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime)?.Rate ?? 0" />
+            <SortHeader Title="Sundays & Public Holidays" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays)?.Rate ?? 0" />
             <th></th>
         </tr>
     </HeaderTemplate>

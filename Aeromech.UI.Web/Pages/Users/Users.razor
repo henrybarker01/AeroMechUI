@@ -71,12 +71,13 @@
               PageSize="15"
               SearchPredicate="MatchesSearch"
               ShowAddButton="true"
+              StorageKey="users"
               OnAdd="AddUserClick">
     <HeaderTemplate>
         <tr>
-            <th>User Name</th>
-            <th>Email</th>
-            <th>Phone Number</th>
+            <SortHeader Title="User Name" SortBy="u => u.UserName" />
+            <SortHeader Title="Email" SortBy="u => u.Email" />
+            <SortHeader Title="Phone Number" SortBy="u => u.PhoneNumber" />
             <th></th>
         </tr>
     </HeaderTemplate>

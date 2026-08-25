@@ -58,12 +58,13 @@
                       Title=""
                       Items="_timesheets"
                       PageSize="15"
-                      ShowAddButton="false">
+                      ShowAddButton="false"
+                      StorageKey="timesheet-dates">
             <HeaderTemplate>
                 <tr>
-                    <th>Date</th>
-                    <th>Day</th>
-                    <th>Total Hours</th>
+                    <SortHeader Title="Date" SortBy="t => t.Date" />
+                    <SortHeader Title="Day" SortBy="t => t.DayOfWeek" />
+                    <SortHeader Title="Total Hours" SortBy="t => t.TotalWorked" />
                     <th></th>
                 </tr>
             </HeaderTemplate>
@@ -98,14 +99,15 @@
                               Title=""
                               Items="_timesheetEmployeeHours"
                               PageSize="15"
-                              ShowAddButton="false">
+                              ShowAddButton="false"
+                              StorageKey="timesheet-employees">
                     <HeaderTemplate>
                         <tr>
-                            <th>Employee #</th>
-                            <th>Name</th>
-                            <th>SR Hours</th>
-                            <th>Other Hours</th>
-                            <th>Total Hours</th>
+                            <SortHeader Title="Employee #" SortBy="e => e.EmployeeNumber" />
+                            <SortHeader Title="Name" SortBy="e => e.EmployeeName" />
+                            <SortHeader Title="SR Hours" SortBy="e => e.ServiceReportHours" />
+                            <SortHeader Title="Other Hours" SortBy="e => e.TimesheetHours" />
+                            <SortHeader Title="Total Hours" SortBy="e => e.ServiceReportHours + e.TimesheetHours" />
                             <th></th>
                         </tr>
                     </HeaderTemplate>
@@ -142,12 +144,13 @@
                               Items="_timesheetEmployeeDetails"
                               PageSize="15"
                               ShowAddButton="true"
+                              StorageKey="timesheet-employee-lines"
                               OnAdd="@(async () => await AddToEmployeeTimesheetAsync())">
                     <HeaderTemplate>
                         <tr>
-                            <th>Description</th>
-                            <th>Source</th>
-                            <th>Total Hours</th>
+                            <SortHeader Title="Description" SortBy="l => l.Description" />
+                            <SortHeader Title="Source" SortBy="l => l.IsServiceReport" />
+                            <SortHeader Title="Total Hours" SortBy="l => l.Hours" />
                             <th></th>
                         </tr>
                     </HeaderTemplate>

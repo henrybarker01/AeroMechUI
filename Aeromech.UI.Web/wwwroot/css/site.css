@@ -142,3 +142,25 @@ a, .btn-link {
 .action {
     font-size: 14px;
 }
+
+/* Sortable grid headers: the whole cell is the click target and the caret is always present so
+   the column keeps its width when the sort moves between columns. */
+.table th.sortable {
+    cursor: pointer;
+    user-select: none;
+    white-space: nowrap;
+}
+
+    .table th.sortable:hover {
+        background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .table th.sortable .sort-indicator {
+        margin-left: 4px;
+        font-size: 11px;
+        vertical-align: baseline;
+    }
+
+    .table th.sortable .sort-indicator.idle {
+        opacity: 0.2;
+    }

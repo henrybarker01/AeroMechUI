@@ -93,19 +93,20 @@
               PageSize="15"
               SearchPredicate="MatchesSearch"
               ShowAddButton="true"
+              StorageKey="parts"
               OnAdd="OnAddPartClick">
     <HeaderTemplate>
         <tr>
-            <th>Part Number</th>
-            <th>Description</th>
-            <th>Warehouse</th>
-            <th>Bin</th>
-            <th>Supplier Code</th>
-            <th>Product Class</th>
-            <th>Cycle Count</th>
-            <th>Qty On Hand</th>
-            <th>Cost Price</th>
-            <th>Total Value</th>
+            <SortHeader Title="Part Number" SortBy="p => p.PartCode" />
+            <SortHeader Title="Description" SortBy="p => p.PartDescription" />
+            <SortHeader Title="Warehouse" SortBy="p => p.Warehouse?.WarehouseCode" />
+            <SortHeader Title="Bin" SortBy="p => p.Bin" />
+            <SortHeader Title="Supplier Code" SortBy="p => p.SupplierCode" />
+            <SortHeader Title="Product Class" SortBy="p => p.ProductClass" />
+            <SortHeader Title="Cycle Count" SortBy="p => p.CycleCount" />
+            <SortHeader Title="Qty On Hand" SortBy="p => p.QtyOnHand" />
+            <SortHeader Title="Cost Price" SortBy="p => p.CostPrice" />
+            <SortHeader Title="Total Value" SortBy="p => p.QtyOnHand * p.CostPrice" />
             <th></th>
         </tr>
     </HeaderTemplate>

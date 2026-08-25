@@ -128,45 +128,44 @@
     <br />
 </div>
 
-<div class="mb-3">
-    <input type="text" class="form-control" placeholder="Search..."
-           @oninput="(e) => SearchTerm = e.Value.ToString()" />
-</div>
-<table class="table">
-    <thead>
+<ListTemplate TItem="VehicleModel"
+              Title=""
+              Items="vehicles"
+              PageSize="15"
+              SearchPredicate="MatchesSearch"
+              ShowAddButton="false"
+              StorageKey="vehicles">
+    <HeaderTemplate>
         <tr>
-            <th>Serial Number</th>
-            <th>Description</th>
-            <th>MachineType</th>
-            <th>Manufacture Date</th>
-            <th>Date In Service</th>
-            <th>Purchase Price</th>
-            <th>EngineHours</th>
-            <th>Job Number</th>
-            <th>Chassis Number</th>
+            <SortHeader Title="Serial Number" SortBy="v => v.SerialNumber" />
+            <SortHeader Title="Description" SortBy="v => v.Description" />
+            <SortHeader Title="MachineType" SortBy="v => v.MachineType" />
+            <SortHeader Title="Manufacture Date" SortBy="v => v.ManufactureDate" />
+            <SortHeader Title="Date In Service" SortBy="v => v.DateInService" />
+            <SortHeader Title="Purchase Price" SortBy="v => v.PurchasePrice" />
+            <SortHeader Title="EngineHours" SortBy="v => v.EngineHours" />
+            <SortHeader Title="Job Number" SortBy="v => v.JobNumber" />
+            <SortHeader Title="Chassis Number" SortBy="v => v.ChassisNumber" />
             <th>Action</th>
         </tr>
-    </thead>
-    <tbody>
-        @foreach (var vehicle in FilteredVehicles)
-        {
-            <tr>
-                <td>@vehicle.SerialNumber</td>
-                <td class="vehicle-description">@vehicle.Description</td>
-                <td>@vehicle.MachineType</td>
-                <td>@vehicle.ManufactureDate</td>
-                <td>@vehicle.DateInService</td>
-                <td>@vehicle.PurchasePrice.ToString("C", CultureInfo.CurrentCulture)</td>
-                <td>@vehicle.EngineHours</td>
-                <td>@vehicle.JobNumber</td>
-                <td>@vehicle.ChassisNumber</td>
-                <td>
-                    <div style="min-width: 65px">
-                        <Icon Name="IconName.Trash3" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteVehicle(vehicle)" Class="me-2" Style="cursor: pointer" />
-                        <Icon Name="IconName.Pencil" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditVehicleClick(vehicle)" Style="cursor: pointer" />
-                    </div>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+    </HeaderTemplate>
+    <RowTemplate Context="vehicle">
+        <tr>
+            <td>@vehicle.SerialNumber</td>
+            <td class="vehicle-description">@vehicle.Description</td>
+            <td>@vehicle.MachineType</td>
+            <td>@vehicle.ManufactureDate</td>
+            <td>@vehicle.DateInService</td>
+            <td>@vehicle.PurchasePrice.ToString("C", CultureInfo.CurrentCulture)</td>
+            <td>@vehicle.EngineHours</td>
+            <td>@vehicle.JobNumber</td>
+            <td>@vehicle.ChassisNumber</td>
+            <td>
+                <div style="min-width: 65px">
+                    <Icon Name="IconName.Trash3" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteVehicle(vehicle)" Class="me-2" Style="cursor: pointer" />
+                    <Icon Name="IconName.Pencil" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditVehicleClick(vehicle)" Style="cursor: pointer" />
+                </div>
+            </td>
+        </tr>
+    </RowTemplate>
+</ListTemplate>

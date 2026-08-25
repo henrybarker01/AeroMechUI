@@ -1,4 +1,5 @@
 ﻿@typeparam TItem
+@attribute [CascadingTypeParameter(nameof(TItem))]
 
 <div class="container-fluid" style="max-height:90vh;">
     <div class="row">
@@ -27,7 +28,9 @@
         <div class="table-container" style="height:100%; overflow-y:auto; position:relative;">
             <table class="table table-striped table-hover">
                 <thead style="position: sticky; top: 0; background-color: white; z-index: 2;">
-                    @HeaderTemplate
+                    <CascadingValue Value="this">
+                        @HeaderTemplate
+                    </CascadingValue>
                 </thead>
                 <tbody>
                     @if (PagedItems?.Any() == true)

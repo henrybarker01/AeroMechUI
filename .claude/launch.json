@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "aeromech-web",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Aeromech.UI.Web/AeroMech.UI.Web.csproj", "--launch-profile", "http"],
+      "port": 5066
+    }
+  ]
+}

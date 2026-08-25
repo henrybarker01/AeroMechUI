@@ -56,6 +56,20 @@
         window.reloadPage = function() {
             window.location.href = '/';
         }
+
+        // Small local storage wrapper for remembering per-page UI preferences such as grid sort
+        // order. Storage can be unavailable (private browsing, quota) so every call is guarded.
+        window.aeroMechStore = {
+            get: function (key) {
+                try { return localStorage.getItem(key); } catch (e) { return null; }
+            },
+            set: function (key, value) {
+                try { localStorage.setItem(key, value); } catch (e) { }
+            },
+            remove: function (key) {
+                try { localStorage.removeItem(key); } catch (e) { }
+            }
+        };
     </script>
      
 </body>

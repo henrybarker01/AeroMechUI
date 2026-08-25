@@ -1,0 +1,13 @@
+@typeparam TItem
+
+@if (IsSortable)
+{
+    <th class="sortable @Class" @onclick="ToggleAsync" aria-sort="@AriaSort" title="Sort by @Title">
+        @Title
+        <i class="bi @IndicatorIcon sort-indicator @(IsActive ? null : "idle")"></i>
+    </th>
+}
+else
+{
+    <th class="@Class">@Title</th>
+}

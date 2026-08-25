@@ -110,15 +110,16 @@
               PageSize="15"
               SearchPredicate="MatchesSearch"
               ShowAddButton="true"
+              StorageKey="employees"
               OnAdd="OnShowModalClick">
     <HeaderTemplate>
         <tr>
-            <th>Title</th>
-            <th>Name</th>
-            <th>Surname</th>
-            <th>ID Number</th>
-            <th>Phone Number</th>
-            <th>Email</th>
+            <SortHeader Title="Title" SortBy="e => e.Title" />
+            <SortHeader Title="Name" SortBy="e => e.FirstName" />
+            <SortHeader Title="Surname" SortBy="e => e.LastName" />
+            <SortHeader Title="ID Number" SortBy="e => e.IDNumber" />
+            <SortHeader Title="Phone Number" SortBy="e => e.PhoneNumber" />
+            <SortHeader Title="Email" SortBy="e => e.Email" />
             <th></th>
         </tr>
     </HeaderTemplate>

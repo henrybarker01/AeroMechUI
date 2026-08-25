@@ -8,18 +8,19 @@
           PageSize="15"
           SearchPredicate="MatchesSearch"
           ShowAddButton="true"
+          StorageKey="quotes"
           OnAdd="NavigateToAddQuote">
     <HeaderTemplate>
         <tr>
-            <th>Quote Number</th>
-            <th>Report Number</th>
-            <th>Report Date</th>
-            <th>Serial Number</th>
-            <th>Instruction</th>
-            <th>Client</th>
-            <th>Service Type</th>
-            <th>Total</th>
-            <th>Status</th>
+            <SortHeader Title="Quote Number" SortBy="q => q.QuoteNumber" />
+            <SortHeader Title="Report Number" SortBy="q => q.ServiceReportNumber" />
+            <SortHeader Title="Report Date" SortBy="q => q.ReportDate" />
+            <SortHeader Title="Serial Number" SortBy="q => q.Vehicle?.SerialNumber" />
+            <SortHeader Title="Instruction" SortBy="q => q.Instruction" />
+            <SortHeader Title="Client" SortBy="q => q.Client?.Name" />
+            <SortHeader Title="Service Type" SortBy="q => q.ServiceType.ToString()" />
+            <SortHeader Title="Total" SortBy="q => CalculateTotal(q)" />
+            <SortHeader Title="Status" SortBy="q => q.IsComplete" />
             <th></th>
         </tr>
     </HeaderTemplate>

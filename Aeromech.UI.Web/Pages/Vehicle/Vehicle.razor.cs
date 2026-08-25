@@ -27,15 +27,17 @@ namespace AeroMech.UI.Web.Pages.Vehicle
         private VehicleModel vehicle = new VehicleModel();
         private List<VehicleModel>? vehicles = new List<VehicleModel>();
 
-        private string SearchTerm { get; set; } = string.Empty;
-        private IEnumerable<VehicleModel> FilteredVehicles =>
-        vehicles.Where(vehicle =>
-            string.IsNullOrEmpty(SearchTerm) ||
-            vehicle.Description.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            vehicle.ChassisNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            vehicle.SerialNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase) ||
-            vehicle.JobNumber.Contains(SearchTerm, StringComparison.OrdinalIgnoreCase)
-        );
+        private bool MatchesSearch(VehicleModel vehicle, string term)
+        {
+            if (string.IsNullOrWhiteSpace(term)) return true;
+            var t = term.Trim();
+
+            return
+                (vehicle.Description ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                (vehicle.ChassisNumber ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                (vehicle.SerialNumber ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase) ||
+                (vehicle.JobNumber ?? string.Empty).Contains(t, StringComparison.OrdinalIgnoreCase);
+        }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {

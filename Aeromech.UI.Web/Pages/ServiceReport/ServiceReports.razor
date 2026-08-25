@@ -13,19 +13,20 @@
               PageSize="15"
               SearchPredicate="MatchesSearch"
               ShowAddButton="true"
+              StorageKey="service-reports"
               OnAdd="NavigateToAdd">
     <HeaderTemplate>
         <tr>
-            <th>Report Number</th>
-            <th>Quote Number</th>
-            <th>Report Date</th>
-            <th>Sales Order Number</th>
-            <th>Serial Number</th>
-            <th>Instruction</th>
-            <th>Client</th>
-            <th>Service Type</th>
-            <th>Total</th>
-            <th>Status</th>
+            <SortHeader Title="Report Number" SortBy="sr => sr.ServiceReportNumber" />
+            <SortHeader Title="Quote Number" SortBy="sr => sr.QuoteNumber" />
+            <SortHeader Title="Report Date" SortBy="sr => sr.ReportDate" />
+            <SortHeader Title="Sales Order Number" SortBy="sr => sr.SalesOrderNumber" />
+            <SortHeader Title="Serial Number" SortBy="sr => sr.Vehicle?.SerialNumber" />
+            <SortHeader Title="Instruction" SortBy="sr => sr.Instruction" />
+            <SortHeader Title="Client" SortBy="sr => sr.Client?.Name" />
+            <SortHeader Title="Service Type" SortBy="sr => sr.ServiceType.ToString()" />
+            <SortHeader Title="Total" SortBy="sr => CalculateTotal(sr)" />
+            <SortHeader Title="Status" SortBy="sr => sr.IsComplete" />
             <th></th>
         </tr>
     </HeaderTemplate>
