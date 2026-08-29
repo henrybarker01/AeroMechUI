@@ -42,6 +42,12 @@ namespace AeroMech.Data.Models
 
 		public int? QuoteNumber { get; set; }
 
+		/// <summary>
+		/// The quote this report was converted from, when it started life as one.
+		/// </summary>
+		public virtual Quote? Quote { get; set; }
+		public int? QuoteId { get; set; }
+
 		public bool IsComplete { get; set; }
 	}
 }

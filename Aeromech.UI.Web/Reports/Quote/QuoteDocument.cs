@@ -1,5 +1,4 @@
-﻿using AeroMech.Data.Models;
-using AeroMech.Models;
+using AeroMech.Models.Models;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
@@ -8,11 +7,11 @@ using IDocument = AeroMech.UI.Web.Reports.IDocument;
 
 namespace AeroMech.API.Reports
 {
-    public class Quote : IDocument
+    public class QuoteDocument : IDocument
     {
-        public ServiceReportModel serviceReport { get; set; }
+        public QuoteModel quote { get; set; }
 
-        public Quote()
+        public QuoteDocument()
         {
 
         }
@@ -58,12 +57,18 @@ namespace AeroMech.API.Reports
 
                     column.Item().Text(text =>
                     {
-                        text.Span($"Quote No:  AEM{serviceReport.QuoteNumber}").SemiBold().FontSize(12);
+                        text.Span($"Quote No:  AEM{quote.QuoteNumber}").SemiBold().FontSize(12);
                     });
-                    column.Item().Text(text =>
+
+                    // A quote only carries a service report number once it has been accepted and
+                    // converted, so the line is left off until then.
+                    if (quote.ServiceReportNumber.HasValue)
                     {
-                        text.Span($"Field Service Report No:  AEM{serviceReport.ServiceReportNumber}").SemiBold().FontSize(12);
-                    });
+                        column.Item().Text(text =>
+                        {
+                            text.Span($"Field Service Report No:  AEM{quote.ServiceReportNumber}").SemiBold().FontSize(12);
+                        });
+                    }
                 });
             });
         }
@@ -78,12 +83,12 @@ namespace AeroMech.API.Reports
                 {
                     row.RelativeItem().PaddingBottom(20).Component(new QuoteOrderInfoLeft(new OrderInfo()
                     {
-                        Date = serviceReport.ReportDate.ToString("dd/MM/yyyy"),
-                        Client = serviceReport.Client.Name,
-                        EngineHours = serviceReport.VehicleHours.ToString() ?? "0", //serviceReport.Vehicle.EngineHours.ToString(),
-                        MachineType = serviceReport.Vehicle.MachineType,
-                        SerialNumber = serviceReport.Vehicle.SerialNumber,
-                        Instructions = serviceReport.Instruction
+                        Date = quote.QuoteDate.ToString("dd/MM/yyyy"),
+                        Client = quote.Client?.Name,
+                        EngineHours = quote.VehicleHours.ToString(),
+                        MachineType = quote.Vehicle?.MachineType,
+                        SerialNumber = quote.Vehicle?.SerialNumber,
+                        Instructions = quote.Instruction
                     }));
 
                     row.ConstantItem(5);
@@ -93,7 +98,7 @@ namespace AeroMech.API.Reports
 
                 column.Item().PaddingBottom(10).Text("Detailed Service Report").FontSize(12).SemiBold().Underline();
 
-                var serviceDescription = serviceReport.DetailedServiceReport;
+                var serviceDescription = quote.DetailedServiceReport;
                 column.Item().Text(serviceDescription).FontSize(10);
 
                 column.Item().PaddingBottom(10).PaddingTop(20).Text("Indicate your acceptance by signing below, if you accept this quote.").FontSize(12).SemiBold().Underline();
@@ -128,18 +133,6 @@ namespace AeroMech.API.Reports
                     row.RelativeItem().Text("Customer");
                 });
             });
-
-            static IContainer Block(IContainer container)
-            {
-                return container
-                    .Border(1)
-                    .Background(Colors.Grey.Lighten3)
-                    .ShowOnce()
-                    .MinWidth(50)
-                    .MinHeight(50)
-                    .AlignCenter()
-                    .AlignMiddle();
-            }
         }
 
         void ComposeLabourTable(IContainer container)
@@ -176,20 +169,16 @@ namespace AeroMech.API.Reports
                     return container.DefaultTextStyle(x => x.FontSize(10)).BorderBottom(1).BorderColor(Colors.Grey.Lighten2).PaddingVertical(5);
                 }
 
-                serviceReport.Employees.Where(x => !x.IsDeleted).GroupBy(e => e.Rate).Select(g => new
+                // Quoted labour is already held per rate type, so each line prints as it stands.
+                foreach (var labour in quote.Labour.Where(x => !x.IsDeleted))
                 {
-                    Rate = g.Key,
-                    Hours = g.Sum(e => e.Hours),
-
-                }).ToList().ForEach(x =>
-                {
-                    table.Cell().Element(CellStyle).Text(x.Hours.ToString());
+                    table.Cell().Element(CellStyle).Text(labour.Hours.ToString());
                     table.Cell().Element(CellStyle).Text("Labour");
                     table.Cell().Element(CellStyle).Text("EA");
-                    table.Cell().Element(CellStyle).AlignRight().Text(string.Empty);// serviceReport.ServiceType
-                    table.Cell().Element(CellStyle).AlignRight().Text(x.Rate.ToString("C", CultureInfo.CurrentCulture));
-                    table.Cell().Element(CellStyle).AlignRight().Text((x.Hours * x.Rate)?.ToString("C", CultureInfo.CurrentCulture));
-                });
+                    table.Cell().Element(CellStyle).AlignRight().Text(labour.RateType.GetDisplayName());
+                    table.Cell().Element(CellStyle).AlignRight().Text(labour.Rate.ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(LineTotal(labour).ToString("C", CultureInfo.CurrentCulture));
+                }
 
                 static IContainer CellFlatStyle(IContainer container)
                 {
@@ -202,14 +191,14 @@ namespace AeroMech.API.Reports
                 table.Cell().Element(CellFlatStyle).AlignRight().Text("");
                 table.Cell().Element(CellFlatStyle).AlignRight().Text("");
 
-                foreach (var part in serviceReport.Parts.Where(x => x.IsDeleted == false))
+                foreach (var part in quote.Parts.Where(x => x.IsDeleted == false))
                 {
                     table.Cell().Element(CellStyle).Text(part.QTY.ToString());
                     table.Cell().Element(CellStyle).Text(part?.PartCode);
                     table.Cell().Element(CellStyle).Text("EA");
                     table.Cell().Element(CellStyle).AlignRight().Text(part?.PartDescription);
                     table.Cell().Element(CellStyle).AlignRight().Text(part?.CostPrice.ToString("C", CultureInfo.CurrentCulture));
-                    table.Cell().Element(CellStyle).AlignRight().Text((part.CostPrice * part.QTY).ToString("C", CultureInfo.CurrentCulture));
+                    table.Cell().Element(CellStyle).AlignRight().Text(LineTotal(part).ToString("C", CultureInfo.CurrentCulture));
                 }
 
                 static IContainer CellTotalsStyle(IContainer container)
@@ -222,7 +211,7 @@ namespace AeroMech.API.Reports
                 table.Cell().Border(0).Text("");
                 table.Cell().Border(0).Text("");
                 table.Cell().Element(CellTotalsStyle).AlignRight().Text("Value of parts user for service:");
-                table.Cell().Element(CellTotalsStyle).AlignRight().Text(serviceReport.Parts.Where(x => !x.IsDeleted).Sum(x => x.CostPrice * x.QTY).ToString("C", CultureInfo.CurrentCulture));
+                table.Cell().Element(CellTotalsStyle).AlignRight().Text(quote.Parts.Where(x => !x.IsDeleted).Sum(LineTotal).ToString("C", CultureInfo.CurrentCulture));
                 table.Cell().Border(0).Text("");
                 table.Cell().Border(0).Text("");
                 table.Cell().Border(0).Text("");
@@ -230,12 +219,18 @@ namespace AeroMech.API.Reports
                 table.Cell().Element(CellTotalsStyle).AlignRight().Text("Total Excl VAT:");
                 table.Cell().Element(CellTotalsStyle).AlignRight().Text(
                     (
-                        serviceReport.Parts.Where(x => x.IsDeleted == false).Sum(x => Convert.ToDouble(x.CostPrice) * x.QTY) +
-                        serviceReport.Employees.Where(x => !x.IsDeleted).Sum(x => x.Hours * x.Rate))?
+                        quote.Parts.Where(x => !x.IsDeleted).Sum(LineTotal) +
+                        quote.Labour.Where(x => !x.IsDeleted).Sum(LineTotal))
                         .ToString("C", CultureInfo.CurrentCulture)
                     );
 
             });
         }
+
+        private static double LineTotal(QuotePartModel part)
+            => part.CostPrice * part.QTY - part.Discount / 100 * (part.CostPrice * part.QTY);
+
+        private static double LineTotal(QuoteLabourModel labour)
+            => labour.Rate * labour.Hours - labour.Discount / 100 * (labour.Rate * labour.Hours);
     }
 }

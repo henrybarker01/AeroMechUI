@@ -58,6 +58,9 @@ namespace AeroMech.API.Reports
                 {
                     info.Item().Text($"Week No :\t\t\t\t{Data.WeekNumber}").SemiBold().FontSize(10);
                     info.Item().Text($"Date :\t\t\t\t{Data.WeekStartDate:dd/MM/yyyy}").SemiBold().FontSize(10);
+
+                    if (Data.SelectedClientNames.Count > 0)
+                        info.Item().Text($"Clients :\t\t\t\t{string.Join(", ", Data.SelectedClientNames)}").SemiBold().FontSize(10);
                 });
 
                 column.Item().Element(ComposeMatrixTable);
@@ -118,7 +121,7 @@ namespace AeroMech.API.Reports
                     var row = rows[rowIndex];
 
                     // Grand total row
-                    if (row.IsTotalRow && row.SectionTitle == "Total")
+                    if (row.IsGrandTotalRow)
                     {
                         table.Cell().Row(currentTableRow).Column(1u).ColumnSpan(2)
                             .Element(GrandTotalLeftCellStyle)
@@ -320,6 +323,7 @@ namespace AeroMech.API.Reports
     {
         public int WeekNumber { get; set; }
         public DateOnly WeekStartDate { get; set; }
+        public List<string> SelectedClientNames { get; set; } = new();
         public List<TimesheetReportEmployee> Employees { get; set; } = new();
         public List<TimesheetReportRow> Rows { get; set; } = new();
     }
@@ -336,6 +340,7 @@ namespace AeroMech.API.Reports
         public bool ShowSectionTitle { get; set; }
         public string RowTitle { get; set; } = string.Empty;
         public bool IsTotalRow { get; set; }
+        public bool IsGrandTotalRow { get; set; }
         public Dictionary<int, double> HoursByEmployeeId { get; set; } = new();
     }
 }

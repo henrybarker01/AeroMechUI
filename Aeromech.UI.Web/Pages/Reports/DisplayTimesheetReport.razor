@@ -61,6 +61,49 @@
             </div>
         }
 
+        <div class="col-3">
+            <label class="form-label">Clients</label>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                        type="button"
+                        id="client-filter"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
+                    @SelectedClientsLabel
+                </button>
+                <div class="dropdown-menu w-100 p-2" aria-labelledby="client-filter">
+                    <div style="max-height: 260px; overflow-y: auto;">
+                        @if (_clients.Count == 0)
+                        {
+                            <div class="text-muted small px-1">No clients available</div>
+                        }
+                        else
+                        {
+                            @foreach (var client in _clients)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="@($"client-{client.Id}")"
+                                           checked="@_selectedClientIds.Contains(client.Id)"
+                                           @onchange="@(e => ToggleClient(client.Id, (bool?)e.Value == true))" />
+                                    <label class="form-check-label" for="@($"client-{client.Id}")">@client.Name</label>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <hr class="my-2" />
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-sm btn-link p-0" type="button" @onclick="ClearClientSelection">Clear (all clients)</button>
+                        <button class="btn btn-sm btn-primary" type="button" @onclick="ViewReport">Apply</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
         <div class="col text-end">
             <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2">
                 <i class="bi bi-file-pdf me-1"></i>View Report

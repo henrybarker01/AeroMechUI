@@ -30,6 +30,8 @@ namespace AeroMech.Models
 
         public bool IsDeleted { get; set; }
 
+        public bool ExcludeFromTimesheets { get; set; }
+
         public int? AddressId { get; set; }
 
         [Required(ErrorMessage = "Address Line 1 is required")]

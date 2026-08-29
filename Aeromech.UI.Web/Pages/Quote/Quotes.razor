@@ -1,8 +1,9 @@
 ﻿@page "/quotes"
+@using AeroMech.Models.Models
 
 <PageTitle>Quotes</PageTitle>
 
-<ListTemplate TItem="ServiceReportModel"
+<ListTemplate TItem="QuoteModel"
           Title="Quotes"
           Items="_quotes"
           PageSize="15"
@@ -13,14 +14,13 @@
     <HeaderTemplate>
         <tr>
             <SortHeader Title="Quote Number" SortBy="q => q.QuoteNumber" />
-            <SortHeader Title="Report Number" SortBy="q => q.ServiceReportNumber" />
-            <SortHeader Title="Report Date" SortBy="q => q.ReportDate" />
+            <SortHeader Title="Quote Date" SortBy="q => q.QuoteDate" />
             <SortHeader Title="Serial Number" SortBy="q => q.Vehicle?.SerialNumber" />
             <SortHeader Title="Instruction" SortBy="q => q.Instruction" />
             <SortHeader Title="Client" SortBy="q => q.Client?.Name" />
             <SortHeader Title="Service Type" SortBy="q => q.ServiceType.ToString()" />
             <SortHeader Title="Total" SortBy="q => CalculateTotal(q)" />
-            <SortHeader Title="Status" SortBy="q => q.IsComplete" />
+            <SortHeader Title="Status" SortBy="q => q.IsConverted" />
             <th></th>
         </tr>
     </HeaderTemplate>
@@ -28,17 +28,29 @@
     <RowTemplate Context="q">
         <tr>
             <td>@($"AEM {q.QuoteNumber}")</td>
-            <td>@($"AEM {q.ServiceReportNumber}")</td>
-            <td>@q.ReportDate.ToString("dd/MM/yyyy")</td>
+            <td>@q.QuoteDate.ToString("dd/MM/yyyy")</td>
             <td>@q.Vehicle?.SerialNumber</td>
             <td style="max-width:400px">@q.Instruction</td>
             <td>@q.Client?.Name</td>
             <td>@q.ServiceType</td>
             <td>@CalculateTotal(q).ToString("C", CultureInfo.CurrentCulture)</td>
-            <td>@(q.IsComplete == true ? "Complete" : "Incomplete")</td>
+            <td>
+                @if (q.IsConverted)
+                {
+                    <span title="Converted to a service report">Converted to AEM @q.ServiceReportNumber</span>
+                }
+                else
+                {
+                    <span>Open</span>
+                }
+            </td>
             <td>
                 <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(q.Id)" Style="cursor: pointer" />
-                <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => PrintQuote(q.Id)" Style="cursor: pointer" />
+                <Icon Name="IconName.Printer" Size="IconSize.x5" Class="me-2" Color="IconColor.Secondary" @onclick="() => PrintQuote(q.Id)" Style="cursor: pointer" />
+                @if (!q.IsConverted)
+                {
+                    <Icon Name="IconName.FileEarmarkCheck" Size="IconSize.x5" Color="IconColor.Success" Title="Convert to service report" @onclick="() => ConvertQuote(q.Id)" Style="cursor: pointer" />
+                }
             </td>
         </tr>
     </RowTemplate>

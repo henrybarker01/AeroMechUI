@@ -89,6 +89,12 @@
                         <DateInput TValue="DateOnly?" @bind-Value="@_employee.BirthDate" id="birth-date" />
                     </div>
                 </div>
+                <div class="row mt-3">
+                    <div class="form-group form-check">
+                        <InputCheckbox @bind-Value="_employee.ExcludeFromTimesheets" class="form-check-input" id="exclude-from-timesheets" />
+                        <label class="form-check-label" for="exclude-from-timesheets">Exclude from timesheets</label>
+                    </div>
+                </div>
             </div>
             <div class="row">
                 <div class="footer-buttons">
@@ -120,6 +126,7 @@
             <SortHeader Title="ID Number" SortBy="e => e.IDNumber" />
             <SortHeader Title="Phone Number" SortBy="e => e.PhoneNumber" />
             <SortHeader Title="Email" SortBy="e => e.Email" />
+            <SortHeader Title="Timesheets" SortBy="e => e.ExcludeFromTimesheets" />
             <th></th>
         </tr>
     </HeaderTemplate>
@@ -131,6 +138,7 @@
             <td>@employee.IDNumber</td>
             <td>@employee.PhoneNumber</td>
             <td>@employee.Email</td>
+            <td>@(employee.ExcludeFromTimesheets ? "Excluded" : "Included")</td>
 
             <td>
                 <Icon Name="IconName.PersonFillDash" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteEmployee(employee)" Class="me-2" Style="cursor: pointer" />

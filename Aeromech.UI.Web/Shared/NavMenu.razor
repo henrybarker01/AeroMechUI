@@ -76,8 +76,9 @@
     </nav>
     <AuthorizeView>
         <Authorized>
-            <div class="container">
-                <button class="btn btn-primary" @onclick="NavigateToAddServiceReport">Add Service Report</button>
+            <div class="nav-actions">
+                <button class="nav-action nav-action-quote" @onclick="NavigateToAddQuote">Add Quote</button>
+                <button class="nav-action nav-action-report" @onclick="NavigateToAddServiceReport">Add Service Report</button>
             </div>
         </Authorized>
     </AuthorizeView>
@@ -96,4 +97,6 @@
     }
 
     private void NavigateToAddServiceReport() => NavigationManager.NavigateTo("add-service-report");
+
+    private void NavigateToAddQuote() => NavigationManager.NavigateTo("add-quote");
 }

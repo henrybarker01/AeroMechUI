@@ -27,6 +27,14 @@ namespace AeroMech.Data.Persistence
             modelBuilder.Entity<TimesheetEmployeeDetail>()
                 .Property(e => e.Description)
                 .HasConversion<string>();
+
+            // A quote is converted into at most one service report, and the report keeps the
+            // pointer back so the quote it came from can always be found.
+            modelBuilder.Entity<ServiceReport>()
+                .HasOne(x => x.Quote)
+                .WithOne(x => x.ServiceReport)
+                .HasForeignKey<ServiceReport>(x => x.QuoteId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         public DbSet<Client> Clients { get; set; }
@@ -45,5 +53,9 @@ namespace AeroMech.Data.Persistence
         public DbSet<StockTake> StockTakes { get; set; }
         public DbSet<StockTakeParts> StockTakeParts { get; set; }
         public DbSet<TimesheetEmployeeDetail> TimesheetEmployeeDetails { get; set; }
+        public DbSet<Quote> Quotes { get; set; }
+        public DbSet<QuoteLabour> QuoteLabour { get; set; }
+        public DbSet<QuotePart> QuoteParts { get; set; }
+        public DbSet<QuoteAdHockPart> QuoteAdHockParts { get; set; }
     }
 }

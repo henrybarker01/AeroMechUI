@@ -16,15 +16,13 @@ namespace AeroMech.UI.Web.Services
         private readonly IMapper _mapper;
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly FieldServiceReport _fieldServiceReport;
-        private readonly Quote _quote;
         private readonly IMemoryCache _memoryCache;
 
-        public ServiceReportService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, FieldServiceReport fieldServiceReport, Quote quote, IMemoryCache memoryCache)
+        public ServiceReportService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, FieldServiceReport fieldServiceReport, IMemoryCache memoryCache)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _fieldServiceReport = fieldServiceReport;
-            _quote = quote;
             _memoryCache = memoryCache;
         }
 
@@ -32,7 +30,7 @@ namespace AeroMech.UI.Web.Services
         private static DateTimeOffset NormalizeDateOnlyToUtc(DateTimeOffset value)
             => new DateTimeOffset(value.Date, TimeSpan.Zero);
 
-        public async Task<int> AddServiceReport(ServiceReportModel serviceReport, bool isQuote)
+        public async Task<int> AddServiceReport(ServiceReportModel serviceReport)
         {
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
@@ -92,9 +90,22 @@ namespace AeroMech.UI.Web.Services
 
             sr.ServiceReportNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => (int?)x.ServiceReportNumber) ?? 0) + 1;
 
-            if (isQuote && sr.QuoteNumber == 0)
+            // Converting an accepted quote is the one path that reaches here with a quote
+            // attached; this is the point the quoted work becomes real, and the stock deducted
+            // above is what makes it so.
+            if (serviceReport.QuoteId.HasValue)
             {
-                sr.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => (int?)x.QuoteNumber) ?? 0) + 1;
+                var quote = await _aeroMechDBContext.Quotes
+                    .Include(x => x.ServiceReport)
+                    .SingleAsync(x => x.Id == serviceReport.QuoteId.Value);
+
+                if (quote.ServiceReport != null)
+                    throw new InvalidOperationException($"Quote AEM{quote.QuoteNumber} has already been converted to service report AEM{quote.ServiceReport.ServiceReportNumber}.");
+
+                quote.ConvertedDate = DateTimeOffset.UtcNow;
+
+                sr.QuoteId = quote.Id;
+                sr.QuoteNumber = quote.QuoteNumber;
             }
 
             if (serviceReport.VehicleId == 0)
@@ -115,7 +126,7 @@ namespace AeroMech.UI.Web.Services
             return sr.Id;
         }
 
-        public async Task<int> EditServiceReport(ServiceReportModel serviceReport, bool isQuote)
+        public async Task<int> EditServiceReport(ServiceReportModel serviceReport)
         {
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
@@ -136,7 +147,6 @@ namespace AeroMech.UI.Web.Services
             serviceReportToEdit.Instruction = serviceReport.Instruction;
             serviceReportToEdit.IsComplete = serviceReport.IsComplete;
             serviceReportToEdit.JobNumber = serviceReport.Vehicle.JobNumber;
-            serviceReportToEdit.QuoteNumber = serviceReport.QuoteNumber;
             serviceReportToEdit.SalesOrderNumber = serviceReport.SalesOrderNumber;
             serviceReportToEdit.ServiceType = serviceReport.ServiceType.ToString();
 
@@ -284,11 +294,6 @@ namespace AeroMech.UI.Web.Services
                 }
             }
 
-            if (isQuote && serviceReportToEdit.QuoteNumber == 0)
-            {
-                serviceReportToEdit.QuoteNumber = (await _aeroMechDBContext.ServiceReports.MaxAsync(x => (int?)x.QuoteNumber) ?? 0) + 1;
-            }
-
             var currentVehicleHours = serviceReportToEdit?.Vehicle?.EngineHours ?? 0;
 
             serviceReportToEdit?.Vehicle?.EngineHours =
@@ -374,26 +379,6 @@ namespace AeroMech.UI.Web.Services
             return Document.Create(_fieldServiceReport.Compose).GeneratePdf();
         }
 
-        public async Task<byte[]> DownloadQuote(int serviceReportId)
-        {
-            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-
-            var serviceResport = await _aeroMechDBContext.ServiceReports
-                 .AsNoTracking()
-           .Include(x => x.Vehicle)
-           .Include(x => x.Parts)
-               .ThenInclude(x => x.Part)
-               .Include(x => x.AdHockParts)
-           .Include(x => x.Employees)
-               .ThenInclude(x => x.Employee)
-           .Include(x => x.Client)
-           .FirstAsync(x => x.Id == serviceReportId);
-
-            _quote.serviceReport = _mapper.Map<ServiceReportModel>(serviceResport);
-
-            return Document.Create(_quote.Compose).GeneratePdf();
-        }
-
         public async Task<List<ServiceReportModel>> GetRecentServiceReports(DateTimeOffset fromDate = default)
         {
             if (fromDate == default)
@@ -406,28 +391,6 @@ namespace AeroMech.UI.Web.Services
             var serviceReports = await _aeroMechDBContext.ServiceReports
                  .AsNoTracking()
                  .Where(x => x.ReportDate >= fromDate && x.Client.IsDeleted == false)
-                 .OrderByDescending(x => x.ReportDate)
-                 .Include(x => x.Vehicle)
-                 .Include(x => x.Parts)
-                 .Include(x => x.AdHockParts)
-                 .Include(r => r.Employees)
-                 .Include(x => x.Client)
-                 .ToListAsync();
-            return _mapper.Map<IEnumerable<ServiceReportModel>>(serviceReports).ToList();
-        }
-
-        public async Task<List<ServiceReportModel>> GetRecentQuotes(DateTimeOffset fromDate = default)
-        {
-            if (fromDate == default)
-                fromDate = DateTimeOffset.MinValue;
-            else
-                fromDate = fromDate.ToUniversalTime();
-
-            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
-
-            var serviceReports = await _aeroMechDBContext.ServiceReports
-                 .AsNoTracking()
-                 .Where(x => x.QuoteNumber > 0 && x.ReportDate >= fromDate)
                  .OrderByDescending(x => x.ReportDate)
                  .Include(x => x.Vehicle)
                  .Include(x => x.Parts)

@@ -15,12 +15,21 @@
         <div class="col-1"></div>
         <div class="col-5 text-right"></div>
     </div>
-    @if (SearchPredicate is not null)
+    @if (SearchPredicate is not null || FilterTemplate is not null)
     {
-        <div class="row">
-            <div class="mb-3">
-                <input type="text" class="form-control" placeholder="Search..." @bind-value="SearchTerm" @bind-value:event="oninput" />
-            </div>
+        <div class="row align-items-center g-2 mb-3">
+            @if (SearchPredicate is not null)
+            {
+                <div class="@(FilterTemplate is null ? "col-12" : "col-12 col-lg-5")">
+                    <input type="text" class="form-control" placeholder="Search..." @bind-value="SearchTerm" @bind-value:event="oninput" />
+                </div>
+            }
+            @if (FilterTemplate is not null)
+            {
+                <div class="col-12 col-lg">
+                    @FilterTemplate
+                </div>
+            }
         </div>
     }
 

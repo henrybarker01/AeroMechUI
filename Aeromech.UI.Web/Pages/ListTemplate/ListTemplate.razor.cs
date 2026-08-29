@@ -24,6 +24,12 @@ namespace AeroMech.UI.Web.Pages.ListTemplate
 
         [Parameter] public Func<TItem, string, bool>? SearchPredicate { get; set; }
 
+        /// <summary>
+        /// Optional controls rendered beside the search box, above the grid. Any filtering they
+        /// drive is the caller's own: it hands the grid an already filtered <see cref="Items"/>.
+        /// </summary>
+        [Parameter] public RenderFragment? FilterTemplate { get; set; }
+
         [Parameter] public EventCallback OnAdd { get; set; }
 
         [EditorRequired]
@@ -54,6 +60,13 @@ namespace AeroMech.UI.Web.Pages.ListTemplate
         private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)(FilteredItems?.Count() ?? 0) / PageSize));
         private bool IsFirstPage => CurrentPage == 1;
         private bool IsLastPage => CurrentPage >= TotalPages;
+
+        // The caller can shrink Items - by filtering above the grid, say - while a later page is
+        // showing, which would otherwise leave the user looking at an empty grid.
+        protected override void OnParametersSet()
+        {
+            if (CurrentPage > TotalPages) CurrentPage = TotalPages;
+        }
 
         // Selectors are supplied by the SortHeader cells in HeaderTemplate, which register
         // themselves as they render.

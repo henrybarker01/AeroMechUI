@@ -1,4 +1,4 @@
-.navbar-toggler {
+﻿.navbar-toggler {
     background-color: #447EE2; 
     /*rgba(255, 255, 255, 0.1);*/
 }
@@ -54,6 +54,58 @@
 .nav-item ::deep a:hover {
     background-color: rgba(255,255,255,0.1);
     color: white;
+}
+
+/* The two "start something new" buttons at the foot of the sidebar. They sit on the
+   dark end of the sidebar gradient, so they carry their own colours rather than
+   Bootstrap's, and they match each other in size so neither reads as an afterthought. */
+.nav-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 0 1rem 1.25rem 1rem;
+}
+
+.nav-action {
+    display: block;
+    width: 100%;
+    padding: 0.6rem 0.75rem;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    font-size: 0.95rem;
+    font-weight: 600;
+    line-height: 1.2;
+    color: #fff;
+    text-align: center;
+    cursor: pointer;
+    transition: background-color .15s ease-in-out, border-color .15s ease-in-out;
+}
+
+/* A quote comes first in the workflow but is the lighter commitment, so it reads as
+   the calmer of the two. */
+.nav-action-quote {
+    background-color: #17867f;
+    border-color: #1c9d95;
+}
+
+.nav-action-quote:hover {
+    background-color: #1c9d95;
+    border-color: #23b3aa;
+}
+
+.nav-action-report {
+    background-color: #3a6fcc;
+    border-color: #447EE2;
+}
+
+.nav-action-report:hover {
+    background-color: #447EE2;
+    border-color: #5c92ea;
+}
+
+.nav-action:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
 }
 
 @media (min-width: 641px) {

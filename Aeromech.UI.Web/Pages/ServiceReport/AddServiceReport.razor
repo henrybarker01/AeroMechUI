@@ -5,6 +5,7 @@
 
 @page "/add-service-report"
 @page "/add-service-report/{serviceReportId:int}"
+@page "/add-service-report/from-quote/{quoteId:int}"
 
 <PageTitle>Field Service Report</PageTitle>
 
@@ -13,6 +14,112 @@
     <div class="row">
         <div class="col-11"><h1>Field Service Report</h1></div>
     </div>
+
+    @if (IsConversion && _sourceQuote != null)
+    {
+        <div class="alert alert-info mt-2" role="alert">
+            Converting quote AEM @_serviceReport.QuoteNumber. The quoted parts have been carried
+            over. Labour was quoted per rate type, so enter the hours each person actually worked
+            before saving.
+        </div>
+
+        @* Quoted against captured, per rate type. Equal totals can still hide weekday hours
+           booked as overtime, so each rate has to tie back on its own. The quote is an estimate -
+           the captured hours are what counts - so this reconciles, it does not gate. *@
+        <div class="data-card">
+            <div class="data-card-header">
+                <h2 class="data-card-title">Labour reconciliation &mdash; quote AEM @_sourceQuote.QuoteNumber</h2>
+                <span class="data-card-note">Quoted per rate type, captured per person</span>
+            </div>
+
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Rate Type</th>
+                        <th class="text-end">Rate</th>
+                        <th class="text-end">Quoted</th>
+                        <th class="text-end">Captured</th>
+                        <th class="text-end">Variance</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var line in LabourReconciliation)
+                    {
+                        <tr class="@(line.Matches ? null : "recon-row-off")">
+                            <td>@line.RateType.GetDisplayName()</td>
+                            <td class="text-end">@line.Rate.ToString("F", CultureInfo.InvariantCulture)</td>
+                            <td class="text-end">@line.QuotedHours.ToString("0.##") h</td>
+                            <td class="text-end">@line.CapturedHours.ToString("0.##") h</td>
+                            <td class="text-end @(line.Matches ? "recon-ok" : "recon-off")">
+                                @if (line.Matches)
+                                {
+                                    <span>&mdash;</span>
+                                }
+                                else
+                                {
+                                    @($"{(line.Variance > 0 ? "+" : "")}{line.Variance.ToString("0.##")} h")
+                                }
+                            </td>
+                        </tr>
+                    }
+                    @if (!LabourReconciliation.Any())
+                    {
+                        <tr>
+                            <td colspan="5" class="text-muted">No labour was quoted on this quote.</td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr class="fw-semibold">
+                        <td>Total</td>
+                        <td class="text-end">&nbsp;</td>
+                        <td class="text-end">@QuotedHours.ToString("0.##") h</td>
+                        <td class="text-end">@CapturedHours.ToString("0.##") h</td>
+                        <td class="text-end @(LabourMatchesQuote ? "recon-ok" : "recon-off")">
+                            @if (Math.Abs(HoursVariance) < 0.005)
+                            {
+                                <span>&mdash;</span>
+                            }
+                            else
+                            {
+                                @($"{(HoursVariance > 0 ? "+" : "")}{HoursVariance.ToString("0.##")} h")
+                            }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="text-muted">Value</td>
+                        <td class="text-end">&nbsp;</td>
+                        <td class="text-end text-muted">@QuotedLabourValue.ToString("F", CultureInfo.InvariantCulture)</td>
+                        <td class="text-end text-muted">@CapturedLabourValue.ToString("F", CultureInfo.InvariantCulture)</td>
+                        <td class="text-end">&nbsp;</td>
+                    </tr>
+                </tfoot>
+            </table>
+
+            @if (CapturedHours == 0)
+            {
+                @* Nothing captured yet is not a variance to be waved through - the save is
+                   blocked until labour is entered, so no override is offered here. *@
+                <div class="text-muted small pb-2">Add the people who did the work below to reconcile against the quote.</div>
+            }
+            else if (LabourMatchesQuote)
+            {
+                <div class="recon-ok small pb-2">Captured labour ties back to the quote on every rate type.</div>
+            }
+            else
+            {
+                <div class="form-check pb-2">
+                    <input class="form-check-input" type="checkbox" id="accept-labour-variance"
+                           checked="@_labourVarianceAccepted"
+                           @onchange="@(e => _labourVarianceAccepted = (bool)(e.Value ?? false))" />
+                    <label class="form-check-label" for="accept-labour-variance">
+                        Captured labour does not tie back &mdash; <strong>@LabourVarianceSummary</strong>.
+                        Convert with the actual hours anyway.
+                    </label>
+                </div>
+            }
+        </div>
+    }
 
     @*  OnValidSubmit="@SaveAndPrint" *@
     @* Model="@serviceReport" *@
@@ -356,7 +463,6 @@
             <div class="row">
                 <div class="footer-buttons">
                     <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="Save" Style="margin-right 20px">Save</Button>
-                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndGenerateQuote" Style="margin-right 20px">Save & Generate Quote</Button>
                     <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndGenerateServiceReport" Style="margin-right 20px">Save & Print FSR</Button>
                     <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndNew">Save & New</Button>
                 </div>

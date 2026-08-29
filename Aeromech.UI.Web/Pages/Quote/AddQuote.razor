@@ -1,0 +1,319 @@
+﻿@using AeroMech.Models;
+@using AeroMech.Models.Enums
+@using AeroMech.Models.Models
+@using System.Globalization
+@using BlazorBootstrap
+
+@page "/add-quote"
+@page "/add-quote/{quoteId:int}"
+
+<PageTitle>Quote</PageTitle>
+
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-11">
+            <h1>Quote @(_quote.QuoteNumber > 0 ? $"AEM {_quote.QuoteNumber}" : string.Empty)</h1>
+        </div>
+    </div>
+
+    @if (_quote.IsConverted)
+    {
+        <div class="alert alert-info mt-2" role="alert">
+            This quote was converted to service report AEM @_quote.ServiceReportNumber on
+            @_quote.ConvertedDate?.ToString("dd/MM/yyyy"), so it can no longer be changed.
+        </div>
+    }
+
+    <EditForm EditContext="editContext">
+        <DataAnnotationsValidator />
+        <fieldset disabled="@_quote.IsConverted">
+            <div class="row mt-3">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="quote-date">Date:</label>
+                        <InputDate @bind-Value="_quote.QuoteDate" class="form-control" id="quote-date"></InputDate>
+                        <ValidationMessage For="() => _quote.QuoteDate" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="vehicle-hours">Vehicle hours:</label>
+                        <NumberInput @bind-Value="_quote.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
+                        <ValidationMessage For="() => _quote.VehicleHours" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="select-client">Client:</label>
+                        <InputSelect class="form-select"
+                                     id="select-client"
+                                     ValueExpression="@(()=>_quote.ClientId)"
+                                     Value="@_quote.ClientId"
+                                     ValueChanged="@((int value) => HandleOnChangeClient(value))">
+                            <option selected value="0">Select client</option>
+                            @foreach (var client in clients)
+                            {
+                                <option value="@client.Id">@client.Name</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => _quote.ClientId" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="select-vehicle">Vehicle:</label>
+                        <InputSelect class="form-select" id="select-vehicle"
+                                     ValueExpression="@(()=>_quote.VehicleId)"
+                                     Value="@_quote.VehicleId"
+                                     ValueChanged="@((int value) => HandleOnChangeVehicle(value))">
+                            <option selected value="0">Select vehicle</option>
+                            @foreach (var vehicle in vehicles)
+                            {
+                                <option value="@vehicle.Id">@vehicle.MachineType @vehicle.SerialNumber</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => _quote.VehicleId" />
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="service-type">Service Type:</label>
+                        <InputSelect class="form-select" id="service-type"
+                                     ValueExpression="@(()=>_quote.ServiceType)"
+                                     Value="@_quote.ServiceType"
+                                     ValueChanged="@((ServiceType serviceType) => HandleOnServiceTypeChange(serviceType))">
+                            <option selected value="0">Select service type</option>
+                            @foreach (var serviceType in Enum.GetValues(typeof(ServiceType)))
+                            {
+                                <option value="@serviceType">@serviceType</option>
+                            }
+                        </InputSelect>
+                        <ValidationMessage For="() => _quote.ServiceType" />
+                    </div>
+                </div>
+            </div>
+
+            @* Labour is quoted per rate type. Who actually does the work is not known yet, and is
+               only captured when the quote is converted into a service report. *@
+            <div class="data-card mt-4">
+                <div class="data-card-header">
+                    <h2 class="data-card-title">Labour</h2>
+                    <span class="data-card-note">
+                        Quoted per rate type at the client's rates &mdash; total
+                        @_quote.Labour.Where(x => !x.IsDeleted).Sum(LabourTotal).ToString("F", CultureInfo.InvariantCulture)
+                    </span>
+                </div>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Rate Type</th>
+                            <th>Rate</th>
+                            <th>Hours</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var labour in _quote.Labour.Where(x => !x.IsDeleted))
+                        {
+                            <tr>
+                                <td>
+                                    <InputSelect Value="@labour.RateType"
+                                                 ValueExpression="@(() => labour.RateType)"
+                                                 ValueChanged="@((RateType rateType) => HandleOnChangeRateType(labour, rateType))"
+                                                 class="form-select">
+                                        @foreach (var rate in RateTypes)
+                                        {
+                                            <option value="@rate">@rate.GetDisplayName()</option>
+                                        }
+                                    </InputSelect>
+                                </td>
+                                @* The rate is the client's, so it is shown rather than offered
+                                   for editing. A blank means the rate card has nothing for this
+                                   rate type, which is worth saying plainly. *@
+                                <td class="align-middle">
+                                    @if (labour.Rate > 0)
+                                    {
+                                        @labour.Rate.ToString("F", CultureInfo.InvariantCulture)
+                                    }
+                                    else if (_quote.ClientId == 0)
+                                    {
+                                        <span class="text-muted">Select a client</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger" title="This client has no rate on file for @labour.RateType.GetDisplayName()">No rate on file</span>
+                                    }
+                                </td>
+                                <td>
+                                    <NumberInput TValue="double" @bind-Value="@labour.Hours" Placeholder="Enter hours" Step=".01" />
+                                </td>
+                                <td class="align-middle">
+                                    @LabourTotal(labour).ToString("F", CultureInfo.InvariantCulture)
+                                </td>
+                                <td>
+                                    <div class="col-1">
+                                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemoveLabour(labour)" Style="cursor: pointer" />
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        <tr class="add-row">
+                            <td>
+                                <InputSelect class="form-select"
+                                             id="select-rate-type"
+                                             ValueExpression="@(()=>selectedRateType)"
+                                             Value="@selectedRateType"
+                                             ValueChanged="@((RateType value) => AddLabour(value))">
+                                    <option selected value="@RateType.None">Add labour</option>
+                                    @foreach (var rate in RateTypes.Where(x => x != RateType.None))
+                                    {
+                                        <option value="@rate">@rate.GetDisplayName()</option>
+                                    }
+                                </InputSelect>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            @* Quoting a part prices it, it does not issue it, so nothing here moves stock. *@
+            <div class="data-card">
+                <div class="data-card-header">
+                    <h2 class="data-card-title">Parts</h2>
+                    <span class="data-card-note">
+                        Priced only &mdash; stock moves on conversion &mdash; total
+                        @_quote.Parts.Where(x => !x.IsDeleted).Sum(PartTotal).ToString("F", CultureInfo.InvariantCulture)
+                    </span>
+                </div>
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Part Number</th>
+                            <th>Description</th>
+                            <th>C.P.U.</th>
+                            <th>Qty</th>
+                            <th>Total</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var part in _quote.Parts.Where(x => !x.IsDeleted))
+                        {
+                            <tr>
+                                <td>
+                                    @if (part.IsAdHockPart)
+                                    {
+                                        <InputText @bind-Value="part.PartCode" type="text" class="form-control"></InputText>
+                                    }
+                                    else
+                                    {
+                                        @part.PartCode
+                                    }
+                                </td>
+                                <td>
+                                    @if (part.IsAdHockPart)
+                                    {
+                                        <InputText @bind-Value="part.PartDescription" type="text" class="form-control"></InputText>
+                                    }
+                                    else
+                                    {
+                                        @part.PartDescription
+                                    }
+                                </td>
+                                <td>
+                                    <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="Enter Cost Price" Step="0.01" />
+                                </td>
+                                <td>
+                                    <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="Enter qty" />
+                                </td>
+                                <td>
+                                    @PartTotal(part).ToString("F", CultureInfo.InvariantCulture)
+                                </td>
+                                <td>
+                                    <div class="col-1">
+                                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemovePart(part)" Style="cursor: pointer" />
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                        <tr class="add-row">
+                            <td>
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        Select Part
+                                    </button>
+                                    <div class="dropdown-menu p-3" style="max-height: 350px; overflow:auto">
+                                        <input type="text" class="form-control mb-2" placeholder="Search part..."
+                                               @oninput="(e) => SearchTerm = e.Value.ToString()" />
+                                        <ul class="list-unstyled">
+                                            <li @onclick="() => HandleOnChangePart(999999)" class="dropdown-item">Non Stock</li>
+                                            @foreach (var prt in FilteredParts)
+                                            {
+                                                <li @onclick="() => HandleOnChangePart(prt.Id)" class="dropdown-item">
+                                                    @prt.PartCode @prt.PartDescription
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                </div>
+                            </td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <br />
+            <div class="row mt-3">
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="instruction">Instruction:</label>
+                        <InputText @bind-Value="_quote.Instruction" type="text" class="form-control" id="instruction"></InputText>
+                        <ValidationMessage For="() => _quote.Instruction" />
+                    </div>
+                </div>
+                <div class="col-6">
+                    <div class="form-group">
+                        <label for="detailed-service-report">Detailed Service Report:</label>
+                        <InputTextArea @bind-Value="_quote.DetailedServiceReport" type="text" class="form-control" id="detailed-service-report"></InputTextArea>
+                        <ValidationMessage For="() => _quote.DetailedServiceReport" />
+                    </div>
+                </div>
+            </div>
+        </fieldset>
+        <div class="container-fluid page-footer">
+            <div class="row">
+                <div class="footer-buttons">
+                    @if (_quote.IsConverted)
+                    {
+                        <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="PrintQuote" Style="margin-right 20px">Print Quote</Button>
+                        <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="OpenServiceReport">Open Service Report</Button>
+                    }
+                    else
+                    {
+                        <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="Save" Style="margin-right 20px">Save</Button>
+                        <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndPrint" Style="margin-right 20px">Save &amp; Print Quote</Button>
+                        <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndNew" Style="margin-right 20px">Save &amp; New</Button>
+                        @if (_quote.Id != 0)
+                        {
+                            <Button class="fsr-button" Color="ButtonColor.Success" @onclick="ConvertToServiceReport">Convert to Service Report</Button>
+                        }
+                    }
+                </div>
+            </div>
+        </div>
+    </EditForm>
+</div>

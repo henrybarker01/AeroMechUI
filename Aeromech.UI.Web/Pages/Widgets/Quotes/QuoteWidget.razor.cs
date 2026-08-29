@@ -1,4 +1,4 @@
-using AeroMech.Models;
+using AeroMech.Models.Models;
 using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Components;
 
@@ -6,16 +6,16 @@ namespace AeroMech.UI.Web.Pages.Widgets.Quotes
 {
     public partial class QuoteWidget
     {
-        [Inject] ServiceReportService ServiceReportService { get; set; }
+        [Inject] QuoteService QuoteService { get; set; }
         [Inject] NavigationManager NavigationManager { get; set; }
 
-        List<ServiceReportModel> quotes = new List<ServiceReportModel>();
+        List<QuoteModel> quotes = new List<QuoteModel>();
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
         {
             if (firstRender)
             {
-                quotes = await ServiceReportService.GetRecentQuotes(DateTimeOffset.UtcNow.AddMonths(-1));
+                quotes = await QuoteService.GetQuotes(DateTimeOffset.UtcNow.AddMonths(-1));
                 await InvokeAsync(StateHasChanged);
             }
         }
@@ -25,9 +25,9 @@ namespace AeroMech.UI.Web.Pages.Widgets.Quotes
             NavigationManager.NavigateTo($"/ShowQuote/{Id}");
         }
 
-        private void EditQuote(int serviceReportId)
+        private void EditQuote(int quoteId)
         {
-            NavigationManager.NavigateTo($"/add-service-report/{serviceReportId}");
+            NavigationManager.NavigateTo($"/add-quote/{quoteId}");
         }
     }
 }

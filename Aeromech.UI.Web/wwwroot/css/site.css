@@ -1,4 +1,4 @@
-@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 html, body {
     font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -92,25 +92,114 @@ a, .btn-link {
     margin-left: 10px;
 }
 
-/* Service report row status: a bar on the leading edge of the row only, so the accent
-   reads at a glance without competing with the striped rows. Inset shadow rather than a
-   border, so the cell keeps its width. */
-.sr-new > td:first-child,
-.sr-quoted > td:first-child,
-.sr-ordered > td:first-child {
-    padding-left: 1rem;
+/* Service report row status. The stage colour lives on the row as a custom property so the
+   first cell and the filter chips above the grid can both read it from one place. */
+.sr-new {
+    --sr-status-color: #d9a406;
+    --sr-status-text: #212529;
 }
 
-.sr-new > td:first-child {
-    box-shadow: inset 4px 0 0 0 #d9a406;
+.sr-quoted {
+    --sr-status-color: #217a4b;
+    --sr-status-text: #fff;
 }
 
-.sr-quoted > td:first-child {
-    box-shadow: inset 4px 0 0 0 #2e8b57;
+.sr-complete {
+    --sr-status-color: #b23b2e;
+    --sr-status-text: #fff;
 }
 
-.sr-ordered > td:first-child {
-    box-shadow: inset 4px 0 0 0 #b23b2e;
+/* The whole leading cell carries the colour. Bootstrap paints the stripe and hover accents as
+   an inset shadow over each cell, so that shadow has to be cleared for the colour to show. */
+.table > tbody > tr > td.sr-status-cell {
+    background-color: var(--sr-status-color);
+    color: var(--sr-status-text);
+    box-shadow: none;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Rows have to keep one constant height. The status filter changes which reports are on the
+   page, and any cell that wraps onto a second line makes its whole row taller - so the row
+   height shifted about as the filter was used. Nothing in this grid wraps: every cell is held to
+   a single line and ellipsised, with the full value on hover for the two text columns. The
+   slightly smaller type buys back the width that costs. */
+.table > tbody > tr.sr-row > td {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    font-size: 13px;
+}
+
+/* The free-text columns are the ones that give way when the grid is short of room, so that the
+   short columns - dates, totals, numbers - always keep their content on one line.
+   max-width:0 is what lets a column shrink below the width of its own text. Without it the
+   nowrap text sets a minimum column width and the table grows wide enough to scroll sideways. */
+.table > tbody > tr.sr-row > td.sr-instruction {
+    width: 30%;
+    max-width: 0;
+}
+
+.table > tbody > tr.sr-row > td.sr-client {
+    width: 14%;
+    max-width: 0;
+}
+
+/* Status filter chips above the grid. */
+.sr-status-filter {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .5rem;
+}
+
+.sr-status-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .3rem .75rem;
+    border: 1px solid var(--sr-status-color);
+    border-radius: 999px;
+    background-color: #fff;
+    color: #212529;
+    font-size: .85rem;
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.sr-status-chip:hover {
+    background-color: rgba(0, 0, 0, .05);
+}
+
+.sr-status-chip.active {
+    background-color: var(--sr-status-color);
+    color: var(--sr-status-text);
+}
+
+.sr-status-dot {
+    width: .6rem;
+    height: .6rem;
+    border-radius: 50%;
+    background-color: var(--sr-status-color);
+}
+
+.sr-status-chip.active .sr-status-dot {
+    background-color: var(--sr-status-text);
+}
+
+.sr-status-count {
+    font-variant-numeric: tabular-nums;
+    opacity: .7;
+}
+
+.sr-status-clear {
+    padding: .3rem .25rem;
+    border: 0;
+    background: none;
+    color: #6c757d;
+    font-size: .85rem;
+    text-decoration: underline;
+    cursor: pointer;
 }
 
 .toast-container {
@@ -164,3 +253,95 @@ a, .btn-link {
     .table th.sortable .sort-indicator.idle {
         opacity: 0.2;
     }
+
+/* ---------------------------------------------------------------------------
+   Floating data cards.
+
+   Lifts a grid off the page rather than letting it run edge to edge: the card
+   carries the elevation and the padding, and the table inside drops its outer
+   borders so only the light row rules remain. Used by the quote form and by the
+   labour reconciliation on the conversion screen.
+   --------------------------------------------------------------------------- */
+.data-card {
+    background: #fff;
+    border: 1px solid rgba(16, 24, 40, 0.06);
+    border-radius: 10px;
+    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 10px 26px -10px rgba(16, 24, 40, 0.18);
+    padding: 1rem 1.25rem 0.5rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+.data-card-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    padding-bottom: 0.5rem;
+}
+
+.data-card-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: #5b6472;
+    margin: 0;
+}
+
+.data-card-note {
+    font-size: 0.78rem;
+    color: #8a929e;
+}
+
+/* The card already frames the grid, so the table gives up its own chrome. */
+.data-card .table {
+    margin-bottom: 0.5rem;
+}
+
+.data-card .table > thead > tr > th {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #6b7280;
+    border-top: 0;
+    border-bottom: 1px solid rgba(16, 24, 40, 0.08);
+    padding-top: 0;
+    white-space: nowrap;
+}
+
+.data-card .table > tbody > tr > td {
+    border-top: 0;
+    border-bottom: 1px solid rgba(16, 24, 40, 0.05);
+    vertical-align: middle;
+}
+
+.data-card .table > tbody > tr:last-child > td {
+    border-bottom: 0;
+}
+
+.data-card .table > tfoot > tr > td {
+    border-top: 1px solid rgba(16, 24, 40, 0.12);
+    border-bottom: 0;
+    vertical-align: middle;
+}
+
+/* The trailing "add a row" line is a control, not data, so it reads quieter. */
+.data-card .table tr.add-row > td {
+    border-bottom: 0;
+    padding-top: 0.75rem;
+}
+
+/* Reconciliation rows: agreement and disagreement should be readable at a glance
+   without relying on the text alone. */
+.recon-ok {
+    color: #16794c;
+}
+
+.recon-off {
+    color: #b42318;
+}
+
+.recon-row-off > td {
+    background-color: rgba(217, 45, 32, 0.04);
+}

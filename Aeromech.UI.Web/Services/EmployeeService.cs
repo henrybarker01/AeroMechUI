@@ -65,6 +65,7 @@ namespace AeroMech.UI.Web.Services
                 employeeToEdit.Email = employee.Email;
                 employeeToEdit.Title = employee.Title;
                 employeeToEdit.BirthDate = employee.BirthDate;
+                employeeToEdit.ExcludeFromTimesheets = employee.ExcludeFromTimesheets;
 
                 if (employeeToEdit.Address == null)
                 {

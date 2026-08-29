@@ -20,8 +20,10 @@ namespace AeroMech.Models
         //[Required(ErrorMessage = "Report Number is required")]
         //public string? ReportNumber { get; set; }
 
-        [Required(ErrorMessage = "Description is required")]
-        public string Description { get; set; }
+        // Not required: there is no Description input on the form, so a rule here can never be
+        // satisfied by the user - it just made every new report fail validation. The save writes
+        // a placeholder into it instead.
+        public string? Description { get; set; }
 
         public virtual ClientModel Client { get; set; }
 
@@ -54,6 +56,12 @@ namespace AeroMech.Models
         public ServiceType ServiceType { get; set; }
 
         public int QuoteNumber { get; set; }
+
+        /// <summary>
+        /// The quote this report is being converted from, when it did not start as a walk-up
+        /// service report.
+        /// </summary>
+        public int? QuoteId { get; set; }
 
         public bool IsComplete { get; set; }
 

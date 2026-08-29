@@ -12,11 +12,12 @@ namespace AeroMech.UI.Web.DependencyInjection
             services.AddScoped<PartsService, PartsService>();
             services.AddScoped<VehicleService, VehicleService>();
             services.AddScoped<ServiceReportService, ServiceReportService>();
+            services.AddScoped<QuoteService, QuoteService>();
             services.AddScoped<UserService, UserService>();
             services.AddScoped<LoaderService, LoaderService>();
             services.AddScoped<ConfirmationService, ConfirmationService>();
             services.AddScoped<FieldServiceReport, FieldServiceReport>();
-            services.AddScoped<Quote, Quote>();
+            services.AddScoped<QuoteDocument, QuoteDocument>();
             services.AddScoped<TimesheetReport, TimesheetReport>();
             services.AddScoped<TimesheetService, TimesheetService>();
         }

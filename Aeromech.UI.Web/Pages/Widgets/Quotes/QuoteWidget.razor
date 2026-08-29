@@ -8,10 +8,10 @@
                     Quote Number
                 </td>
                 <td class="widget-data-col">
-                    Report Number
+                    Client
                 </td>
                 <td class="widget-data-col">
-                    Sales Order Number
+                    Status
                 </td>
                 <td class="widget-data-col report-date">
                     Date
@@ -27,14 +27,14 @@
                     <td class="widget-data-col report-number">
                         @($"AEM{@quote.QuoteNumber}")
                     </td>
-                    <td class="widget-data-col report-number">
-                        @($"AEM{@quote.ServiceReportNumber}")
+                    <td class="widget-data-col">
+                        @quote.Client?.Name
                     </td>
                     <td class="widget-data-col">
-                        @quote.SalesOrderNumber
+                        @(quote.IsConverted ? $"Converted to AEM{quote.ServiceReportNumber}" : "Open")
                     </td>
                     <td class="widget-data-col report-date">
-                        @quote.ReportDate.ToString("dd/MM/yyyy")
+                        @quote.QuoteDate.ToString("dd/MM/yyyy")
                     </td>
                     <td class="widget-data-col action-buttons">
                         <Icon Name="IconName.Pencil" Size="IconSize.x6" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(quote.Id)" Style="cursor: pointer" />

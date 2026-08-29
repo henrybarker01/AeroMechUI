@@ -9,12 +9,33 @@
 
 <ListTemplate TItem="ServiceReportModel"
               Title="Service Reports"
-              Items="_serviceReports"
+              Items="FilteredServiceReports"
               PageSize="15"
               SearchPredicate="MatchesSearch"
               ShowAddButton="true"
               StorageKey="service-reports"
               OnAdd="NavigateToAdd">
+    <FilterTemplate>
+        <div class="sr-status-filter">
+            @foreach (var status in Statuses)
+            {
+                <button type="button"
+                        class="sr-status-chip @status.Css @(IsStatusActive(status) ? "active" : null)"
+                        title="@status.Description"
+                        aria-pressed="@(IsStatusActive(status) ? "true" : "false")"
+                        @onclick="() => ToggleStatus(status)">
+                    <span class="sr-status-dot"></span>
+                    @status.Label
+                    <span class="sr-status-count">@CountFor(status)</span>
+                </button>
+            }
+            @if (_activeStatuses.Count > 0)
+            {
+                <button type="button" class="sr-status-clear" @onclick="ClearStatusFilter">Clear</button>
+            }
+        </div>
+    </FilterTemplate>
+
     <HeaderTemplate>
         <tr>
             <SortHeader Title="Report Number" SortBy="sr => sr.ServiceReportNumber" />
@@ -26,7 +47,7 @@
             <SortHeader Title="Client" SortBy="sr => sr.Client?.Name" />
             <SortHeader Title="Service Type" SortBy="sr => sr.ServiceType.ToString()" />
             <SortHeader Title="Total" SortBy="sr => CalculateTotal(sr)" />
-            <SortHeader Title="Status" SortBy="sr => sr.IsComplete" />
+            <SortHeader Title="Status" SortBy="sr => RowStatus(sr).Rank" />
             <th></th>
         </tr>
     </HeaderTemplate>
@@ -35,17 +56,17 @@
         @{
             var status = RowStatus(sr);
         }
-        <tr class="@status.Css">
-            <td title="@status.Label">@($"AEM {sr.ServiceReportNumber}")</td>
+        <tr class="sr-row @status.Css">
+            <td class="sr-status-cell" title="@status.Description">@($"AEM {sr.ServiceReportNumber}")</td>
             <td>@($"AEM {sr.QuoteNumber}")</td>
             <td>@sr.ReportDate.ToString("dd/MM/yyyy")</td>
             <td>@sr.SalesOrderNumber</td>
             <td>@sr.Vehicle?.SerialNumber</td>
-            <td style="max-width:400px">@sr.Instruction</td>
-            <td>@sr.Client?.Name</td>
+            <td class="sr-instruction" title="@sr.Instruction">@sr.Instruction</td>
+            <td class="sr-client" title="@sr.Client?.Name">@sr.Client?.Name</td>
             <td>@sr.ServiceType</td>
             <td>@CalculateTotal(sr).ToString("C", CultureInfo.CurrentCulture)</td>
-            <td>@(sr.IsComplete ? "Complete" : "Incomplete")</td>
+            <td>@status.Label</td>
             <td>
                 <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => Edit(sr.Id)" Style="cursor: pointer" />
                 <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => Print(sr.Id)" Style="cursor: pointer" />

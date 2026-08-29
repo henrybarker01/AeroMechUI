@@ -1,4 +1,4 @@
-using AeroMech.UI.Web.Services;
+﻿using AeroMech.UI.Web.Services;
 using BlazorBootstrap;
 using Microsoft.AspNetCore.Components;
 using Microsoft.JSInterop;
@@ -8,9 +8,9 @@ namespace AeroMech.UI.Web.Pages.Reports
     public partial class DisplayQuote
     {
         [Parameter]
-        public int reportId { get; set; }
+        public int quoteId { get; set; }
 
-        [Inject] ServiceReportService ServiceReportService { get; set; }
+        [Inject] QuoteService QuoteService { get; set; }
         [Inject] IJSRuntime JS { get; set; }
 
         private string pdfBase64String;
@@ -18,7 +18,7 @@ namespace AeroMech.UI.Web.Pages.Reports
 
         protected override async void OnInitialized()
         {
-            pdfBase64String = await GetPDF(reportId);
+            pdfBase64String = await GetPDF(quoteId);
             StateHasChanged();
         }
         private string eventLog { get; set; } = $"Last event: ..., CurrentPage: 0, TotalPages: 0";
@@ -29,16 +29,16 @@ namespace AeroMech.UI.Web.Pages.Reports
         private void OnPageChanged(PdfViewerEventArgs args)
             => eventLog = $"Last event: OnPageChanged, CurrentPage: {args.CurrentPage}, TotalPages: {args.TotalPages}";
 
-        public async Task<string> GetPDF(int ReportId)
+        public async Task<string> GetPDF(int QuoteId)
         {
-            pdfBytes = await ServiceReportService.DownloadQuote(ReportId);
+            pdfBytes = await QuoteService.DownloadQuote(QuoteId);
             return Convert.ToBase64String(pdfBytes);
         }
 
         private async Task DownloadFileFromStream()
         {
             var fileStream = new MemoryStream(pdfBytes);
-            var fileName = $"{reportId}.pdf";
+            var fileName = $"Quote-{quoteId}.pdf";
             using var streamRef = new DotNetStreamReference(stream: fileStream);
             await JS.InvokeVoidAsync("downloadFileFromStream", fileName, streamRef);
         }

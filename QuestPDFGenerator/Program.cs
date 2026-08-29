@@ -17,7 +17,7 @@ QuestPDF.Settings.License = QuestPDF.Infrastructure.LicenseType.Community;
 //    });
 //}).ShowInPreviewer();
 
-var _quote = new Quote();
+var _quote = new QuoteDocument();
 
 using (var _aeroMechDBContext = new AeroMechDBContext()) 
 {
