@@ -1,4 +1,4 @@
-@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 /* ---------------------------------------------------------------------------
    Design tokens.
@@ -24,11 +24,18 @@
     --am-slate-light: #2c3d51;
     --am-slate-rail: #46586c;
 
-    /* One accent. Every interactive thing in the app is this blue - there is
-       no second brand blue and no third. */
-    --am-blue: #2c6ecb;
-    --am-blue-dark: #245bab;
-    --am-blue-light: #e7edf6;
+    /* One accent: the AeroMech brand blue. Every interactive thing in the app is
+       this blue - there is no second brand blue and no third.
+
+       Two shades below it, and the reason there are two: #447EE2 on white is
+       3.94:1, which is under the 4.5:1 needed for body-size text. It is fine as
+       a fill - white text on it is 5.33:1 - so it paints buttons, the brand mark
+       and active states, while link text takes --am-blue-text at 4.86:1. */
+    --am-blue: #447EE2;
+    --am-blue-dark: #3a6fcc;
+    --am-blue-text: #3a6fcc;
+    --am-blue-text-hover: #2f5bab;
+    --am-blue-light: #e6eefb;
 
     /* Neutrals. */
     --am-ink: #101828;
@@ -76,10 +83,10 @@
 
     /* Re-point Bootstrap at the tokens above. */
     --bs-primary: var(--am-blue);
-    --bs-primary-rgb: 44, 110, 203;
-    --bs-link-color: var(--am-blue);
-    --bs-link-color-rgb: 44, 110, 203;
-    --bs-link-hover-color: var(--am-blue-dark);
+    --bs-primary-rgb: 68, 126, 226;
+    --bs-link-color: var(--am-blue-text);
+    --bs-link-color-rgb: 58, 111, 204;
+    --bs-link-hover-color: var(--am-blue-text-hover);
     --bs-border-color: var(--am-rule);
     --bs-body-color: var(--am-ink-2);
     --bs-body-bg: var(--am-surface);
@@ -99,12 +106,12 @@ h1:focus {
    link inside the content area white text on a white page - the sidebar and the
    top bar are the only places that want white, so they ask for it themselves. */
 a, .btn-link {
-    color: var(--am-blue);
+    color: var(--am-blue-text);
     font-weight: 600;
 }
 
 a:hover, .btn-link:hover {
-    color: var(--am-blue-dark);
+    color: var(--am-blue-text-hover);
 }
 
 .sidebar a,
@@ -128,7 +135,7 @@ a:hover, .btn-link:hover {
     }
 
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.2rem rgba(44, 110, 203, 0.25);
+    box-shadow: 0 0 0 0.2rem rgba(68, 126, 226, 0.28);
     border-color: var(--am-blue);
 }
 
@@ -577,7 +584,7 @@ a:hover, .btn-link:hover {
 /* A row only joins the invoice once a quantity is entered, and the tint is what
    makes those rows findable again in a long supplier list. */
 .table > tbody > tr.rs-row.receiving > td {
-    background-color: rgba(44, 110, 203, .06);
+    background-color: rgba(68, 126, 226, .06);
 }
 
 .table > tbody > tr.rs-row.receiving > td.rs-new-level {
@@ -954,4 +961,851 @@ a:hover, .btn-link:hover {
 .panel-scroll {
     max-height: 260px;
     overflow-y: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Stock takes.
+
+   The counting grid is not a table. A count is done on a phone walking round a
+   warehouse, so the rows are laid out with CSS grid and reflow into cards below
+   768px: one markup tree, a dense table on a desk and a thumb-sized card in an
+   aisle. .st-meta uses display:contents so that on a wide screen its children
+   drop into the row's own columns, and on a narrow one it collapses to a single
+   labelled strip.
+   --------------------------------------------------------------------------- */
+
+.st-page {
+    padding-bottom: 3rem;
+}
+
+.st-empty {
+    padding: 3rem 0;
+    text-align: center;
+    color: var(--am-steel);
+}
+
+/* Header ------------------------------------------------------------------- */
+
+.st-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: var(--am-space-4);
+    margin-bottom: var(--am-space-4);
+}
+
+.st-header-main {
+    min-width: 0;
+}
+
+.st-header .page-title {
+    display: flex;
+    align-items: center;
+    gap: .6rem;
+    flex-wrap: wrap;
+}
+
+.st-header-desc {
+    margin: .15rem 0 0;
+    color: var(--am-ink-2);
+    font-size: var(--am-fs-body);
+}
+
+.st-header-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .25rem 1rem;
+    margin-top: .4rem;
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel);
+}
+
+.st-header-meta strong {
+    color: var(--am-steel-light);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: var(--am-fs-label);
+    letter-spacing: .04em;
+    margin-right: .3rem;
+}
+
+.st-blind-badge {
+    align-self: center;
+    padding: .1rem .45rem;
+    border-radius: 999px;
+    background-color: var(--am-blue-light);
+    color: var(--am-blue-dark);
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+}
+
+.st-header-side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: .5rem;
+    min-width: 260px;
+}
+
+.st-header-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    justify-content: flex-end;
+}
+
+.st-order-select {
+    width: auto;
+    min-width: 165px;
+}
+
+/* Progress ----------------------------------------------------------------- */
+
+.st-progress {
+    width: 100%;
+    min-width: 220px;
+}
+
+.st-progress-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: .5rem;
+}
+
+.st-progress-count {
+    font-size: var(--am-fs-h2);
+    font-weight: 700;
+    color: var(--am-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.st-progress-of {
+    font-size: var(--am-fs-sm);
+    font-weight: 400;
+    color: var(--am-steel);
+}
+
+.st-progress-pct {
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel);
+    font-variant-numeric: tabular-nums;
+}
+
+.st-progress-track {
+    display: block;
+    height: 6px;
+    margin-top: .3rem;
+    border-radius: 999px;
+    background-color: var(--am-rule);
+    overflow: hidden;
+}
+
+.st-progress-fill {
+    display: block;
+    height: 100%;
+    border-radius: 999px;
+    background-color: var(--am-blue);
+    transition: width .2s ease;
+}
+
+/* Written back as each figure is entered, so the counter is told so rather than
+   being left to wonder whether the walk to the far aisle was recorded. */
+.st-save-state {
+    display: block;
+    margin-top: .25rem;
+    font-size: var(--am-fs-label);
+    color: var(--am-good);
+    text-align: right;
+}
+
+.st-save-state.failed {
+    color: var(--am-bad);
+    font-weight: 600;
+}
+
+/* Status pills ------------------------------------------------------------- */
+
+.st-status {
+    display: inline-block;
+    padding: .12rem .5rem;
+    border-radius: 999px;
+    font-size: var(--am-fs-label);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    white-space: nowrap;
+}
+
+.st-status-pending {
+    background-color: var(--am-rule);
+    color: var(--am-ink-2);
+}
+
+.st-status-counting {
+    background-color: var(--am-blue-light);
+    color: var(--am-blue-dark);
+}
+
+.st-status-review {
+    background-color: var(--am-warn-soft);
+    color: var(--am-warn-ink);
+}
+
+.st-status-completed {
+    background-color: var(--am-good-soft);
+    color: var(--am-good);
+}
+
+.st-status-cancelled {
+    background-color: var(--am-rule);
+    color: var(--am-steel);
+}
+
+/* Banners ------------------------------------------------------------------ */
+
+.st-banner {
+    padding: .6rem .9rem;
+    margin-bottom: var(--am-space-3);
+    border-radius: var(--am-radius);
+    font-size: var(--am-fs-sm);
+}
+
+.st-banner-good {
+    background-color: var(--am-good-soft);
+    color: var(--am-good);
+}
+
+.st-banner-warn {
+    background-color: var(--am-warn-soft);
+    color: var(--am-warn-ink);
+}
+
+.st-banner-muted {
+    background-color: var(--am-ground);
+    color: var(--am-steel);
+}
+
+/* Tabs and toolbar --------------------------------------------------------- */
+
+.st-tabs {
+    display: flex;
+    gap: .25rem;
+    border-bottom: 1px solid var(--am-rule);
+    margin-bottom: var(--am-space-3);
+}
+
+.st-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .5rem .9rem;
+    border: 0;
+    border-bottom: 2px solid transparent;
+    background: none;
+    color: var(--am-steel);
+    font-size: var(--am-fs-body);
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.st-tab:hover {
+    color: var(--am-ink-2);
+}
+
+.st-tab.active {
+    color: var(--am-blue);
+    border-bottom-color: var(--am-blue);
+}
+
+.st-tab-badge {
+    padding: .05rem .4rem;
+    border-radius: 999px;
+    background-color: var(--am-rule);
+    color: var(--am-ink-2);
+    font-size: var(--am-fs-label);
+    font-variant-numeric: tabular-nums;
+}
+
+.st-tab-badge.urgent {
+    background-color: var(--am-warn-soft);
+    color: var(--am-warn-ink);
+}
+
+.st-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--am-space-3);
+    margin-bottom: var(--am-space-3);
+}
+
+.st-search {
+    flex: 1 1 260px;
+    min-width: 0;
+}
+
+.st-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+}
+
+.st-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .35rem;
+    padding: .3rem .7rem;
+    border: 1px solid var(--am-rule-strong);
+    border-radius: 999px;
+    background-color: var(--am-surface);
+    color: var(--am-ink-2);
+    font-size: var(--am-fs-sm);
+    cursor: pointer;
+}
+
+.st-chip:hover {
+    border-color: var(--am-steel-light);
+}
+
+.st-chip.active {
+    background-color: var(--am-blue);
+    border-color: var(--am-blue);
+    color: #fff;
+}
+
+.st-chip-warn:not(.active) {
+    border-color: var(--am-warn);
+    color: var(--am-warn-ink);
+}
+
+.st-chip-count {
+    font-variant-numeric: tabular-nums;
+    opacity: .75;
+}
+
+/* The grid ----------------------------------------------------------------- */
+
+.st-list {
+    background: var(--am-surface);
+    border: 1px solid rgba(16, 24, 40, 0.06);
+    border-radius: var(--am-radius-lg);
+    box-shadow: var(--am-shadow-2);
+    overflow: hidden;
+}
+
+.st-list-head,
+.st-row {
+    display: grid;
+    align-items: center;
+    gap: .75rem;
+    padding: .5rem .9rem;
+}
+
+.st-list-count .st-list-head,
+.st-list-count .st-row {
+    grid-template-columns: 130px minmax(0, 1fr) 90px 90px 80px 168px;
+}
+
+/* A blind sheet drops the expected-quantity column rather than blanking it, so
+   the row has one column fewer to lay out. */
+.st-list-count.blind .st-list-head,
+.st-list-count.blind .st-row {
+    grid-template-columns: 130px minmax(0, 1fr) 90px 90px 168px;
+}
+
+.st-list-review .st-list-head,
+.st-list-review .st-row {
+    grid-template-columns: 130px minmax(0, 1fr) 80px 90px 90px 110px 180px;
+}
+
+.st-list-head {
+    background-color: var(--am-ground);
+    border-bottom: 1px solid var(--am-rule);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+.st-row {
+    border-bottom: 1px solid rgba(16, 24, 40, 0.05);
+    font-size: var(--am-fs-sm);
+}
+
+.st-row:last-child {
+    border-bottom: 0;
+}
+
+.st-row-counted {
+    background-color: rgba(44, 110, 203, .04);
+}
+
+.st-row-recount {
+    background-color: var(--am-warn-soft);
+}
+
+.st-row-unsettled {
+    background-color: rgba(217, 45, 32, .04);
+}
+
+.st-row-accepted {
+    background-color: var(--am-good-soft);
+}
+
+.st-list-empty {
+    padding: 2rem .9rem;
+    text-align: center;
+    color: var(--am-steel);
+}
+
+/* On a wide screen the meta strip has no box of its own - its children sit in
+   the row's columns directly. */
+.st-meta {
+    display: contents;
+}
+
+.st-code {
+    font-weight: 600;
+    color: var(--am-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* The description is the column that gives way, so the numbers never wrap.
+   min-width:0 is what lets it shrink below its own text. */
+.st-desc {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--am-ink-2);
+}
+
+.st-bin,
+.st-sup {
+    color: var(--am-steel);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.st-right {
+    text-align: right;
+}
+
+.st-center {
+    text-align: center;
+}
+
+.st-expected,
+.st-counted,
+.st-variance,
+.st-varvalue {
+    font-variant-numeric: tabular-nums;
+}
+
+.st-value-up {
+    color: var(--am-good);
+    font-weight: 600;
+}
+
+.st-value-down {
+    color: var(--am-bad);
+    font-weight: 600;
+}
+
+.st-muted {
+    color: var(--am-steel);
+}
+
+.st-prev,
+.st-recount-note {
+    display: block;
+    font-size: var(--am-fs-label);
+    color: var(--am-warn-ink);
+    white-space: nowrap;
+}
+
+.st-recount-badge {
+    margin-left: .3rem;
+    padding: 0 .3rem;
+    border-radius: var(--am-radius);
+    background-color: var(--am-warn-soft);
+    color: var(--am-warn-ink);
+    font-size: var(--am-fs-label);
+    font-weight: 700;
+}
+
+.st-moved {
+    display: inline-block;
+    margin-left: .4rem;
+    color: var(--am-warn-ink);
+    font-size: var(--am-fs-label);
+    white-space: nowrap;
+}
+
+/* Count entry -------------------------------------------------------------- */
+
+.st-qty {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .3rem;
+    flex-wrap: wrap;
+}
+
+.st-stepper {
+    display: flex;
+    align-items: center;
+    gap: .2rem;
+}
+
+.st-qty-input {
+    width: 68px;
+    height: 34px;
+    padding: .15rem .4rem;
+    text-align: center;
+    font-size: 15px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Hidden where there is a keyboard and a mouse; indispensable where there is a
+   thumb. */
+.st-step {
+    display: none;
+    width: 40px;
+    height: 40px;
+    border: 1px solid var(--am-rule-strong);
+    border-radius: var(--am-radius);
+    background-color: var(--am-surface);
+    color: var(--am-ink-2);
+    font-size: 20px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.st-step:disabled {
+    opacity: .4;
+    cursor: default;
+}
+
+.st-clear {
+    border: 0;
+    background: none;
+    color: var(--am-steel-light);
+    padding: .2rem .3rem;
+    cursor: pointer;
+}
+
+.st-clear:hover {
+    color: var(--am-bad);
+}
+
+/* Decisions ---------------------------------------------------------------- */
+
+.st-decision {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .3rem;
+    flex-wrap: wrap;
+}
+
+.st-accepted,
+.st-agrees {
+    color: var(--am-good);
+    font-size: var(--am-fs-sm);
+    white-space: nowrap;
+}
+
+.st-awaiting {
+    color: var(--am-steel);
+    font-size: var(--am-fs-sm);
+    white-space: nowrap;
+}
+
+.st-applied {
+    font-size: var(--am-fs-sm);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Summary strip and footers ------------------------------------------------ */
+
+.st-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem;
+    padding: .6rem .9rem;
+    margin-bottom: var(--am-space-3);
+    border: 1px solid var(--am-rule);
+    border-radius: .5rem;
+    background-color: var(--am-ground);
+}
+
+.st-summary-item {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.st-summary-label {
+    font-size: var(--am-fs-label);
+    font-weight: 700;
+    letter-spacing: .04em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+.st-summary-value {
+    font-size: var(--am-fs-h2);
+    font-weight: 600;
+    color: var(--am-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.st-summary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .4rem;
+    margin-left: auto;
+}
+
+.st-pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--am-space-3);
+    padding: .6rem .2rem 0;
+}
+
+.st-footer-actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--am-space-3);
+    margin-top: var(--am-space-4);
+}
+
+.st-footer-note {
+    color: var(--am-steel);
+    font-size: var(--am-fs-sm);
+}
+
+.st-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: .5rem;
+}
+
+/* Stock take list ---------------------------------------------------------- */
+
+.table > tbody > tr.st-take-row {
+    cursor: pointer;
+}
+
+.table > tbody > tr.st-take-row > td {
+    white-space: nowrap;
+    font-size: var(--am-fs-sm);
+    vertical-align: middle;
+}
+
+.st-reference {
+    font-weight: 600;
+    color: var(--am-ink);
+}
+
+.st-number {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.st-action-col {
+    width: 96px;
+    text-align: right;
+}
+
+.table > tbody > tr.st-take-row > td.st-description {
+    max-width: 260px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.st-progress-label {
+    display: block;
+    font-variant-numeric: tabular-nums;
+}
+
+.table .st-progress-track {
+    width: 72px;
+    margin-left: auto;
+}
+
+/* ---------------------------------------------------------------------------
+   Counting on a phone. Below 768px each row becomes a card: the part and its
+   description stack, the bin and supplier collapse into one labelled strip, and
+   the quantity control grows to something a thumb can hit while holding a box.
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 767.98px) {
+
+    .st-header {
+        position: sticky;
+        top: 0;
+        z-index: 5;
+        padding: .5rem 0;
+        margin-bottom: var(--am-space-3);
+        background-color: var(--am-surface);
+        border-bottom: 1px solid var(--am-rule);
+    }
+
+    .st-header-side {
+        align-items: stretch;
+        min-width: 100%;
+    }
+
+    .st-header-actions {
+        justify-content: flex-start;
+    }
+
+    .st-save-state {
+        text-align: left;
+    }
+
+    /* Column headings describe columns that no longer exist; each cell carries
+       its own label instead. */
+    .st-list-head {
+        display: none;
+    }
+
+    .st-list-count .st-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "code qty"
+            "desc qty"
+            "meta qty";
+        gap: .15rem .75rem;
+        padding: .75rem .9rem;
+    }
+
+    .st-list-review .st-row {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-areas:
+            "code code code code"
+            "desc desc desc desc"
+            "exp  cnt  diff val"
+            "dec  dec  dec  dec";
+        gap: .4rem .5rem;
+        padding: .75rem .9rem;
+    }
+
+    .st-code {
+        grid-area: code;
+        font-size: var(--am-fs-body);
+    }
+
+    .st-desc {
+        grid-area: desc;
+        white-space: normal;
+    }
+
+    .st-qty {
+        grid-area: qty;
+        justify-content: flex-end;
+    }
+
+    .st-list-count .st-meta {
+        grid-area: meta;
+        display: flex;
+        flex-wrap: wrap;
+        gap: .25rem .75rem;
+        font-size: var(--am-fs-label);
+    }
+
+    .st-list-review .st-expected {
+        grid-area: exp;
+        text-align: left;
+    }
+
+    .st-list-review .st-counted {
+        grid-area: cnt;
+        text-align: left;
+    }
+
+    .st-list-review .st-variance {
+        grid-area: diff;
+        text-align: left;
+    }
+
+    .st-list-review .st-varvalue {
+        grid-area: val;
+        text-align: left;
+    }
+
+    .st-list-review .st-decision {
+        grid-area: dec;
+        justify-content: flex-start;
+    }
+
+    /* Without the column heading above them, the numbers have to say what they
+       are themselves. */
+    .st-row [data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: var(--am-fs-label);
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--am-steel-light);
+    }
+
+    .st-list-count .st-meta [data-label]::before {
+        display: inline;
+        margin-right: .25rem;
+    }
+
+    .st-step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .st-qty-input {
+        width: 60px;
+        height: 40px;
+        font-size: 16px; /* Anything smaller and iOS zooms the page on focus. */
+    }
+
+    .st-summary {
+        gap: .75rem 1.25rem;
+    }
+
+    .st-summary-actions {
+        margin-left: 0;
+        width: 100%;
+    }
+
+    .st-summary-actions .btn {
+        flex: 1 1 auto;
+    }
+
+    .st-footer-actions .btn {
+        width: 100%;
+    }
+}
+
+/* Accepted lines are shown but not editable; the note reads as settled rather than as a
+   warning, which is what the recount note beside it is for. */
+.st-locked-note {
+    color: var(--am-good);
 }

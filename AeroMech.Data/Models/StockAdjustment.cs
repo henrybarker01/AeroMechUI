@@ -31,5 +31,14 @@ namespace AeroMech.Data.Models
         public int? StockReceiptId { get; set; }
 
         public virtual StockReceipt? StockReceipt { get; set; }
+
+        /// <summary>
+        /// The stock take that caused this movement, when the count disagreed with the system.
+        /// Null for every other kind of adjustment, so a corrected level can always be walked
+        /// back to the sheet that corrected it.
+        /// </summary>
+        public int? StockTakeId { get; set; }
+
+        public virtual StockTake? StockTake { get; set; }
     }
 }

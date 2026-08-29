@@ -56,6 +56,28 @@ namespace AeroMech.Data.Persistence
                 .WithMany()
                 .HasForeignKey(x => x.StockReceiptId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // The number written on the printed count sheet, and how a sheet handed back on paper
+            // is found again. Unique because two sheets answering to one number would make that
+            // lookup ambiguous exactly when it matters.
+            modelBuilder.Entity<StockTake>()
+                .HasIndex(x => x.StockTakeNumber)
+                .IsUnique();
+
+            // A count sheet is the reason its lines exist, so they go when it goes.
+            modelBuilder.Entity<StockTakeParts>()
+                .HasOne(x => x.StockTake)
+                .WithMany(x => x.StockTakeParts)
+                .HasForeignKey(x => x.StockTakeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // As with receipts, the ledger rows a stock take wrote outlive the sheet: stock that
+            // moved stays on the record even where the paperwork behind it is removed.
+            modelBuilder.Entity<StockAdjustment>()
+                .HasOne(x => x.StockTake)
+                .WithMany()
+                .HasForeignKey(x => x.StockTakeId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         public DbSet<Client> Clients { get; set; }

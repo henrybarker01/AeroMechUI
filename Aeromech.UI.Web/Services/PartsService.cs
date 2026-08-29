@@ -1,6 +1,7 @@
 ﻿using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
+using AeroMech.Models.Models;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -29,6 +30,29 @@ namespace AeroMech.UI.Web.Services
                 .OrderBy(x => x.PartCode).ThenBy(x => x.PartDescription)
                 .ToListAsync();
             return _mapper.Map<List<PartModel>>(parts);
+        }
+
+        /// <summary>
+        /// The supplier codes actually carried by parts, with how many parts each covers. Built by
+        /// grouping the parts themselves because supplier codes live on <c>Part.SupplierCode</c>
+        /// and there is no supplier table. Parts with no code are left out: there is no supplier
+        /// to receive them against or to count them under.
+        /// </summary>
+        public async Task<List<SupplierOptionModel>> GetSupplierOptions()
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            return await context.Parts
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted && x.SupplierCode != null && x.SupplierCode != "")
+                .GroupBy(x => x.SupplierCode!)
+                .Select(g => new SupplierOptionModel
+                {
+                    SupplierCode = g.Key,
+                    PartCount = g.Count()
+                })
+                .OrderBy(x => x.SupplierCode)
+                .ToListAsync();
         }
 
         public async Task DeletePart(PartModel prt)

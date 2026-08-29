@@ -21,6 +21,8 @@ namespace AeroMech.UI.Web.DependencyInjection
             services.AddScoped<TimesheetReport, TimesheetReport>();
             services.AddScoped<TimesheetService, TimesheetService>();
             services.AddScoped<StockReceivingService, StockReceivingService>();
+            services.AddScoped<StockTakeService, StockTakeService>();
+            services.AddScoped<StockCountSheet, StockCountSheet>();
         }
     }
 }

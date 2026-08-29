@@ -25,20 +25,18 @@
     color: #fff;
 }
 
-/* A small mark rather than a wordmark: it holds the corner at any width and
-   gives the sidebar a fixed point the eye returns to. */
+/* The gear from the AeroMech lockup, cropped out of the full logo. It sits on a
+   white tile because the mark's inner shape is black and would disappear against
+   the slate; the tile keeps the brand colours exactly as drawn. The wordmark half
+   of the logo is not used here - the sidebar sets "AeroMech" in its own type. */
 .brand-mark {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 1.5rem;
-    height: 1.5rem;
+    flex: 0 0 auto;
+    width: 1.75rem;
+    height: 1.75rem;
     border-radius: 5px;
-    background-color: var(--am-blue);
-    color: #fff;
-    font-size: 0.8125rem;
-    font-weight: 700;
-    line-height: 1;
+    background-color: #fff;
+    padding: 2px;
+    object-fit: contain;
 }
 
 .nav-item {

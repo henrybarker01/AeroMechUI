@@ -1,0 +1,187 @@
+@page "/stock-takes"
+
+@using AeroMech.Data.Enums
+@using AeroMech.Models.Models
+@using AeroMech.UI.Web.Pages.ListTemplate
+@using System.Globalization
+@using BlazorBootstrap
+
+<PageTitle>Stock Takes</PageTitle>
+
+<Modal @ref="_newModal" Title="New Stock Take">
+    <BodyTemplate>
+        <EditForm Model="_request" OnValidSubmit="CreateStockTake">
+            <DataAnnotationsValidator />
+
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col-12 col-md-7">
+                        <div class="form-group">
+                            <label for="st-description">Description:</label>
+                            <InputText @bind-Value="_request.StockTakeDescription" class="form-control" id="st-description"
+                                       placeholder="e.g. Month end count - August" />
+                            <ValidationMessage For="() => _request.StockTakeDescription" />
+                        </div>
+                    </div>
+                    <div class="col-12 col-md-5 mt-3 mt-md-0">
+                        <div class="form-group">
+                            <label for="st-date">Date:</label>
+                            <InputDate @bind-Value="_request.StockTakeDate" class="form-control" id="st-date" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <label class="form-label">Suppliers</label>
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                                    type="button"
+                                    id="st-supplier-filter"
+                                    data-bs-toggle="dropdown"
+                                    data-bs-auto-close="outside"
+                                    aria-expanded="false">
+                                @SelectedSuppliersLabel
+                            </button>
+                            <div class="dropdown-menu w-100 p-2" aria-labelledby="st-supplier-filter">
+                                <div class="panel-scroll">
+                                    @if (_suppliers.Count == 0)
+                                    {
+                                        <div class="text-muted small px-1">No suppliers available</div>
+                                    }
+                                    else
+                                    {
+                                        @foreach (var supplier in _suppliers)
+                                        {
+                                            <div class="form-check">
+                                                <input class="form-check-input"
+                                                       type="checkbox"
+                                                       id="@($"st-supplier-{supplier.SupplierCode}")"
+                                                       checked="@_selectedSuppliers.Contains(supplier.SupplierCode)"
+                                                       @onchange="@(e => ToggleSupplier(supplier.SupplierCode, (bool?)e.Value == true))" />
+                                                <label class="form-check-label" for="@($"st-supplier-{supplier.SupplierCode}")">
+                                                    @supplier.SupplierCode <span class="text-muted">(@supplier.PartCount)</span>
+                                                </label>
+                                            </div>
+                                        }
+                                    }
+                                </div>
+                                <div class="dropdown-divider"></div>
+                                <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearSupplierSelection">
+                                    Clear selection (count everything)
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-text">Leave empty to count every part, including those with no supplier code.</div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="form-check">
+                            <InputCheckbox @bind-Value="_request.BlindCount" class="form-check-input" id="st-blind" />
+                            <label class="form-check-label" for="st-blind">
+                                Blind count &mdash; hide the expected quantity from the counter
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            Recommended. Shown what the system expects, a counter tends to confirm it rather than count.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <div class="form-check">
+                            <InputCheckbox @bind-Value="_request.ExcludeZeroQtyParts" class="form-check-input" id="st-exclude-zero" />
+                            <label class="form-check-label" for="st-exclude-zero">
+                                Leave out parts the system already shows as empty
+                            </label>
+                        </div>
+                        <div class="form-text">
+                            Shortens the sheet, but a part recorded as zero with stock on the shelf will not be found.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12">
+                        <div class="form-group">
+                            <label for="st-remarks">Remarks:</label>
+                            <InputText @bind-Value="_request.Remarks" class="form-control" id="st-remarks" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-12 st-modal-actions">
+                        <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="CloseNewModal">Cancel</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Create sheet</Button>
+                    </div>
+                </div>
+            </div>
+        </EditForm>
+    </BodyTemplate>
+</Modal>
+
+<ListTemplate TItem="StockTakeModel"
+              Title="Stock Takes"
+              Eyebrow="Inventory"
+              Items="_stockTakes"
+              PageSize="15"
+              SearchPredicate="MatchesSearch"
+              ShowAddButton="true"
+              AddButtonText="New stock take"
+              StorageKey="stock-takes"
+              OnAdd="OpenNewModal">
+    <HeaderTemplate>
+        <tr>
+            <SortHeader Title="Reference" SortBy="t => t.StockTakeNumber" />
+            <SortHeader Title="Date" SortBy="t => t.StockTakeDate" />
+            <SortHeader Title="Description" SortBy="t => t.StockTakeDescription" />
+            <SortHeader Title="Suppliers" SortBy="t => t.SupplierLabel" />
+            <SortHeader Title="Status" SortBy="t => t.Status" />
+            <SortHeader Title="Counted" SortBy="t => t.ProgressPercent" />
+            <SortHeader Title="Differences" SortBy="t => t.VarianceCount" />
+            <SortHeader Title="Value" SortBy="t => t.TotalVarianceValue" />
+            <th class="st-action-col">Action</th>
+        </tr>
+    </HeaderTemplate>
+
+    <RowTemplate Context="take">
+        <tr class="st-take-row" @onclick="() => OpenStockTake(take)">
+            <td class="st-reference">@take.Reference</td>
+            <td>@take.StockTakeDate.ToString("yyyy-MM-dd")</td>
+            <td class="st-description" title="@take.StockTakeDescription">@take.StockTakeDescription</td>
+            <td title="@string.Join(", ", take.SupplierCodes)">@take.SupplierLabel</td>
+            <td>
+                <span class="st-status st-status-@take.Status.ToString().ToLowerInvariant()">@take.StatusLabel</span>
+            </td>
+            <td class="st-number">
+                <span class="st-progress-label">@take.CountedCount / @take.LineCount</span>
+                <span class="st-progress-track" aria-hidden="true">
+                    <span class="st-progress-fill" style="width: @(take.ProgressPercent)%"></span>
+                </span>
+            </td>
+            <td class="st-number">@(take.VarianceCount == 0 ? "" : take.VarianceCount.ToString())</td>
+            <td class="st-number @(take.TotalVarianceValue < 0 ? "st-value-down" : take.TotalVarianceValue > 0 ? "st-value-up" : null)">
+                @(take.VarianceCount == 0 ? "" : take.TotalVarianceValue.ToString("C", CultureInfo.CurrentCulture))
+            </td>
+            <td class="st-action-col" @onclick:stopPropagation="true">
+                <div class="action-buttons">
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                            title="Print count sheet" @onclick="() => DownloadCountSheet(take)">
+                        <i class="bi bi-printer" aria-hidden="true"></i>
+                    </button>
+                    @if (take.IsOpen)
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-danger"
+                                title="Cancel this stock take" @onclick="() => CancelStockTake(take)">
+                            <i class="bi bi-x-lg" aria-hidden="true"></i>
+                        </button>
+                    }
+                </div>
+            </td>
+        </tr>
+    </RowTemplate>
+</ListTemplate>

@@ -16,11 +16,13 @@ namespace AeroMech.UI.Web.Services
     {
         private readonly IMapper _mapper;
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
+        private readonly PartsService _partsService;
 
-        public StockReceivingService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper)
+        public StockReceivingService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, PartsService partsService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
+            _partsService = partsService;
         }
 
         // Date pickers are date-only. Persist as UTC midnight for the selected calendar date so
@@ -30,24 +32,10 @@ namespace AeroMech.UI.Web.Services
 
         /// <summary>
         /// The supplier codes worth receiving against, which is those actually carried by parts.
-        /// Parts with no supplier code are left out: there is no invoice to receive them on.
+        /// Owned by <see cref="PartsService"/> so receiving and stock takes read one definition of
+        /// what counts as a supplier rather than each keeping its own.
         /// </summary>
-        public async Task<List<SupplierOptionModel>> GetSuppliers()
-        {
-            using var context = await _contextFactory.CreateDbContextAsync();
-
-            return await context.Parts
-                .AsNoTracking()
-                .Where(x => !x.IsDeleted && x.SupplierCode != null && x.SupplierCode != "")
-                .GroupBy(x => x.SupplierCode!)
-                .Select(g => new SupplierOptionModel
-                {
-                    SupplierCode = g.Key,
-                    PartCount = g.Count()
-                })
-                .OrderBy(x => x.SupplierCode)
-                .ToListAsync();
-        }
+        public Task<List<SupplierOptionModel>> GetSuppliers() => _partsService.GetSupplierOptions();
 
         /// <summary>
         /// Every part the supplier carries, ready to receive against. Quantities start at zero and

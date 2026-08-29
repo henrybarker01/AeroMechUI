@@ -14,7 +14,9 @@
     height: 1.75rem;
     border-radius: 50%;
     background-color: var(--am-blue-light);
-    color: var(--am-blue);
+    /* The initials are small and bold on a pale tint, so they take the darkest
+       blue in the set - the brand blue itself only reaches 3.4:1 here. */
+    color: var(--am-blue-text-hover);
     font-size: var(--am-fs-sm);
     font-weight: 700;
     line-height: 1;

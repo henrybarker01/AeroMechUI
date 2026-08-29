@@ -1,4 +1,4 @@
-/* Centred on the viewport at every width. The card carries a max-width rather
+﻿/* Centred on the viewport at every width. The card carries a max-width rather
    than a column span, so there is no breakpoint at which it disappears. */
 .login-page {
     display: flex;
@@ -22,9 +22,10 @@
 .login-logo {
     display: block;
     width: 100%;
-    max-width: 13rem;
+    max-width: 12rem;
     height: auto;
-    margin: 0 auto var(--am-space-6);
+    /* The lockup carries its own whitespace, so it needs less below it. */
+    margin: 0 auto var(--am-space-3);
 }
 
 .login-intro {
