@@ -1,0 +1,71 @@
+/* Centred on the viewport at every width. The card carries a max-width rather
+   than a column span, so there is no breakpoint at which it disappears. */
+.login-page {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: var(--am-space-6) var(--am-space-4);
+    background-color: var(--am-ground);
+}
+
+.login-card {
+    width: 100%;
+    max-width: 24rem;
+    padding: var(--am-space-8);
+    border: 1px solid var(--am-rule);
+    border-radius: var(--am-radius-lg);
+    background-color: var(--am-surface);
+    box-shadow: var(--am-shadow-2);
+}
+
+.login-logo {
+    display: block;
+    width: 100%;
+    max-width: 13rem;
+    height: auto;
+    margin: 0 auto var(--am-space-6);
+}
+
+.login-intro {
+    margin-bottom: var(--am-space-6);
+}
+
+.login-title {
+    margin: 0 0 var(--am-space-1);
+    font-size: var(--am-fs-h1);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--am-ink);
+}
+
+.login-subtitle {
+    margin: 0;
+    font-size: var(--am-fs-body);
+    color: var(--am-steel);
+}
+
+.login-alert {
+    padding: var(--am-space-2) var(--am-space-3);
+    margin-bottom: var(--am-space-4);
+    font-size: var(--am-fs-body);
+}
+
+.login-field {
+    margin-bottom: var(--am-space-4);
+}
+
+.login-label {
+    display: block;
+    margin-bottom: var(--am-space-1);
+    font-size: var(--am-fs-sm);
+    font-weight: 600;
+    color: var(--am-ink-2);
+}
+
+.login-submit {
+    width: 100%;
+    margin-top: var(--am-space-2);
+    padding: var(--am-space-2) var(--am-space-4);
+    font-weight: 600;
+}

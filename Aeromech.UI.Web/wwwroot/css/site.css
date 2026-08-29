@@ -1,26 +1,135 @@
-﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+/* ---------------------------------------------------------------------------
+   Design tokens.
+
+   One place to pick a colour, a type size or a step of spacing from. Anything
+   added after this should reference a token rather than choosing its own hex -
+   that is the whole point, and it is what stops a fourth grey appearing.
+
+   The neutral ramp is the one the stock receiving screens already established
+   (#101828 through #f9fafb); it is kept because it was the most consistent
+   family in the app and .data-card's rgba(16,24,40,...) shadows already sit on
+   the same hue.
+
+   Bootstrap's own --bs-* variables are re-pointed at the end of this block, so
+   components that were never overridden - form controls, links, focus rings,
+   BlazorBootstrap widgets - follow along without being restyled one by one.
+   --------------------------------------------------------------------------- */
+
+:root {
+    /* Chrome. Deep and desaturated so the navigation recedes and the data on
+       the page is what carries colour. */
+    --am-slate: #223041;
+    --am-slate-light: #2c3d51;
+    --am-slate-rail: #46586c;
+
+    /* One accent. Every interactive thing in the app is this blue - there is
+       no second brand blue and no third. */
+    --am-blue: #2c6ecb;
+    --am-blue-dark: #245bab;
+    --am-blue-light: #e7edf6;
+
+    /* Neutrals. */
+    --am-ink: #101828;
+    --am-ink-2: #344054;
+    --am-steel: #667085;
+    --am-steel-light: #98a2b3;
+    --am-rule: #e4e7ec;
+    --am-rule-strong: #d0d5dd;
+    --am-ground: #f9fafb;
+    --am-surface: #ffffff;
+
+    /* Status. These are the service report stage colours, kept as they were
+       and simply given names. */
+    --am-warn: #d9a406;
+    --am-warn-ink: #b54708;
+    --am-warn-soft: #fdf6e3;
+    --am-good: #16794c;
+    --am-good-soft: #e6f3ec;
+    --am-bad: #b42318;
+    --am-bad-soft: #fdeceb;
+
+    /* Type. Six steps, all rem, with a real middle so a page title does not
+       have to drop straight to table text. */
+    --am-fs-display: 1.75rem;
+    --am-fs-h1: 1.375rem;
+    --am-fs-h2: 1.0625rem;
+    --am-fs-body: 0.875rem;
+    --am-fs-sm: 0.8125rem;
+    --am-fs-label: 0.6875rem;
+
+    /* Spacing, on a 4px rhythm. */
+    --am-space-1: 0.25rem;
+    --am-space-2: 0.5rem;
+    --am-space-3: 0.75rem;
+    --am-space-4: 1rem;
+    --am-space-6: 1.5rem;
+    --am-space-8: 2rem;
+    --am-space-12: 3rem;
+
+    --am-radius: 4px;
+    --am-radius-lg: 8px;
+
+    --am-shadow-1: 0 1px 2px rgba(16, 24, 40, 0.06);
+    --am-shadow-2: 0 1px 2px rgba(16, 24, 40, 0.05), 0 10px 26px -10px rgba(16, 24, 40, 0.18);
+
+    /* Re-point Bootstrap at the tokens above. */
+    --bs-primary: var(--am-blue);
+    --bs-primary-rgb: 44, 110, 203;
+    --bs-link-color: var(--am-blue);
+    --bs-link-color-rgb: 44, 110, 203;
+    --bs-link-hover-color: var(--am-blue-dark);
+    --bs-border-color: var(--am-rule);
+    --bs-body-color: var(--am-ink-2);
+    --bs-body-bg: var(--am-surface);
+    --bs-secondary-color: var(--am-steel);
+}
 
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--am-ink-2);
 }
 
 h1:focus {
     outline: none;
 }
 
+/* Links take the accent. The white here used to be unscoped, which made every
+   link inside the content area white text on a white page - the sidebar and the
+   top bar are the only places that want white, so they ask for it themselves. */
 a, .btn-link {
-    color: white;
-    font-weight: bold;
+    color: var(--am-blue);
+    font-weight: 600;
+}
+
+a:hover, .btn-link:hover {
+    color: var(--am-blue-dark);
+}
+
+.sidebar a,
+.sidebar .btn-link,
+.top-row a,
+.top-row .btn-link {
+    color: #fff;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: var(--am-blue);
+    border-color: var(--am-blue);
 }
 
+    .btn-primary:hover,
+    .btn-primary:focus,
+    .btn-primary:active {
+        background-color: var(--am-blue-dark);
+        border-color: var(--am-blue-dark);
+    }
+
 .btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-    box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    box-shadow: 0 0 0 0.2rem rgba(44, 110, 203, 0.25);
+    border-color: var(--am-blue);
 }
 
 .content {
@@ -28,15 +137,15 @@ a, .btn-link {
 }
 
 .valid.modified:not([type=checkbox]) {
-    outline: 1px solid #26b050;
+    outline: 1px solid var(--am-good);
 }
 
 .invalid {
-    outline: 1px solid red;
+    outline: 1px solid var(--am-bad);
 }
 
 .validation-message {
-    color: red;
+    color: var(--am-bad);
 }
 
 #blazor-error-ui {
@@ -73,7 +182,7 @@ a, .btn-link {
     display: flex;
     justify-content: end;
     margin: 15px 0px 0 0;
-    border-top: 1px solid lightgray;
+    border-top: 1px solid var(--am-rule);
     padding: 15px 20px 0 0;
 }
 
@@ -95,17 +204,17 @@ a, .btn-link {
 /* Service report row status. The stage colour lives on the row as a custom property so the
    first cell and the filter chips above the grid can both read it from one place. */
 .sr-new {
-    --sr-status-color: #d9a406;
+    --sr-status-color: var(--am-warn);
     --sr-status-text: #212529;
 }
 
 .sr-quoted {
-    --sr-status-color: #217a4b;
+    --sr-status-color: var(--am-good);
     --sr-status-text: #fff;
 }
 
 .sr-complete {
-    --sr-status-color: #b23b2e;
+    --sr-status-color: var(--am-bad);
     --sr-status-text: #fff;
 }
 
@@ -128,7 +237,7 @@ a, .btn-link {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    font-size: 13px;
+    font-size: var(--am-fs-sm);
 }
 
 /* The free-text columns are the ones that give way when the grid is short of room, so that the
@@ -160,9 +269,9 @@ a, .btn-link {
     padding: .3rem .75rem;
     border: 1px solid var(--sr-status-color);
     border-radius: 999px;
-    background-color: #fff;
-    color: #212529;
-    font-size: .85rem;
+    background-color: var(--am-surface);
+    color: var(--am-ink-2);
+    font-size: var(--am-fs-sm);
     line-height: 1.2;
     cursor: pointer;
 }
@@ -196,8 +305,8 @@ a, .btn-link {
     padding: .3rem .25rem;
     border: 0;
     background: none;
-    color: #6c757d;
-    font-size: .85rem;
+    color: var(--am-steel);
+    font-size: var(--am-fs-sm);
     text-decoration: underline;
     cursor: pointer;
 }
@@ -218,18 +327,18 @@ a, .btn-link {
 }
 
 .table th {
-    font-weight: bold;
-    font-size: 14px;
+    font-weight: 600;
+    font-size: var(--am-fs-body);
 }
 
 
 .table td {
-    font-size: 14px;
-    color: black;
+    font-size: var(--am-fs-body);
+    color: var(--am-ink-2);
 }
 
 .action {
-    font-size: 14px;
+    font-size: var(--am-fs-body);
 }
 
 /* Sortable grid headers: the whole cell is the click target and the caret is always present so
@@ -263,10 +372,10 @@ a, .btn-link {
    labour reconciliation on the conversion screen.
    --------------------------------------------------------------------------- */
 .data-card {
-    background: #fff;
+    background: var(--am-surface);
     border: 1px solid rgba(16, 24, 40, 0.06);
-    border-radius: 10px;
-    box-shadow: 0 1px 2px rgba(16, 24, 40, 0.05), 0 10px 26px -10px rgba(16, 24, 40, 0.18);
+    border-radius: var(--am-radius-lg);
+    box-shadow: var(--am-shadow-2);
     padding: 1rem 1.25rem 0.5rem 1.25rem;
     margin-bottom: 1.5rem;
 }
@@ -284,13 +393,13 @@ a, .btn-link {
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: #5b6472;
+    color: var(--am-steel);
     margin: 0;
 }
 
 .data-card-note {
-    font-size: 0.78rem;
-    color: #8a929e;
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel-light);
 }
 
 /* The card already frames the grid, so the table gives up its own chrome. */
@@ -303,7 +412,7 @@ a, .btn-link {
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: #6b7280;
+    color: var(--am-steel);
     border-top: 0;
     border-bottom: 1px solid rgba(16, 24, 40, 0.08);
     padding-top: 0;
@@ -335,13 +444,514 @@ a, .btn-link {
 /* Reconciliation rows: agreement and disagreement should be readable at a glance
    without relying on the text alone. */
 .recon-ok {
-    color: #16794c;
+    color: var(--am-good);
 }
 
 .recon-off {
-    color: #b42318;
+    color: var(--am-bad);
 }
 
 .recon-row-off > td {
     background-color: rgba(217, 45, 32, 0.04);
+}
+
+/* ---------------------------------------------------------------------------
+   Stock receiving. The grid is an entry surface rather than a list, so it is
+   styled to keep the eye on the two things being decided per row: how many
+   are coming in, and what the level becomes. Rules live here rather than in
+   the page's scoped stylesheet because the rows render inside ListTemplate.
+   --------------------------------------------------------------------------- */
+
+.rs-invoice {
+    padding-bottom: .5rem;
+}
+
+.rs-invoice-heading {
+    margin-bottom: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--am-ink-2);
+}
+
+.rs-empty {
+    padding: 2rem 0;
+    color: var(--am-steel);
+    text-align: center;
+}
+
+/* The invoice against the lines captured, kept on one strip so posting is never
+   a decision made without the variance in view. */
+.rs-summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1.25rem;
+    padding: .6rem .9rem;
+    border: 1px solid var(--am-rule);
+    border-radius: .5rem;
+    background-color: var(--am-ground);
+}
+
+.rs-summary-item {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.25;
+}
+
+.rs-summary-label {
+    font-size: .75rem;
+    text-transform: uppercase;
+    letter-spacing: .02em;
+    color: var(--am-steel);
+}
+
+.rs-summary-value {
+    font-variant-numeric: tabular-nums;
+    font-weight: 600;
+}
+
+.rs-variance.reconciled .rs-summary-value {
+    color: var(--am-good);
+}
+
+.rs-variance.unreconciled .rs-summary-value {
+    color: var(--am-bad);
+}
+
+/* Pushed to the far end so the buttons sit clear of the figures they act on. */
+.rs-summary-actions {
+    display: flex;
+    gap: .5rem;
+    margin-left: auto;
+}
+
+.rs-totals-warning {
+    padding: .5rem .75rem;
+    border-radius: .375rem;
+    background-color: rgba(217, 45, 32, .06);
+    color: var(--am-bad);
+    font-size: .875rem;
+}
+
+/* Toggle above the grid for hiding every part the invoice does not list. */
+.rs-line-filter {
+    display: flex;
+    align-items: center;
+    gap: .5rem;
+}
+
+.rs-line-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .3rem .75rem;
+    border: 1px solid var(--am-blue);
+    border-radius: 999px;
+    background-color: var(--am-surface);
+    color: var(--am-ink-2);
+    font-size: var(--am-fs-sm);
+    line-height: 1.2;
+    cursor: pointer;
+}
+
+.rs-line-chip:hover {
+    background-color: rgba(0, 0, 0, .05);
+}
+
+.rs-line-chip.active {
+    background-color: var(--am-blue);
+    color: #fff;
+}
+
+.rs-line-count {
+    font-variant-numeric: tabular-nums;
+    opacity: .7;
+}
+
+.table > tbody > tr.rs-row > td {
+    vertical-align: middle;
+    white-space: nowrap;
+    font-size: var(--am-fs-sm);
+}
+
+/* A row only joins the invoice once a quantity is entered, and the tint is what
+   makes those rows findable again in a long supplier list. */
+.table > tbody > tr.rs-row.receiving > td {
+    background-color: rgba(44, 110, 203, .06);
+}
+
+.table > tbody > tr.rs-row.receiving > td.rs-new-level {
+    font-weight: 600;
+    color: var(--am-good);
+}
+
+/* Descriptions are the column that gives way, so the numeric columns always keep
+   their content on one line. max-width:0 is what lets it shrink below its text. */
+.rs-description {
+    width: 28%;
+    max-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.rs-number {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+.rs-input-col {
+    width: 110px;
+    text-align: right;
+}
+
+.rs-qty-input,
+.rs-cost-input {
+    height: 30px;
+    padding: .15rem .4rem;
+    text-align: right;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Shown only where the invoice disagrees with the part's current cost, so a
+   reprice is never something that happens without being seen. */
+.rs-cost-changed {
+    display: block;
+    margin-top: .15rem;
+    color: var(--am-warn-ink);
+    font-size: var(--am-fs-label);
+    text-align: right;
+    white-space: nowrap;
+}
+
+/* Receipt history. Rows open in place rather than on their own page: the lines
+   are only ever read next to the invoice they were captured against. */
+.rs-expand-col {
+    width: 34px;
+}
+
+.table > tbody > tr.rs-receipt-row {
+    cursor: pointer;
+}
+
+.table > tbody > tr.rs-receipt-row > td {
+    white-space: nowrap;
+    font-size: var(--am-fs-sm);
+}
+
+.rs-variance-cell.reconciled {
+    color: var(--am-good);
+}
+
+.rs-variance-cell.unreconciled {
+    color: var(--am-bad);
+    font-weight: 600;
+}
+
+.table > tbody > tr.rs-detail-row > td {
+    padding: .75rem 1rem 1rem 2.25rem;
+    background-color: var(--am-ground);
+}
+
+.rs-detail-table {
+    margin-bottom: 0;
+    font-size: var(--am-fs-sm);
+}
+
+.rs-detail-table th {
+    color: var(--am-steel);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: var(--am-fs-label);
+    letter-spacing: .02em;
+}
+
+.rs-detail-empty {
+    color: var(--am-steel);
+    font-size: .875rem;
+}
+
+.rs-detail-notes {
+    margin-top: .5rem;
+    font-size: .8125rem;
+    color: var(--am-steel);
+}
+
+/* ---------------------------------------------------------------------------
+   Page header.
+
+   An uppercase eyebrow, a 22px title and the primary action on the same line.
+   The title used to be a bare Bootstrap h1 at 40px sitting directly above 13px
+   table text, which is a jump with nothing in between - and the action next to
+   it was an unlabelled "+" glyph.
+   --------------------------------------------------------------------------- */
+
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--am-space-3);
+    margin-bottom: var(--am-space-4);
+}
+
+.page-header-text {
+    min-width: 0;
+}
+
+.page-eyebrow {
+    margin: 0 0 var(--am-space-1);
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+.page-title {
+    margin: 0;
+    font-size: var(--am-fs-h1);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--am-ink);
+}
+
+.page-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    flex: 0 0 auto;
+    font-size: var(--am-fs-body);
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* ---------------------------------------------------------------------------
+   List toolbar and grid card.
+   --------------------------------------------------------------------------- */
+
+.list-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--am-space-2) var(--am-space-3);
+    margin-bottom: var(--am-space-3);
+}
+
+/* Held to a sensible width rather than spanning the page: a search box as wide
+   as the grid reads as the subject of the screen, which it is not. */
+.list-search {
+    position: relative;
+    flex: 0 1 20rem;
+    min-width: 12rem;
+}
+
+.list-search-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.625rem;
+    transform: translateY(-50%);
+    color: var(--am-steel-light);
+    font-size: var(--am-fs-body);
+    pointer-events: none;
+}
+
+.list-search .form-control {
+    padding-left: 2rem;
+    font-size: var(--am-fs-body);
+}
+
+.list-filters {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--am-space-2);
+    min-width: 0;
+}
+
+.list-card {
+    padding: 0;
+    margin-bottom: var(--am-space-6);
+}
+
+/* Only the grid scrolls sideways, so the page itself never does. */
+.list-scroll {
+    overflow-x: auto;
+}
+
+.list-card .table {
+    margin-bottom: 0;
+}
+
+.list-card .table > thead > tr > th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    background-color: var(--am-surface);
+    padding: var(--am-space-3) var(--am-space-3);
+    border-top: 0;
+    border-bottom: 1px solid var(--am-rule);
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+    white-space: nowrap;
+}
+
+.list-card .table > tbody > tr > td {
+    padding: var(--am-space-2) var(--am-space-3);
+    border-top: 0;
+    border-bottom: 1px solid var(--am-rule);
+    vertical-align: middle;
+}
+
+.list-card .table > tbody > tr:last-child > td {
+    border-bottom: 0;
+}
+
+.list-empty {
+    padding: var(--am-space-12) var(--am-space-4) !important;
+    text-align: center;
+    color: var(--am-steel);
+}
+
+.list-pager {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--am-space-2);
+    padding: var(--am-space-2) var(--am-space-3);
+    border-top: 1px solid var(--am-rule);
+}
+
+.list-count {
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel);
+    font-variant-numeric: tabular-nums;
+}
+
+.list-pager-controls {
+    display: flex;
+    align-items: center;
+    gap: var(--am-space-2);
+}
+
+.list-page-number {
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+/* Figures line up down the column rather than drifting with digit width. */
+.list-card .table .rate,
+.list-card .table .num,
+.list-card .table .amount {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   Dashboard widget tables.
+
+   These rules were copied into all five widget stylesheets, so a change to the
+   look of one list meant editing five files. They live here once now; the
+   scoped stylesheets keep only what is genuinely their own.
+
+   The gap under the header used to be produced by a :before on the tbody that
+   inserted an "@" and pushed it 99999px off screen. It is padding.
+   --------------------------------------------------------------------------- */
+
+.widger-container {
+    overflow: auto;
+}
+
+.widget-data-table {
+    width: 100%;
+}
+
+.widget-data-header {
+    border-bottom: 1px solid var(--am-rule);
+    font-weight: 600;
+}
+
+    .widget-data-header td {
+        padding: 0 0.5rem 0.5rem 0;
+        font-size: var(--am-fs-label);
+        font-weight: 600;
+        letter-spacing: 0.05em;
+        text-transform: uppercase;
+        color: var(--am-steel);
+        white-space: nowrap;
+    }
+
+.widget-data-row {
+    color: var(--am-ink-2);
+    cursor: pointer;
+}
+
+    .widget-data-row:hover {
+        background-color: var(--am-ground);
+    }
+
+    .widget-data-row > td {
+        border-bottom: 1px solid var(--am-rule);
+    }
+
+    .widget-data-row:last-child > td {
+        border-bottom: 0;
+    }
+
+.widget-data-col {
+    text-align: left;
+    padding: 0.375rem 0.5rem 0.375rem 0;
+    font-size: var(--am-fs-body);
+    vertical-align: middle;
+}
+
+.report-date {
+    text-align: right;
+    min-width: 93px;
+    font-variant-numeric: tabular-nums;
+}
+
+.action-buttons {
+    display: flex;
+    flex-direction: row;
+    gap: 0.25rem;
+    justify-content: flex-end;
+}
+
+.email {
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ---------------------------------------------------------------------------
+   Small utilities that were repeated as inline style attributes.
+   --------------------------------------------------------------------------- */
+
+/* Row action cells: holds its width so the icons do not shift between rows. */
+.action-col {
+    min-width: 65px;
+}
+
+/* Long free-text cells give way before the numeric columns do. */
+.instruction-col {
+    max-width: 400px;
+}
+
+/* Pickers with a long list scroll inside the menu rather than off the page. */
+.dropdown-scroll {
+    max-height: 350px;
+    overflow: auto;
+}
+
+.panel-scroll {
+    max-height: 260px;
+    overflow-y: auto;
 }

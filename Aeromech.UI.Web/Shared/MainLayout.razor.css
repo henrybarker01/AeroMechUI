@@ -6,39 +6,54 @@
 
 main {
     flex: 1;
-}
-
-.main-view-port {
-    /*max-height: 100vh;*/
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background-color: var(--am-ground);
 }
 
 .sidebar {
-    background-image: linear-gradient(0deg, rgb(5, 39, 103) 40%, #447EE2 90%);
+    background-color: var(--am-slate);
 }
 
+/* The top bar reads as a shelf for the page, not as a second band of brand
+   colour. It was previously the same saturated blue as the sidebar, which put a
+   heavy L of colour around every screen. */
 .top-row {
-    font-weight: bold;
-    background-color: #447EE2;
-    border-bottom: 1px solid #d6d5d5;
+    background-color: var(--am-surface);
+    border-bottom: 1px solid var(--am-rule);
     justify-content: flex-end;
+    align-items: center;
+    gap: var(--am-space-3);
     height: 3.5rem;
     display: flex;
-    align-items: center;
-    background-color: #447EE2;
-    font-weight: bold;
-    color: white;
+    font-size: var(--am-fs-body);
+    font-weight: 400;
+    color: var(--am-steel);
 }
 
-    .top-row ::deep a, .top-row .btn-link {
+    .top-row ::deep a,
+    .top-row ::deep .btn-link {
         white-space: nowrap;
-        margin-left: 1.5rem;
-        color: white;
+        color: var(--am-ink-2);
+        font-weight: 500;
+        text-decoration: none;
     }
 
-    .top-row a:first-child {
+        .top-row ::deep a:hover,
+        .top-row ::deep .btn-link:hover {
+            color: var(--am-blue);
+        }
+
+    .top-row ::deep a:first-child {
         overflow: hidden;
         text-overflow: ellipsis;
     }
+
+.main-view-port {
+    flex: 1 1 auto;
+    min-height: 0;
+}
 
 @media (max-width: 640.98px) {
     .top-row:not(.auth) {
@@ -49,9 +64,9 @@ main {
         justify-content: space-between;
     }
 
-    .top-row a, .top-row .btn-link {
+    .top-row ::deep a,
+    .top-row ::deep .btn-link {
         margin-left: 0;
-        color: white;
     }
 }
 
@@ -65,6 +80,7 @@ main {
         height: 100vh;
         position: sticky;
         top: 0;
+        flex: 0 0 250px;
     }
 
     .top-row {
@@ -74,7 +90,7 @@ main {
     }
 
     .top-row, article {
-        padding-left: 2rem !important;
-        padding-right: 1.5rem !important;
+        padding-left: var(--am-space-8) !important;
+        padding-right: var(--am-space-6) !important;
     }
 }

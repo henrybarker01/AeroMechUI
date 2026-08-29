@@ -408,7 +408,7 @@
                                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
                                         @(selectedPart?.PartCode ?? "Select Part")
                                     </button>
-                                    <div class="dropdown-menu p-3" style="max-height: 350px; overflow:auto">
+                                    <div class="dropdown-menu p-3 dropdown-scroll">
                                         <input type="text" class="form-control mb-2" placeholder="Search part..."
                                                @oninput="(e) => SearchTerm = e.Value.ToString()" />
                                         <ul class="list-unstyled">

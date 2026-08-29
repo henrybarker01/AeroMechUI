@@ -47,7 +47,12 @@
 <div class="timesheets d-flex">
     <div class="col-6 time-sheet-data">
         <div class="form-group pe-2">
-            <h1>Time sheet data</h1>
+            <header class="page-header">
+                <div class="page-header-text">
+                    <p class="page-eyebrow">Workshop</p>
+                    <h1 class="page-title">Time sheet data</h1>
+                </div>
+            </header>
             <InputDate TValue="DateOnly"
                        @bind-Value="_startDate"
                        @bind-Value:after="LoadTimesheetsAsync"
@@ -74,7 +79,7 @@
                     <td>@timesheet.DayOfWeek</td>
                     <td>@timesheet.TotalWorked</td>
                     <td>
-                        <div style="min-width: 65px">
+                        <div class="action-col">
                             <Icon Name="IconName.Eye"
                                   Size="IconSize.x5"
                                   Color="IconColor.Primary"
@@ -161,7 +166,7 @@
                             <td>@timesheetLine.Hours</td>
 
                             <td>
-                                <div style="min-width: 65px">
+                                <div class="action-col">
                                     @if (timesheetLine.IsServiceReport)
                                     {
                                         <Icon Name="IconName.Eye"

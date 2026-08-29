@@ -1,44 +1,16 @@
-
-.widger-container {
-    overflow: auto;
-}
+/* Shared widget table styles live in site.css; these are this widget's own. */
 
 .widget-data-table {
-    width: 100%;
     table-layout: fixed;
     border-collapse: collapse;
 }
 
-.widget-data-header {
-    border-bottom: 1px solid black;
-    font-weight: 600;
+.widget-data-header td {
+    padding: 0 0.5rem 0.5rem 0.5rem;
 }
-
-    .widget-data-header td {
-        padding: 5px 8px;
-    }
-
-.widget-data-body:before {
-    content: "@";
-    display: block;
-    line-height: 10px;
-    text-indent: -99999px;
-}
-
-.widget-data-row {
-    color: black;
-    cursor: pointer;
-}
-
-    .widget-data-row:hover {
-        background-color: lightgray;
-    }
 
 .widget-data-col {
-    text-align: left;
-    padding: 5px 8px;
-    font-size: 14px;
-    vertical-align: middle;
+    padding: 0.375rem 0.5rem;
 }
 
 .day-name {
@@ -49,51 +21,49 @@
 .hours-col {
     text-align: right;
     width: 20%;
+    font-variant-numeric: tabular-nums;
 }
 
 .hours-badge {
-    padding: 4px 10px;
-    border-radius: 4px;
+    padding: 2px 8px;
+    border-radius: var(--am-radius);
     font-weight: 500;
     display: inline-block;
     min-width: 40px;
     text-align: center;
+    font-variant-numeric: tabular-nums;
 }
 
 .action-buttons {
-    display: flex;
-    flex-direction: row;
-    justify-content: flex-end;
     width: 15%;
-    padding-left: 45px;
 }
 
 .status-badge {
     padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 12px;
-    font-weight: 500;
+    border-radius: 999px;
+    font-size: var(--am-fs-label);
+    font-weight: 600;
 }
 
 .status-complete {
-    background-color: #d4edda;
-    color: #155724;
+    background-color: var(--am-good-soft);
+    color: var(--am-good);
 }
 
 .status-incomplete {
-    background-color: #fff3cd;
-    color: #856404;
+    background-color: var(--am-warn-soft);
+    color: var(--am-warn-ink);
 }
 
 .status-missing {
-    background-color: #f8d7da;
-    color: #721c24;
+    background-color: var(--am-bad-soft);
+    color: var(--am-bad);
 }
 
 .week-summary {
-    margin-top: 10px;
-    padding-top: 10px;
-    border-top: 1px solid #ddd;
-    font-size: 14px;
+    margin-top: var(--am-space-2);
+    padding-top: var(--am-space-2);
+    border-top: 1px solid var(--am-rule);
+    font-size: var(--am-fs-body);
     text-align: right;
 }

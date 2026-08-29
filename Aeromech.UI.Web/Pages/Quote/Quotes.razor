@@ -5,6 +5,7 @@
 
 <ListTemplate TItem="QuoteModel"
           Title="Quotes"
+          Eyebrow="Workshop"
           Items="_quotes"
           PageSize="15"
           SearchPredicate="MatchesSearch"
@@ -30,7 +31,7 @@
             <td>@($"AEM {q.QuoteNumber}")</td>
             <td>@q.QuoteDate.ToString("dd/MM/yyyy")</td>
             <td>@q.Vehicle?.SerialNumber</td>
-            <td style="max-width:400px">@q.Instruction</td>
+            <td class="instruction-col">@q.Instruction</td>
             <td>@q.Client?.Name</td>
             <td>@q.ServiceType</td>
             <td>@CalculateTotal(q).ToString("C", CultureInfo.CurrentCulture)</td>

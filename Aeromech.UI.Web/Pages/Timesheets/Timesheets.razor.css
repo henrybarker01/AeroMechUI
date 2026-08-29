@@ -1,5 +1,5 @@
 ﻿.timesheets .time-sheet-data {
-  border-right: 1px solid lightgray;
+  border-right: 1px solid var(--am-rule);
 }
 
 .timesheets .half-view-height {
@@ -8,5 +8,5 @@
 }
 
 .selected-row {
-  background-color: rgba(13, 110, 253, 0.12);
+  background-color: rgba(44, 110, 203, 0.12);
 }

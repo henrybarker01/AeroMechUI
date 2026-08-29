@@ -1,0 +1,47 @@
+.user-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-width: 0;
+}
+
+.user-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 1.75rem;
+    width: 1.75rem;
+    height: 1.75rem;
+    border-radius: 50%;
+    background-color: var(--am-blue-light);
+    color: var(--am-blue);
+    font-size: var(--am-fs-sm);
+    font-weight: 700;
+    line-height: 1;
+}
+
+.user-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--am-ink-2);
+    font-weight: 500;
+}
+
+.logout-form {
+    margin: 0;
+}
+
+.logout-button {
+    padding: 0;
+    border: 0;
+    font-size: var(--am-fs-body);
+    font-weight: 500;
+    color: var(--am-steel);
+    text-decoration: none;
+}
+
+    .logout-button:hover {
+        color: var(--am-blue);
+        text-decoration: underline;
+    }

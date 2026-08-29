@@ -1,7 +1,6 @@
 ﻿@inherits LayoutComponentBase;
 
-<div class="container py-3">
-    <link href="css/login.css" rel="stylesheet">
-    @Body  
-   @*   <LoginError visible="false"/> *@
-</div>
+@* No container here: the login page centres itself against the full viewport,
+   and the stylesheet this layout used to link (css/login.css) did not exist,
+   so every load of this page fetched a 404. *@
+@Body

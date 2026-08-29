@@ -22,5 +22,14 @@ namespace AeroMech.Data.Models
         public Guid AdjustedById { get; set; }
 
         public StockAdjustmentType StockAdjustmentType { get; set; }
+
+        /// <summary>
+        /// The receipt that caused this movement, when the stock came in on a supplier invoice.
+        /// Null for every other kind of adjustment, so the ledger can be walked back to the
+        /// invoice that proves an increase.
+        /// </summary>
+        public int? StockReceiptId { get; set; }
+
+        public virtual StockReceipt? StockReceipt { get; set; }
     }
 }

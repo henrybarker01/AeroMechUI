@@ -26,8 +26,8 @@
     </div>
 
     <div class="mt-3">
-        <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="@(() => OnPageChanged.InvokeAsync(CurrentPage - 1))" disabled="@(CurrentPage == 1)" style="margin-right: 20px">Previous</Button>
+        <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="@(() => OnPageChanged.InvokeAsync(CurrentPage - 1))" disabled="@(CurrentPage == 1)">Previous</Button>
         <span>Page @CurrentPage of @TotalPages</span>
-        <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="@(() => OnPageChanged.InvokeAsync(CurrentPage + 1))" disabled="@(CurrentPage == TotalPages)" style="margin-right: 20px">Next</Button>
+        <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="@(() => OnPageChanged.InvokeAsync(CurrentPage + 1))" disabled="@(CurrentPage == TotalPages)">Next</Button>
     </div>
 </div>

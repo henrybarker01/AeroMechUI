@@ -7,6 +7,7 @@
         ServiceReportReversal = 2,
         ServiceReportEdit = 3,
         StockTake = 4,
-        StockAdjustment = 5
+        StockAdjustment = 5,
+        StockReceipt = 6
     }
 }

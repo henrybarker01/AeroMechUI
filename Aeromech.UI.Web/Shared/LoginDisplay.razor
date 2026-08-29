@@ -1,12 +1,38 @@
-﻿<AuthorizeView>
+﻿@using System.Security.Claims
+
+<AuthorizeView>
     <Authorized>
-        <a href="">Hello, @context.User.Identity?.Name!</a>
-        <form method="post" action="Identity/Account/Logout">
-            <button type="submit" class="nav-link btn btn-link">Log out</button>
+        <div class="user-chip">
+            <span class="user-avatar" aria-hidden="true">@Initials(context.User)</span>
+            <span class="user-name">@context.User.Identity?.Name</span>
+        </div>
+        <form method="post" action="Identity/Account/Logout" class="logout-form">
+            <button type="submit" class="btn btn-link logout-button">Log out</button>
         </form>
     </Authorized>
     <NotAuthorized>
-   @*      <a href="Identity/Account/Register">Register</a> *@
-      @*   <a href="Identity/Account/Login">Log in</a> *@
     </NotAuthorized>
 </AuthorizeView>
+
+@code {
+    // Falls back to the first character of whatever the name is, so the chip is
+    // never empty for accounts that are a bare user name rather than a full name.
+    private static string Initials(ClaimsPrincipal user)
+    {
+        var name = user.Identity?.Name;
+
+        if (string.IsNullOrWhiteSpace(name))
+        {
+            return "?";
+        }
+
+        var parts = name.Split(new[] { ' ', '.', '@', '_', '-' }, StringSplitOptions.RemoveEmptyEntries);
+
+        if (parts.Length >= 2)
+        {
+            return string.Concat(char.ToUpperInvariant(parts[0][0]), char.ToUpperInvariant(parts[1][0]));
+        }
+
+        return char.ToUpperInvariant(parts[0][0]).ToString();
+    }
+}

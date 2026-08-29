@@ -1,0 +1,111 @@
+﻿@page "/stock-receipts"
+
+@using AeroMech.Models.Models
+@using AeroMech.UI.Web.Pages.ListTemplate
+@using System.Globalization
+@using BlazorBootstrap
+
+<PageTitle>Stock Receipts</PageTitle>
+
+<ListTemplate TItem="StockReceiptModel"
+              Title="Stock Receipts"
+              Eyebrow="Inventory"
+              Items="_receipts"
+              PageSize="15"
+              SearchPredicate="MatchesSearch"
+              ShowAddButton="true"
+              StorageKey="stock-receipts"
+              OnAdd="NavigateToReceiveStock">
+    <HeaderTemplate>
+        <tr>
+            <th class="rs-expand-col"></th>
+            <SortHeader Title="Invoice Number" SortBy="r => r.InvoiceNumber" />
+            <SortHeader Title="Supplier" SortBy="r => r.SupplierCode" />
+            <SortHeader Title="Invoice Date" SortBy="r => r.InvoiceDate" />
+            <SortHeader Title="Received" SortBy="r => r.ReceivedDate" />
+            <SortHeader Title="Received By" SortBy="r => r.ReceivedBy" />
+            <SortHeader Title="Lines" SortBy="r => r.LineCount" />
+            <SortHeader Title="Qty" SortBy="r => r.TotalQtyReceived" />
+            <SortHeader Title="Sub Total" SortBy="r => r.InvoiceSubTotal" />
+            <SortHeader Title="VAT" SortBy="r => r.InvoiceVat" />
+            <SortHeader Title="Total" SortBy="r => r.InvoiceTotal" />
+            <SortHeader Title="Variance" SortBy="r => r.SubTotalVariance" />
+        </tr>
+    </HeaderTemplate>
+
+    <RowTemplate Context="receipt">
+        <tr class="rs-receipt-row" @onclick="() => ToggleReceipt(receipt)">
+            <td class="rs-expand-col">
+                <Icon Name="@(IsExpanded(receipt) ? IconName.ChevronDown : IconName.ChevronRight)"
+                      Size="IconSize.x5" Color="IconColor.Primary" Style="cursor: pointer" />
+            </td>
+            <td>@receipt.InvoiceNumber</td>
+            <td>@receipt.SupplierCode</td>
+            <td>@receipt.InvoiceDate.ToString("yyyy-MM-dd")</td>
+            <td>@receipt.ReceivedDate.ToString("yyyy-MM-dd")</td>
+            <td>@receipt.ReceivedBy</td>
+            <td class="rs-number">@receipt.LineCount</td>
+            <td class="rs-number">@receipt.TotalQtyReceived</td>
+            <td class="rs-number">@receipt.InvoiceSubTotal.ToString("C", CultureInfo.CurrentCulture)</td>
+            <td class="rs-number">@receipt.InvoiceVat.ToString("C", CultureInfo.CurrentCulture)</td>
+            <td class="rs-number">@receipt.InvoiceTotal.ToString("C", CultureInfo.CurrentCulture)</td>
+            <td class="rs-number rs-variance-cell @(receipt.IsReconciled ? "reconciled" : "unreconciled")">
+                @receipt.SubTotalVariance.ToString("C", CultureInfo.CurrentCulture)
+            </td>
+        </tr>
+
+        @if (IsExpanded(receipt))
+        {
+            <tr class="rs-detail-row">
+                <td colspan="12">
+                    @if (!_receiptLines.TryGetValue(receipt.Id, out var lines))
+                    {
+                        <div class="rs-detail-empty">Loading lines...</div>
+                    }
+                    else if (lines.Count == 0)
+                    {
+                        <div class="rs-detail-empty">This receipt has no lines.</div>
+                    }
+                    else
+                    {
+                        <table class="table rs-detail-table">
+                            <thead>
+                                <tr>
+                                    <th>Part Code</th>
+                                    <th>Description</th>
+                                    <th>Bin</th>
+                                    <th>Warehouse</th>
+                                    <th class="rs-number">Received</th>
+                                    <th class="rs-number">Unit Cost</th>
+                                    <th class="rs-number">Line Total</th>
+                                    <th class="rs-number">Level Before</th>
+                                    <th class="rs-number">Level After</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var line in lines)
+                                {
+                                    <tr>
+                                        <td>@line.PartCode</td>
+                                        <td class="rs-description" title="@line.PartDescription">@line.PartDescription</td>
+                                        <td>@line.Bin</td>
+                                        <td>@line.WarehouseCode</td>
+                                        <td class="rs-number">@line.QtyReceived</td>
+                                        <td class="rs-number">@line.UnitCost.ToString("C", CultureInfo.CurrentCulture)</td>
+                                        <td class="rs-number">@line.LineTotal.ToString("C", CultureInfo.CurrentCulture)</td>
+                                        <td class="rs-number">@line.QtyOnHand</td>
+                                        <td class="rs-number">@line.NewQtyOnHand</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                        @if (!string.IsNullOrWhiteSpace(receipt.Notes))
+                        {
+                            <div class="rs-detail-notes"><strong>Notes:</strong> @receipt.Notes</div>
+                        }
+                    }
+                </td>
+            </tr>
+        }
+    </RowTemplate>
+</ListTemplate>

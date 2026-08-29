@@ -1,4 +1,4 @@
-@page "/ShowTimesheetReport"
+﻿@page "/ShowTimesheetReport"
 @page "/ShowTimesheetReport/{ReportDate}"
 @using BlazorBootstrap
 
@@ -73,7 +73,7 @@
                     @SelectedClientsLabel
                 </button>
                 <div class="dropdown-menu w-100 p-2" aria-labelledby="client-filter">
-                    <div style="max-height: 260px; overflow-y: auto;">
+                    <div class="panel-scroll">
                         @if (_clients.Count == 0)
                         {
                             <div class="text-muted small px-1">No clients available</div>

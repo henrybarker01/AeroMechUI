@@ -89,6 +89,7 @@
 
 <ListTemplate TItem="PartModel"
               Title="Parts"
+              Eyebrow="Inventory"
               Items="_parts"
               PageSize="15"
               SearchPredicate="MatchesSearch"
@@ -123,7 +124,7 @@
             <td>@part.CostPrice.ToString("C", CultureInfo.CurrentCulture)</td>
             <td>@((part.QtyOnHand * part.CostPrice).ToString("C", CultureInfo.CurrentCulture))</td>
             <td>
-                <div style="min-width: 65px">
+                <div class="action-col">
                     <Icon Name="IconName.Trash3" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeletePart(part)" Class="me-2" Style="cursor: pointer" />
                     <Icon Name="IconName.Pencil" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditPartClick(part)" Style="cursor: pointer" />
                 </div>

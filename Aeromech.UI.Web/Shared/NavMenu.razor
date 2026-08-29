@@ -1,89 +1,125 @@
-﻿@inject NavigationManager NavigationManager
+@inject NavigationManager NavigationManager
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
-        <a class="navbar-brand" href="">VMI</a>
+        <a class="navbar-brand" href="">
+            <span class="brand-mark">A</span>
+            <span class="brand-name">AeroMech</span>
+        </a>
         <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>
 </div>
 
+@* Each section gets the icon that matches it. The markup previously asked for
+   classes from the Blazor starter template (bi-*-nav-menu) which this project
+   never defined, so every icon rendered at 0x0 - and all of them asked for the
+   same glyph, so they would have carried no meaning even had they shown.
+   Bootstrap Icons is already loaded in _Host.cshtml, so these are its own names. *@
 <div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
     <nav class="flex-column">
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Home
+                <i class="bi bi-house-door nav-icon" aria-hidden="true"></i>
+                <span class="nav-text">Home</span>
             </NavLink>
         </div>
-        <!-- <div class="nav-item px-3">
-             <NavLink class="nav-link" href="counter">
-                 <span class="bi bi-plus-square-fill-nav-menu" aria-hidden="true"></span> Counter
-             </NavLink>
-         </div>-->
 
         <AuthorizeView>
             <Authorized>
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="clients">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Clients
+                        <i class="bi bi-buildings nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Clients</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="employees">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Employees
+                        <i class="bi bi-people nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Employees</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="vehicles">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Vehicles
+                        <i class="bi bi-truck nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Vehicles</span>
                     </NavLink>
                 </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="parts">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Parts
+                        <i class="bi bi-box-seam nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Parts</span>
                     </NavLink>
                 </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="receive-stock">
+                        <i class="bi bi-box-arrow-in-down nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Receive Stock</span>
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="stock-receipts">
+                        <i class="bi bi-clipboard-check nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Stock Receipts</span>
+                    </NavLink>
+                </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="quotes">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Quotes
+                        <i class="bi bi-file-earmark-text nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Quotes</span>
                     </NavLink>
                 </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="service-reports">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Service Reports
+                        <i class="bi bi-wrench-adjustable nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Service Reports</span>
                     </NavLink>
                 </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="timesheets">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Time Sheet Data
+                        <i class="bi bi-clock-history nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Time Sheet Data</span>
                     </NavLink>
                 </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="reports">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>Reports
+                        <i class="bi bi-bar-chart-line nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Reports</span>
                     </NavLink>
                 </div>
+
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="users">
-                        <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span>Users
+                        <i class="bi bi-person-gear nav-icon" aria-hidden="true"></i>
+                        <span class="nav-text">Users</span>
                     </NavLink>
                 </div>
             </Authorized>
         </AuthorizeView>
     </nav>
+
     <AuthorizeView>
         <Authorized>
             <div class="nav-actions">
-                <button class="nav-action nav-action-quote" @onclick="NavigateToAddQuote">Add Quote</button>
-                <button class="nav-action nav-action-report" @onclick="NavigateToAddServiceReport">Add Service Report</button>
+                <button class="nav-action nav-action-primary" @onclick="NavigateToAddQuote">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> New quote
+                </button>
+                <button class="nav-action nav-action-secondary" @onclick="NavigateToAddServiceReport">
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> New service report
+                </button>
             </div>
         </Authorized>
     </AuthorizeView>
-
-
 </div>
 
 @code {

@@ -35,6 +35,27 @@ namespace AeroMech.Data.Persistence
                 .WithOne(x => x.ServiceReport)
                 .HasForeignKey<ServiceReport>(x => x.QuoteId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // Two suppliers can raise the same invoice number, but one supplier raising it twice
+            // means the same stock was received twice - the mistake this feature most needs to
+            // make visible.
+            modelBuilder.Entity<StockReceipt>()
+                .HasIndex(x => new { x.SupplierCode, x.InvoiceNumber });
+
+            // A receipt is the reason its lines exist, so they go when it goes. The ledger rows
+            // it wrote are deliberately kept: stock that moved stays on the record even if the
+            // paperwork behind it is removed.
+            modelBuilder.Entity<StockReceiptLine>()
+                .HasOne(x => x.StockReceipt)
+                .WithMany(x => x.Lines)
+                .HasForeignKey(x => x.StockReceiptId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<StockAdjustment>()
+                .HasOne(x => x.StockReceipt)
+                .WithMany()
+                .HasForeignKey(x => x.StockReceiptId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
 
         public DbSet<Client> Clients { get; set; }
@@ -50,6 +71,8 @@ namespace AeroMech.Data.Persistence
         public DbSet<Warehouse> Warehouse { get; set; }
         public DbSet<ServiceReportAdHockPart> ServiceReportAdHockPart { get; set; }
         public DbSet<StockAdjustment> StockAdjustment { get; set; }
+        public DbSet<StockReceipt> StockReceipts { get; set; }
+        public DbSet<StockReceiptLine> StockReceiptLines { get; set; }
         public DbSet<StockTake> StockTakes { get; set; }
         public DbSet<StockTakeParts> StockTakeParts { get; set; }
         public DbSet<TimesheetEmployeeDetail> TimesheetEmployeeDetails { get; set; }

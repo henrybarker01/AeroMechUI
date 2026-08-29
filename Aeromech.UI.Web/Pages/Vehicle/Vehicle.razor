@@ -87,24 +87,22 @@
     </BodyTemplate>
 </Modal>
 
-<div class="container-fluid" style="padding: 0">
-    <div class="row">
-        <div class="col-6 header">
-            <h1>Vehicles</h1>
-            <span class="add-icon">
-                <Icon Name="IconName.PlusCircleFill" Size="IconSize.x2" Color="IconColor.Primary" @onclick="OnAddVehicleClick" Style="cursor: pointer" />
-            </span>
+<div class="container-fluid vehicle-page">
+    <header class="page-header">
+        <div class="page-header-text">
+            <p class="page-eyebrow">Fleet</p>
+            <h1 class="page-title">Vehicles</h1>
         </div>
-        <div class="col-1">
-        </div>
-        <div class="col-5 text-right"></div>
-    </div>
-    <br />
+        <button type="button" class="btn btn-primary page-action" @onclick="OnAddVehicleClick">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+            <span>New vehicle</span>
+        </button>
+    </header>
     <div class="row">
         <div class="col-6">
             @if (pleaseSelectClient && selectedClientId == 0)
             {
-                <div style="color: red; font-weight: bold;">Please select a client.</div>
+                <div class="field-error">Please select a client.</div>
                 <br />
             }
 
@@ -161,7 +159,7 @@
             <td>@vehicle.JobNumber</td>
             <td>@vehicle.ChassisNumber</td>
             <td>
-                <div style="min-width: 65px">
+                <div class="action-col">
                     <Icon Name="IconName.Trash3" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteVehicle(vehicle)" Class="me-2" Style="cursor: pointer" />
                     <Icon Name="IconName.Pencil" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditVehicleClick(vehicle)" Style="cursor: pointer" />
                 </div>

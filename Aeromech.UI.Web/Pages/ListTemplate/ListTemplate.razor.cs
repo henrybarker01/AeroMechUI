@@ -36,6 +36,42 @@ namespace AeroMech.UI.Web.Pages.ListTemplate
         [Parameter] public bool ShowAddButton { get; set; }
 
         /// <summary>
+        /// Optional uppercase label above the page title, naming the area of the app this grid
+        /// belongs to. Left unset the title stands on its own.
+        /// </summary>
+        [Parameter] public string? Eyebrow { get; set; }
+
+        /// <summary>
+        /// Wording for the add button. Defaults to "New " and the singular of <see cref="Title"/>,
+        /// which is right for every grid in the app today; set it where that reads badly.
+        /// </summary>
+        [Parameter] public string? AddButtonText { get; set; }
+
+        private bool HasTitle => !string.IsNullOrWhiteSpace(Title);
+
+        private string AddButtonLabel => string.IsNullOrWhiteSpace(AddButtonText)
+            ? $"New {Singular(Title)}"
+            : AddButtonText;
+
+        private string SearchPlaceholder => HasTitle
+            ? $"Search {Title.ToLowerInvariant()}"
+            : "Search";
+
+        // Grid titles are plain English plurals, so trimming a trailing "s" covers all of them.
+        // Anything irregular is handled by passing AddButtonText instead.
+        private static string Singular(string title)
+        {
+            if (string.IsNullOrWhiteSpace(title)) return "item";
+
+            var lower = title.ToLowerInvariant().TrimEnd();
+
+            if (lower.EndsWith("ies", StringComparison.Ordinal))
+                return string.Concat(lower.AsSpan(0, lower.Length - 3), "y");
+
+            return lower.EndsWith('s') ? lower[..^1] : lower;
+        }
+
+        /// <summary>
         /// Identifies this grid when the chosen sort order is remembered in the browser's local
         /// storage. Leave unset to keep the sort order for the lifetime of the page only.
         /// </summary>
@@ -57,9 +93,26 @@ namespace AeroMech.UI.Web.Pages.ListTemplate
         }
 
         private int CurrentPage { get; set; } = 1;
-        private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)(FilteredItems?.Count() ?? 0) / PageSize));
+        private int MatchCount => FilteredItems?.Count() ?? 0;
+        private int TotalPages => Math.Max(1, (int)Math.Ceiling((double)MatchCount / PageSize));
         private bool IsFirstPage => CurrentPage == 1;
         private bool IsLastPage => CurrentPage >= TotalPages;
+
+        // "1-15 of 237" rather than a bare page number: how much there is to get through is the
+        // thing the page count was standing in for.
+        private string RangeLabel
+        {
+            get
+            {
+                var total = MatchCount;
+                if (total == 0) return "No records";
+
+                var first = ((CurrentPage - 1) * PageSize) + 1;
+                var last = Math.Min(first + PageSize - 1, total);
+
+                return $"{first}–{last} of {total}";
+            }
+        }
 
         // The caller can shrink Items - by filtering above the grid, say - while a later page is
         // showing, which would otherwise leave the user looking at an empty grid.

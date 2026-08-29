@@ -20,6 +20,7 @@ namespace AeroMech.UI.Web.DependencyInjection
             services.AddScoped<QuoteDocument, QuoteDocument>();
             services.AddScoped<TimesheetReport, TimesheetReport>();
             services.AddScoped<TimesheetService, TimesheetService>();
+            services.AddScoped<StockReceivingService, StockReceivingService>();
         }
     }
 }

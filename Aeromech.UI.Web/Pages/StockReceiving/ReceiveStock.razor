@@ -1,0 +1,217 @@
+@page "/receive-stock"
+
+@using AeroMech.Models.Models
+@using AeroMech.UI.Web.Pages.ListTemplate
+@using System.Globalization
+@using BlazorBootstrap
+
+<PageTitle>Receive Stock</PageTitle>
+
+<EditForm Model="_receipt" OnValidSubmit="OnPostReceiptClick">
+    <DataAnnotationsValidator />
+
+    <div class="container-fluid rs-invoice">
+        <div class="row">
+            <div class="col-12">
+                <h4 class="rs-invoice-heading">Supplier Invoice</h4>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col-12 col-lg-4">
+                <div class="form-group">
+                    <label for="select-supplier">Supplier:</label>
+                    <InputSelect class="form-select"
+                                 id="select-supplier"
+                                 ValueExpression="@(() => _receipt.SupplierCode)"
+                                 Value="@_receipt.SupplierCode"
+                                 ValueChanged="@((string value) => OnSupplierChanged(value))">
+                        <option selected value="">Select supplier</option>
+                        @foreach (var supplier in _suppliers)
+                        {
+                            <option value="@supplier.SupplierCode">@supplier.SupplierCode (@supplier.PartCount)</option>
+                        }
+                    </InputSelect>
+                    <ValidationMessage For="() => _receipt.SupplierCode" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="form-group">
+                    <label for="invoice-number">Invoice Number:</label>
+                    <InputText @bind-Value="_receipt.InvoiceNumber" class="form-control" id="invoice-number" />
+                    <ValidationMessage For="() => _receipt.InvoiceNumber" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-4">
+                <div class="form-group">
+                    <label for="invoice-date">Invoice Date:</label>
+                    <InputDate @bind-Value="_receipt.InvoiceDate" class="form-control" id="invoice-date" />
+                    <ValidationMessage For="() => _receipt.InvoiceDate" />
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-2">
+            <div class="col-12 col-lg-3">
+                <div class="form-group">
+                    <label for="invoice-sub-total">Invoice Sub Total:</label>
+                    <NumberInput TValue="double" @bind-Value="_receipt.InvoiceSubTotal" class="form-control" id="invoice-sub-total" Step=".01" />
+                    <ValidationMessage For="() => _receipt.InvoiceSubTotal" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="form-group">
+                    <label for="invoice-vat">VAT:</label>
+                    <NumberInput TValue="double" @bind-Value="_receipt.InvoiceVat" class="form-control" id="invoice-vat" Step=".01" />
+                    <ValidationMessage For="() => _receipt.InvoiceVat" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="form-group">
+                    <label for="invoice-total">Invoice Total:</label>
+                    <NumberInput TValue="double" @bind-Value="_receipt.InvoiceTotal" class="form-control" id="invoice-total" Step=".01" />
+                    <ValidationMessage For="() => _receipt.InvoiceTotal" />
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="form-group">
+                    <label for="invoice-notes">Notes:</label>
+                    <InputText @bind-Value="_receipt.Notes" class="form-control" id="invoice-notes" />
+                </div>
+            </div>
+        </div>
+
+        @if (!_receipt.TotalsAddUp && (_receipt.InvoiceSubTotal > 0 || _receipt.InvoiceVat > 0 || _receipt.InvoiceTotal > 0))
+        {
+            <div class="row mt-2">
+                <div class="col-12">
+                    <div class="rs-totals-warning">
+                        Sub total plus VAT comes to
+                        @((_receipt.InvoiceSubTotal + _receipt.InvoiceVat).ToString("C", CultureInfo.CurrentCulture)),
+                        which is not the invoice total you entered.
+                    </div>
+                </div>
+            </div>
+        }
+
+        <div class="row mt-2">
+            <div class="col-12">
+                <div class="form-check">
+                    <InputCheckbox @bind-Value="_receipt.UpdateCostPrices" class="form-check-input" id="update-cost-prices" />
+                    <label class="form-check-label" for="update-cost-prices">
+                        Update part cost prices from this invoice
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-12">
+                <div class="rs-summary">
+                    <span class="rs-summary-item">
+                        <span class="rs-summary-label">Lines</span>
+                        <span class="rs-summary-value">@_receipt.LineCount</span>
+                    </span>
+                    <span class="rs-summary-item">
+                        <span class="rs-summary-label">Qty received</span>
+                        <span class="rs-summary-value">@_receipt.TotalQtyReceived</span>
+                    </span>
+                    <span class="rs-summary-item">
+                        <span class="rs-summary-label">Captured lines</span>
+                        <span class="rs-summary-value">@_receipt.CapturedLineTotal.ToString("C", CultureInfo.CurrentCulture)</span>
+                    </span>
+                    <span class="rs-summary-item">
+                        <span class="rs-summary-label">Invoice sub total</span>
+                        <span class="rs-summary-value">@_receipt.InvoiceSubTotal.ToString("C", CultureInfo.CurrentCulture)</span>
+                    </span>
+                    <span class="rs-summary-item rs-variance @(_receipt.IsReconciled ? "reconciled" : "unreconciled")">
+                        <span class="rs-summary-label">Variance</span>
+                        <span class="rs-summary-value">@_receipt.SubTotalVariance.ToString("C", CultureInfo.CurrentCulture)</span>
+                    </span>
+
+                    <span class="rs-summary-actions">
+                        <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="OnClearClick">Clear</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" Disabled="@(_receipt.LineCount == 0)">Post Receipt</Button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (string.IsNullOrWhiteSpace(_receipt.SupplierCode))
+    {
+        <div class="container-fluid">
+            <div class="rs-empty">Select a supplier to see the parts it supplies.</div>
+        </div>
+    }
+    else
+    {
+        <ListTemplate TItem="StockReceivingLineModel"
+                      Title="Parts"
+                      Eyebrow="@($"Receive Stock - {_receipt.SupplierCode}")"
+                      Items="VisibleLines"
+                      PageSize="25"
+                      SearchPredicate="MatchesSearch"
+                      ShowAddButton="false"
+                      StorageKey="receive-stock">
+            <FilterTemplate>
+                <div class="rs-line-filter">
+                    <button type="button"
+                            class="rs-line-chip @(_onlyInvoiceLines ? "active" : null)"
+                            aria-pressed="@(_onlyInvoiceLines ? "true" : "false")"
+                            @onclick="ToggleOnlyInvoiceLines">
+                        Only lines being received
+                        <span class="rs-line-count">@_receipt.LineCount</span>
+                    </button>
+                </div>
+            </FilterTemplate>
+
+            <HeaderTemplate>
+                <tr>
+                    <SortHeader Title="Part Code" SortBy="l => l.PartCode" />
+                    <SortHeader Title="Description" SortBy="l => l.PartDescription" />
+                    <SortHeader Title="Bin" SortBy="l => l.Bin" />
+                    <SortHeader Title="Warehouse" SortBy="l => l.WarehouseCode" />
+                    <SortHeader Title="On Hand" SortBy="l => l.QtyOnHand" />
+                    <th class="rs-input-col">Receiving</th>
+                    <th class="rs-input-col">Unit Cost</th>
+                    <SortHeader Title="Line Total" SortBy="l => l.LineTotal" />
+                    <SortHeader Title="New On Hand" SortBy="l => l.NewQtyOnHand" />
+                </tr>
+            </HeaderTemplate>
+
+            <RowTemplate Context="line">
+                <tr class="rs-row @(line.IsOnInvoice ? "receiving" : null)">
+                    <td>@line.PartCode</td>
+                    <td class="rs-description" title="@line.PartDescription">@line.PartDescription</td>
+                    <td>@line.Bin</td>
+                    <td>@line.WarehouseCode</td>
+                    <td class="rs-number">@line.QtyOnHand</td>
+                    <td class="rs-input-col">
+                        <input type="number" min="0" step="1" class="form-control rs-qty-input"
+                               value="@line.QtyReceived"
+                               @oninput="e => OnQtyInput(line, e.Value?.ToString())" />
+                    </td>
+                    <td class="rs-input-col">
+                        <input type="number" min="0" step="0.01" class="form-control rs-cost-input"
+                               value="@line.UnitCost.ToString(CultureInfo.InvariantCulture)"
+                               @oninput="e => OnUnitCostInput(line, e.Value?.ToString())" />
+                        @if (line.IsOnInvoice && line.CostPriceDiffers)
+                        {
+                            <span class="rs-cost-changed"
+                                  title="@($"Cost price was {line.CurrentCostPrice.ToString("C", CultureInfo.CurrentCulture)}")">
+                                was @line.CurrentCostPrice.ToString("C", CultureInfo.CurrentCulture)
+                            </span>
+                        }
+                    </td>
+                    <td class="rs-number">
+                        @(line.IsOnInvoice ? line.LineTotal.ToString("C", CultureInfo.CurrentCulture) : "")
+                    </td>
+                    <td class="rs-number rs-new-level">
+                        @(line.IsOnInvoice ? line.NewQtyOnHand.ToString() : "")
+                    </td>
+                </tr>
+            </RowTemplate>
+        </ListTemplate>
+    }
+</EditForm>
