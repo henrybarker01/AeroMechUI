@@ -1,6 +1,7 @@
-﻿@page "/timesheets"
+@page "/timesheets"
 @page "/timesheets/{SelectedDate}"
 @using AeroMech.Models.Models
+@using AeroMech.Data.Enums
 
 <PageTitle>Time Sheet Data</PageTitle>
 
@@ -8,197 +9,342 @@
     <BodyTemplate>
         <EditForm Model="@_timesheetEmployeeDetail" OnValidSubmit="AddLineToEmployeeTimesheetDetailAsync">
             <DataAnnotationsValidator />
-            <ValidationSummary />
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="form-group">
-                        <label for="description">Description</label>
-                        <InputSelect @bind-Value="_timesheetEmployeeDetail.Description" class="form-control" id="description">
-                            @foreach (var gapType in Enum.GetValues<AeroMech.Data.Enums.TimesheetGapTypes>())
-                            {
-                                <option value="@gapType">@gapType</option>
-                            }
-                        </InputSelect>
-                        <ValidationMessage For="() => _timesheetEmployeeDetail.Description" />
-                    </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="form-group">
-                        <label for="hours">Hours:</label>
-                        <NumberInput @bind-Value="_timesheetEmployeeDetail.Hours" type="text" class="form-control" id="hours"></NumberInput>
-                        <ValidationMessage For="() => _timesheetEmployeeDetail.Hours" />
-                    </div>
-                </div>
+
+            @* The modal used to open with no sign of who or when it was for, which on a screen
+               where every employee's line looks alike is the one thing you need to be sure of. *@
+            <div class="ts-modal-context">
+                <span class="ts-modal-who">@SelectedEmployeeName</span>
+                <span class="ts-modal-when">@SelectedDayLongLabel</span>
             </div>
-            <div class="row">
-                <div class="footer-buttons">
-                    <div class="close">
-                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
-                    </div>
-                    <div>
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
-                    </div>
+
+            <div class="ts-field">
+                <label class="ts-field-label" for="description">Reason</label>
+                <InputSelect @bind-Value="_timesheetEmployeeDetail.Description" class="form-select" id="description">
+                    @foreach (var gapType in Enum.GetValues<TimesheetGapTypes>())
+                    {
+                        <option value="@gapType">@GapTypeLabel(gapType)</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="() => _timesheetEmployeeDetail.Description" />
+            </div>
+
+            <div class="ts-field">
+                <label class="ts-field-label" for="hours">Hours</label>
+                <div class="ts-hours-field">
+                    @* A number input rather than a text one: on a phone it opens the numeric
+                       keypad, and the presets below cover the values that get typed most. *@
+                    <InputNumber @bind-Value="_timesheetEmployeeDetail.Hours"
+                                 class="form-control ts-hours-input"
+                                 id="hours" step="0.25" min="0" inputmode="decimal" />
+                    <span class="ts-hours-unit">hours</span>
                 </div>
+                <div class="ts-presets">
+                    @foreach (var preset in HourPresets)
+                    {
+                        <button type="button"
+                                class="ts-preset @(_timesheetEmployeeDetail.Hours == preset ? "active" : null)"
+                                @onclick="() => _timesheetEmployeeDetail.Hours = preset">
+                            @FormatHours(preset)
+                        </button>
+                    }
+                </div>
+                <ValidationMessage For="() => _timesheetEmployeeDetail.Hours" />
+            </div>
+
+            <div class="ts-modal-actions">
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Cancel</Button>
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save</Button>
             </div>
         </EditForm>
     </BodyTemplate>
 </Modal>
 
-<div class="timesheets d-flex">
-    <div class="col-6 time-sheet-data">
-        <div class="form-group pe-2">
-            <header class="page-header">
-                <div class="page-header-text">
-                    <p class="page-eyebrow">Workshop</p>
-                    <h1 class="page-title">Time sheet data</h1>
-                </div>
-            </header>
+@* The page is one drill-down - a day, then someone who worked it, then how their hours were
+   made up. data-step names how far in you are; on a phone that is what decides which of the
+   three panels is on screen, because all three at once is what made this unusable there. *@
+<div class="ts-page" data-step="@Step">
+
+    <header class="page-header">
+        <div class="page-header-text">
+            <p class="page-eyebrow">Workshop</p>
+            <h1 class="page-title">Time sheet data</h1>
+        </div>
+
+        <div class="ts-range">
+            <label class="ts-range-label" for="from-date">Showing days from</label>
             <InputDate TValue="DateOnly"
                        @bind-Value="_startDate"
                        @bind-Value:after="LoadTimesheetsAsync"
-                       class="form-control"
+                       class="form-control ts-range-input"
                        id="from-date" />
         </div>
-        <ListTemplate TItem="TimesheetDateModel"
-                      Title=""
-                      Items="_timesheets"
-                      PageSize="15"
-                      ShowAddButton="false"
-                      StorageKey="timesheet-dates">
-            <HeaderTemplate>
-                <tr>
-                    <SortHeader Title="Date" SortBy="t => t.Date" />
-                    <SortHeader Title="Day" SortBy="t => t.DayOfWeek" />
-                    <SortHeader Title="Total Hours" SortBy="t => t.TotalWorked" />
-                    <th></th>
-                </tr>
-            </HeaderTemplate>
-            <RowTemplate Context="timesheet">
-                <tr class="@(timesheet.Date == _selectedTimesheetDate ? "selected-row" : string.Empty)">
-                    <td>@timesheet.Date</td>
-                    <td>@timesheet.DayOfWeek</td>
-                    <td>@timesheet.TotalWorked</td>
-                    <td>
-                        <div class="action-col">
-                            <Icon Name="IconName.Eye"
-                                  Size="IconSize.x5"
-                                  Color="IconColor.Primary"
-                                  @onclick="async () => await ViewDayAsync(timesheet)"
-                                  Class="me-2"
-                                  Style="cursor: pointer" />
-                            <Icon Name="IconName.Printer"
-                                  Size="IconSize.x5"
-                                  Color="IconColor.Secondary"
-                                  @onclick="() => PrintDay(timesheet)"
-                                  Style="cursor: pointer" />
+    </header>
+
+    <div class="ts-columns">
+
+        @* ------------------------------------------------------------------
+           1. The days. A rail rather than half the screen: it is the way in to
+           a day's data, not the data itself.
+           ------------------------------------------------------------------ *@
+        <section class="ts-panel ts-panel-days">
+            <div class="ts-panel-head">
+                <div class="ts-panel-headings">
+                    <p class="ts-panel-eyebrow">Step 1</p>
+                    <h2 class="ts-panel-title">Pick a day</h2>
+                </div>
+            </div>
+
+            @* Ten rather than fifteen: it keeps the rail inside a laptop screen, so picking an
+               employee does not push the panel that answers you below the fold. *@
+            <ListTemplate TItem="TimesheetDateModel"
+                          Title=""
+                          Items="_timesheets"
+                          PageSize="10"
+                          ShowAddButton="false"
+                          StorageKey="timesheet-dates">
+                @* The weekday sits under the date rather than in a column of its own: the rail
+                   is too narrow for four columns, and sorting days of the week alphabetically -
+                   Friday, Monday, Saturday - was never a useful order to put them in. *@
+                <HeaderTemplate>
+                    <tr>
+                        <SortHeader Title="Date" SortBy="t => t.Date" />
+                        <SortHeader Title="Hours" SortBy="t => t.TotalWorked" Class="num" />
+                        <SortHeader Title="" />
+                    </tr>
+                </HeaderTemplate>
+                <RowTemplate Context="timesheet">
+                    @* The whole row selects the day. The eye icon that used to be the only way
+                       in was a 20px target on a 40px row. *@
+                    <tr class="ts-row @(timesheet.Date == _selectedTimesheetDate ? "ts-row-selected" : null)"
+                        @onclick="async () => await ViewDayAsync(timesheet)">
+                        <td class="ts-date" data-label="Date">
+                            <span class="ts-date-value">@timesheet.Date.ToString("dd MMM yyyy")</span>
+                            <span class="ts-date-day">@timesheet.DayOfWeek</span>
+                        </td>
+                        <td class="num ts-cell-hours @(timesheet.TotalWorked == 0 ? "ts-zero" : null)" data-label="Hours">
+                            @FormatHours(timesheet.TotalWorked)
+                        </td>
+                        <td class="ts-action-cell">
+                            <div class="ts-actions">
+                                <button type="button" class="ts-icon-btn" title="Print this day"
+                                        @onclick="() => PrintDay(timesheet)" @onclick:stopPropagation="true">
+                                    <i class="bi bi-printer" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Print @timesheet.Date.ToString("dd MMM yyyy")</span>
+                                </button>
+                                <button type="button" class="ts-icon-btn ts-chevron" title="Open this day"
+                                        @onclick="async () => await ViewDayAsync(timesheet)" @onclick:stopPropagation="true">
+                                    <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                    <span class="visually-hidden">Open @timesheet.Date.ToString("dd MMM yyyy")</span>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </RowTemplate>
+            </ListTemplate>
+        </section>
+
+        <div class="ts-detail">
+
+            @* ------------------------------------------------------------------
+               2. Who worked that day.
+               ------------------------------------------------------------------ *@
+            <section class="ts-panel ts-panel-employees">
+                <div class="ts-panel-head">
+                    <button type="button" class="ts-back" @onclick="BackToDays">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        <span>Days</span>
+                    </button>
+
+                    <div class="ts-panel-headings">
+                        <p class="ts-panel-eyebrow">Step 2 &middot; Who worked</p>
+                        <h2 class="ts-panel-title">@SelectedDayLabel</h2>
+                    </div>
+
+                    @if (_timesheetDateModel is not null)
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-secondary ts-panel-action"
+                                @onclick="() => PrintDay(_timesheetDateModel)">
+                            <i class="bi bi-printer" aria-hidden="true"></i>
+                            <span>Print day</span>
+                        </button>
+                    }
+                </div>
+
+                @if (_selectedTimesheetDate is null)
+                {
+                    <div class="ts-placeholder">
+                        <i class="bi bi-calendar3" aria-hidden="true"></i>
+                        <p>Pick a day to see who worked it and how their hours were made up.</p>
+                    </div>
+                }
+                else
+                {
+                    @* What the page is actually for: spotting the hours nobody has accounted
+                       for yet. The figures were there before, but only one row at a time. *@
+                    <div class="ts-summary">
+                        <div class="ts-summary-item">
+                            <span class="ts-summary-label">Hours logged</span>
+                            <span class="ts-summary-value">@FormatHours(DayTotalHours) h</span>
                         </div>
-                    </td>
-                </tr>
-            </RowTemplate>
-        </ListTemplate>
-    </div>
-    <div class="col-6">
-        <div class="d-flex flex-column h-100">
-            <div class="col-12 flex-fill half-view-height">
-                <ListTemplate TItem="TimesheetEmployeeHoursModel"
-                              Title=""
-                              Items="_timesheetEmployeeHours"
-                              PageSize="15"
-                              ShowAddButton="false"
-                              StorageKey="timesheet-employees">
-                    <HeaderTemplate>
-                        <tr>
-                            <SortHeader Title="Employee #" SortBy="e => e.EmployeeNumber" />
-                            <SortHeader Title="Name" SortBy="e => e.EmployeeName" />
-                            <SortHeader Title="SR Hours" SortBy="e => e.ServiceReportHours" />
-                            <SortHeader Title="Other Hours" SortBy="e => e.TimesheetHours" />
-                            <SortHeader Title="Total Hours" SortBy="e => e.ServiceReportHours + e.TimesheetHours" />
-                            <th></th>
-                        </tr>
-                    </HeaderTemplate>
-                    <RowTemplate Context="timesheetEmployee">
-                        <tr class="@(timesheetEmployee.EmployeeId == _selectedEmployeeId ? "selected-row" : string.Empty)">
-                            <td>@timesheetEmployee.EmployeeNumber</td>
-                            <td>@timesheetEmployee.EmployeeName</td>
-                            <td>@timesheetEmployee.ServiceReportHours</td>
-                            <td>@timesheetEmployee.TimesheetHours</td>
-                            <td>@(timesheetEmployee.ServiceReportHours + timesheetEmployee.TimesheetHours)</td>
-                            <td>
-                                <div>
-                                    <Icon Name="IconName.Eye"
-                                          Size="IconSize.x5"
-                                          Color="IconColor.Primary"
-                                          @onclick="async () => await ViewEmplyeeTimesheetDetail(timesheetEmployee.EmployeeId)"
-                                          Class="me-2"
-                                          Style="cursor: pointer" />
-                                    <Icon Name="IconName.Plus"
-                                          Size="IconSize.x5"
-                                          Color="IconColor.Danger"
-                                          @onclick="(async () => await AddToEmployeeTimesheetAsync(timesheetEmployee))"
-                                          Class="me-2"
-                                          Style="cursor: pointer" />
-                                </div>
-                            </td>
-                        </tr>
-                    </RowTemplate>
-                </ListTemplate>
-            </div>
-            <div class="col-12 flex-fill half-view-height">
-                <ListTemplate TItem="TimesheetEmployeeLineModel"
-                              Title=""
-                              Items="_timesheetEmployeeDetails"
-                              PageSize="15"
-                              ShowAddButton="true"
-                              StorageKey="timesheet-employee-lines"
-                              OnAdd="@(async () => await AddToEmployeeTimesheetAsync())">
-                    <HeaderTemplate>
-                        <tr>
-                            <SortHeader Title="Description" SortBy="l => l.Description" />
-                            <SortHeader Title="Source" SortBy="l => l.IsServiceReport" />
-                            <SortHeader Title="Total Hours" SortBy="l => l.Hours" />
-                            <th></th>
-                        </tr>
-                    </HeaderTemplate>
-                    <RowTemplate Context="timesheetLine">
-                        <tr>
-                            <td>@timesheetLine.Description</td>
-                            <td>@(timesheetLine.IsServiceReport ? "Service Report" : "Timesheet")</td>
-                            <td>@timesheetLine.Hours</td>
+                        <div class="ts-summary-item">
+                            <span class="ts-summary-label">Employees with hours</span>
+                            <span class="ts-summary-value">
+                                @EmployeesWithHours<span class="ts-summary-of"> of @_timesheetEmployeeHours.Count</span>
+                            </span>
+                        </div>
+                        <div class="ts-summary-item @(EmployeesWithoutHours > 0 ? "ts-summary-warn" : null)">
+                            <span class="ts-summary-label">Nothing logged</span>
+                            <span class="ts-summary-value">@EmployeesWithoutHours</span>
+                        </div>
+                    </div>
 
-                            <td>
-                                <div class="action-col">
-                                    @if (timesheetLine.IsServiceReport)
-                                    {
-                                        <Icon Name="IconName.Eye"
-                                              Size="IconSize.x5"
-                                              Color="IconColor.Primary"
-                                              @onclick="() => ViewServiceReport(timesheetLine.ServiceReportId!.Value)"
-                                              Class="me-2"
-                                              Style="cursor: pointer" />
-                                    }
-                                    else
-                                    {
-                                        <Icon Name="IconName.Pencil"
-                                              Size="IconSize.x5"
-                                              Color="IconColor.Dark"
-                                              @onclick="async () => await EditEmployeeTimesheetAsync(timesheetLine)"
-                                              Class="me-2"
-                                              Style="cursor: pointer" />
-                                        <Icon Name="IconName.Trash"
-                                              Size="IconSize.x5"
-                                              Color="IconColor.Danger"
-                                              @onclick="async () => await DeleteEmployeeTimesheetDetailAsync(timesheetLine)"
-                                              Class="me-2"
-                                              Style="cursor: pointer" />
-                                    }
-                                </div>
-                            </td>
-                        </tr>
-                    </RowTemplate>
-                </ListTemplate>
-            </div>
+                    <ListTemplate TItem="TimesheetEmployeeHoursModel"
+                                  Title=""
+                                  Items="_timesheetEmployeeHours"
+                                  PageSize="15"
+                                  ShowAddButton="false"
+                                  SearchPredicate="MatchesEmployee"
+                                  StorageKey="timesheet-employees">
+                        <HeaderTemplate>
+                            <tr>
+                                <SortHeader Title="Employee" SortBy="e => e.EmployeeName" />
+                                <SortHeader Title="Service reports" SortKey="SR" SortBy="e => e.ServiceReportHours" Class="num" />
+                                <SortHeader Title="Other" SortBy="e => e.TimesheetHours" Class="num" />
+                                <SortHeader Title="Total" SortBy="e => e.ServiceReportHours + e.TimesheetHours" Class="num" />
+                                <SortHeader Title="" />
+                            </tr>
+                        </HeaderTemplate>
+                        <RowTemplate Context="timesheetEmployee">
+                            <tr class="ts-row @(timesheetEmployee.EmployeeId == _selectedEmployeeId ? "ts-row-selected" : null)"
+                                @onclick="async () => await ViewEmplyeeTimesheetDetail(timesheetEmployee.EmployeeId)">
+                                <td class="ts-employee" data-label="Employee">
+                                    <span class="ts-employee-name">@timesheetEmployee.EmployeeName</span>
+                                    <span class="ts-employee-number">@timesheetEmployee.EmployeeNumber</span>
+                                </td>
+                                <td class="num ts-cell-sr @(timesheetEmployee.ServiceReportHours == 0 ? "ts-zero" : null)" data-label="Service reports">
+                                    @FormatHours(timesheetEmployee.ServiceReportHours)
+                                </td>
+                                <td class="num ts-cell-other @(timesheetEmployee.TimesheetHours == 0 ? "ts-zero" : null)" data-label="Other">
+                                    @FormatHours(timesheetEmployee.TimesheetHours)
+                                </td>
+                                <td class="num ts-cell-total @(timesheetEmployee.ServiceReportHours + timesheetEmployee.TimesheetHours == 0 ? "ts-zero" : null)" data-label="Total">
+                                    @FormatHours(timesheetEmployee.ServiceReportHours + timesheetEmployee.TimesheetHours)
+                                </td>
+                                <td class="ts-action-cell">
+                                    <div class="ts-actions">
+                                        <button type="button" class="ts-icon-btn ts-icon-add" title="Add hours for this employee"
+                                                @onclick="async () => await AddToEmployeeTimesheetAsync(timesheetEmployee)"
+                                                @onclick:stopPropagation="true">
+                                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                                            <span class="visually-hidden">Add hours for @timesheetEmployee.EmployeeName</span>
+                                        </button>
+                                        <button type="button" class="ts-icon-btn ts-chevron" title="See this employee's lines"
+                                                @onclick="async () => await ViewEmplyeeTimesheetDetail(timesheetEmployee.EmployeeId)"
+                                                @onclick:stopPropagation="true">
+                                            <i class="bi bi-chevron-right" aria-hidden="true"></i>
+                                            <span class="visually-hidden">Open @timesheetEmployee.EmployeeName</span>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </RowTemplate>
+                    </ListTemplate>
+                }
+            </section>
+
+            @* ------------------------------------------------------------------
+               3. How one person's day was made up, and where hours get added.
+               ------------------------------------------------------------------ *@
+            <section class="ts-panel ts-panel-lines">
+                <div class="ts-panel-head">
+                    <button type="button" class="ts-back" @onclick="BackToEmployees">
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        <span>Employees</span>
+                    </button>
+
+                    <div class="ts-panel-headings">
+                        <p class="ts-panel-eyebrow">Step 3 &middot; The day in detail</p>
+                        <h2 class="ts-panel-title">@SelectedEmployeeName</h2>
+                    </div>
+
+                    @if (_selectedEmployeeId is not null)
+                    {
+                        <button type="button" class="btn btn-primary btn-sm ts-panel-action"
+                                @onclick="async () => await AddToEmployeeTimesheetAsync()">
+                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
+                            <span>Add hours</span>
+                        </button>
+                    }
+                </div>
+
+                @if (_selectedEmployeeId is null)
+                {
+                    <div class="ts-placeholder">
+                        <i class="bi bi-person-lines-fill" aria-hidden="true"></i>
+                        <p>
+                            @(_selectedTimesheetDate is null
+                                ? "Pick a day, then an employee, to see and fill in their hours."
+                                : "Pick an employee to see their service report lines and add anything missing.")
+                        </p>
+                    </div>
+                }
+                else
+                {
+                    <ListTemplate TItem="TimesheetEmployeeLineModel"
+                                  Title=""
+                                  Items="_timesheetEmployeeDetails"
+                                  PageSize="15"
+                                  ShowAddButton="false"
+                                  StorageKey="timesheet-employee-lines">
+                        <HeaderTemplate>
+                            <tr>
+                                <SortHeader Title="Description" SortBy="l => l.Description" />
+                                <SortHeader Title="Source" SortBy="l => l.IsServiceReport" />
+                                <SortHeader Title="Hours" SortBy="l => l.Hours" Class="num" />
+                                <SortHeader Title="" />
+                            </tr>
+                        </HeaderTemplate>
+                        <RowTemplate Context="timesheetLine">
+                            <tr>
+                                <td class="ts-line-description" data-label="Description">@LineDescription(timesheetLine)</td>
+                                <td class="ts-cell-source" data-label="Source">
+                                    @* A badge rather than a sentence: the two sources need telling
+                                       apart at a glance, because only one of them can be edited. *@
+                                    <span class="ts-source @(timesheetLine.IsServiceReport ? "ts-source-report" : "ts-source-manual")">
+                                        @(timesheetLine.IsServiceReport ? "Service report" : "Added here")
+                                    </span>
+                                </td>
+                                <td class="num ts-cell-hours" data-label="Hours">@FormatHours(timesheetLine.Hours)</td>
+                                <td class="ts-action-cell">
+                                    <div class="ts-actions">
+                                        @if (timesheetLine.IsServiceReport)
+                                        {
+                                            <button type="button" class="ts-icon-btn" title="Open the service report"
+                                                    @onclick="() => ViewServiceReport(timesheetLine.ServiceReportId!.Value)">
+                                                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Open service report</span>
+                                            </button>
+                                        }
+                                        else
+                                        {
+                                            <button type="button" class="ts-icon-btn" title="Edit this line"
+                                                    @onclick="async () => await EditEmployeeTimesheetAsync(timesheetLine)">
+                                                <i class="bi bi-pencil" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Edit this line</span>
+                                            </button>
+                                            <button type="button" class="ts-icon-btn ts-icon-danger" title="Delete this line"
+                                                    @onclick="async () => await DeleteEmployeeTimesheetDetailAsync(timesheetLine)">
+                                                <i class="bi bi-trash" aria-hidden="true"></i>
+                                                <span class="visually-hidden">Delete this line</span>
+                                            </button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        </RowTemplate>
+                    </ListTemplate>
+                }
+            </section>
         </div>
-
     </div>
 </div>
-

@@ -964,6 +964,43 @@ a:hover, .btn-link:hover {
 }
 
 /* ---------------------------------------------------------------------------
+   The row of filters above a report or a list.
+
+   What has to line up is the controls, not the columns. Bottom-aligning the
+   columns lines up whatever each one happens to end on, so a column carrying
+   help text under its input has that input pushed up by the height of the help
+   while a column without help keeps its input on the baseline - and the row
+   reads as though it had been set on two different lines.
+
+   Aligning to the top instead puts every label on one line and every control on
+   the next, and lets help text hang below where it moves nothing above it. A
+   label long enough to wrap still carries its own control down; the labels here
+   are short enough that it does not arise.
+   --------------------------------------------------------------------------- */
+.filter-row {
+    align-items: flex-start;
+}
+
+/* A checkbox or a button dropped into a filter row has no label of its own, so
+   it would otherwise ride up onto the label line beside its neighbours' labels
+   rather than sitting with their inputs. This gives back the space the label
+   would have taken and centres a lone control against the height of an input.
+   Only from the medium breakpoint up: once the columns stack there is no label
+   line left to clear. */
+.filter-row .filter-row-control {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: calc(1.5rem + 0.75rem + 2px); /* as .form-control is built up */
+}
+
+@media (min-width: 768px) {
+    .filter-row .filter-row-control {
+        margin-top: 2rem; /* .form-label: one line at 1.5rem, plus its 0.5rem margin */
+    }
+}
+
+/* ---------------------------------------------------------------------------
    Stock takes.
 
    The counting grid is not a table. A count is done on a phone walking round a
@@ -1808,4 +1845,640 @@ a:hover, .btn-link:hover {
    warning, which is what the recount note beside it is for. */
 .st-locked-note {
     color: var(--am-good);
+}
+
+/* ---------------------------------------------------------------------------
+   Time sheet data.
+
+   The screen is one drill-down - a day, then someone who worked it, then how
+   their hours were made up - and it is now laid out as one. It used to be two
+   half-width columns with the right one split again and capped at 30% of its
+   own height, which clipped the employee grid mid-row and hid its pager; and
+   because the halves were plain col-6 they stayed halves on a phone, at which
+   point nothing on the screen fit.
+
+   The rules live here rather than in the page's scoped stylesheet because the
+   rows render inside ListTemplate, the same reason the receiving grid's do.
+   --------------------------------------------------------------------------- */
+
+/* The range the day list covers. A dated grid with no sign of where it starts
+   was the previous state of this control. */
+.ts-range {
+    display: flex;
+    flex: 0 0 auto;
+    flex-direction: column;
+    gap: var(--am-space-1);
+}
+
+.ts-range-label {
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+.ts-range-input {
+    width: 11rem;
+    font-size: var(--am-fs-body);
+}
+
+/* Days are a rail: the way in to a day's data rather than half the screen. */
+.ts-columns {
+    display: grid;
+    grid-template-columns: minmax(0, 21rem) minmax(0, 1fr);
+    gap: var(--am-space-6);
+    align-items: start;
+}
+
+.ts-detail {
+    display: flex;
+    flex-direction: column;
+    gap: var(--am-space-6);
+    min-width: 0;
+}
+
+.ts-panel {
+    min-width: 0;
+}
+
+/* The grid card carries the frame, so the panel only supplies the label above
+   it - and gives up the card's own bottom margin to the column gap. */
+.ts-panel .list-card {
+    margin-bottom: 0;
+}
+
+.ts-panel-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: var(--am-space-2) var(--am-space-3);
+    margin-bottom: var(--am-space-3);
+}
+
+.ts-panel-headings {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+/* Each panel says which step of the drill-down it is and what it is showing.
+   Before this the three grids were told apart only by their column headings. */
+.ts-panel-eyebrow {
+    margin: 0 0 2px;
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--am-steel-light);
+}
+
+.ts-panel-title {
+    margin: 0;
+    font-size: var(--am-fs-h2);
+    font-weight: 600;
+    color: var(--am-ink);
+    overflow-wrap: anywhere;
+}
+
+.ts-panel-action {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    gap: 0.375rem;
+    white-space: nowrap;
+}
+
+/* Stepping back out only exists on a narrow screen, where one panel is on show
+   at a time. The wide layout has all three and nothing to go back to. */
+.ts-back {
+    display: none;
+}
+
+/* A panel with nothing in it yet says what to do rather than "Nothing here
+   yet.", and the dashed edge keeps it from reading as an empty grid. */
+.ts-placeholder {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--am-space-2);
+    padding: var(--am-space-12) var(--am-space-6);
+    text-align: center;
+    color: var(--am-steel);
+    background-color: var(--am-surface);
+    border: 1px dashed var(--am-rule-strong);
+    border-radius: var(--am-radius-lg);
+}
+
+.ts-placeholder i {
+    font-size: 1.5rem;
+    color: var(--am-steel-light);
+}
+
+.ts-placeholder p {
+    max-width: 28rem;
+    margin: 0;
+    font-size: var(--am-fs-body);
+}
+
+/* What the screen is for: the hours nobody has accounted for yet. The figures
+   were always on the page, but only ever one row at a time. */
+.ts-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--am-space-3) var(--am-space-8);
+    padding: var(--am-space-3) var(--am-space-4);
+    margin-bottom: var(--am-space-3);
+    background-color: var(--am-surface);
+    border: 1px solid var(--am-rule);
+    border-radius: var(--am-radius-lg);
+}
+
+.ts-summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    line-height: 1.2;
+}
+
+.ts-summary-label {
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+.ts-summary-value {
+    font-size: var(--am-fs-h2);
+    font-weight: 600;
+    color: var(--am-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.ts-summary-of {
+    font-size: var(--am-fs-sm);
+    font-weight: 400;
+    color: var(--am-steel);
+}
+
+.ts-summary-warn .ts-summary-value {
+    color: var(--am-warn-ink);
+}
+
+/* The whole row drills in. The eye icon that used to be the only way in was a
+   20px target on a 40px row, and on a phone that is a miss more often than a
+   hit. */
+.ts-panel .table > tbody > tr.ts-row {
+    cursor: pointer;
+}
+
+.ts-panel .table > tbody > tr.ts-row-selected > td {
+    background-color: var(--am-blue-light);
+}
+
+.ts-panel .table > tbody > tr.ts-row-selected > td:first-child {
+    box-shadow: inset 3px 0 0 var(--am-blue);
+}
+
+.ts-action-cell {
+    width: 1%;
+    text-align: right;
+    white-space: nowrap;
+}
+
+.ts-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: var(--am-space-1);
+}
+
+/* Real buttons rather than bare icons: they take focus, they say what they do,
+   and they carry a target big enough to hit. */
+.ts-icon-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    padding: 0;
+    font-size: 1rem;
+    line-height: 1;
+    color: var(--am-steel);
+    background: transparent;
+    border: 0;
+    border-radius: var(--am-radius);
+}
+
+    .ts-icon-btn:hover {
+        color: var(--am-blue-text);
+        background-color: var(--am-blue-light);
+    }
+
+    .ts-icon-btn:focus-visible {
+        outline: 2px solid var(--am-blue);
+        outline-offset: 1px;
+    }
+
+.ts-icon-danger:hover {
+    color: var(--am-bad);
+    background-color: var(--am-bad-soft);
+}
+
+.ts-chevron {
+    color: var(--am-steel-light);
+}
+
+.ts-row-selected .ts-chevron {
+    color: var(--am-blue-text);
+}
+
+.ts-date-value {
+    display: block;
+    font-weight: 600;
+    color: var(--am-ink);
+    white-space: nowrap;
+    font-variant-numeric: tabular-nums;
+}
+
+.ts-date-day {
+    display: block;
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel-light);
+}
+
+.ts-employee-name {
+    display: block;
+    font-weight: 600;
+    color: var(--am-ink);
+}
+
+.ts-employee-number {
+    display: block;
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel-light);
+    font-variant-numeric: tabular-nums;
+}
+
+.ts-panel .table > tbody > tr > td.ts-cell-total {
+    font-weight: 600;
+    color: var(--am-ink);
+}
+
+/* A grid of noughts reads calmer greyed out, and it lets the hours that were
+   logged carry the eye instead. */
+.ts-panel .table > tbody > tr > td.ts-zero {
+    font-weight: 400;
+    color: var(--am-steel-light);
+}
+
+.ts-line-description {
+    font-weight: 500;
+    color: var(--am-ink);
+}
+
+/* Where a line came from decides whether it can be edited here at all, so it is
+   a badge rather than a sentence in the same grey as everything else. */
+.ts-source {
+    display: inline-block;
+    padding: 0.125rem 0.5rem;
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    border-radius: 999px;
+}
+
+.ts-source-report {
+    color: var(--am-blue-text);
+    background-color: var(--am-blue-light);
+}
+
+.ts-source-manual {
+    color: var(--am-steel);
+    background-color: var(--am-ground);
+    border: 1px solid var(--am-rule);
+}
+
+/* --- Adding hours ------------------------------------------------------- */
+
+/* The modal used to open with no sign of whose day it was about. */
+.ts-modal-context {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: var(--am-space-3) var(--am-space-4);
+    margin-bottom: var(--am-space-4);
+    background-color: var(--am-ground);
+    border-radius: var(--am-radius-lg);
+}
+
+.ts-modal-who {
+    font-size: var(--am-fs-h2);
+    font-weight: 600;
+    color: var(--am-ink);
+}
+
+.ts-modal-when {
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel);
+}
+
+.ts-field {
+    margin-bottom: var(--am-space-4);
+}
+
+.ts-field-label {
+    display: block;
+    margin-bottom: var(--am-space-1);
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+.ts-hours-field {
+    display: flex;
+    align-items: center;
+    gap: var(--am-space-2);
+}
+
+.ts-hours-input {
+    max-width: 8rem;
+    font-variant-numeric: tabular-nums;
+}
+
+.ts-hours-unit {
+    font-size: var(--am-fs-body);
+    color: var(--am-steel);
+}
+
+/* Most entries are one of six lengths, so they are a tap rather than a typed
+   number - which on a phone is the difference between quick and fiddly. */
+.ts-presets {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--am-space-2);
+    margin-top: var(--am-space-2);
+}
+
+.ts-preset {
+    padding: 0.3rem 0.75rem;
+    font-size: var(--am-fs-sm);
+    font-weight: 600;
+    color: var(--am-ink-2);
+    font-variant-numeric: tabular-nums;
+    background-color: var(--am-surface);
+    border: 1px solid var(--am-rule-strong);
+    border-radius: 999px;
+}
+
+    .ts-preset:hover {
+        color: var(--am-blue-text);
+        border-color: var(--am-blue);
+    }
+
+    .ts-preset.active {
+        color: #fff;
+        background-color: var(--am-blue);
+        border-color: var(--am-blue);
+    }
+
+.ts-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--am-space-2);
+    margin-top: var(--am-space-6);
+}
+
+/* ---------------------------------------------------------------------------
+   The same job on anything narrower. Three panels side by side is what made
+   this screen unusable on a phone, so below the width where two columns
+   genuinely fit, the drill-down shows one step at a time and each row becomes
+   a card - a row of figures does not fit a 375px screen, and a sideways
+   scrollbar inside a table is not a way to read them.
+
+   The switch is at 1280 rather than at a tablet width because the sidebar
+   takes 250px before the page starts: below that the employee grid is left
+   with about 500px for five columns, which wraps the names onto two lines and
+   puts the total off the end behind a scrollbar. One panel at a time is the
+   better use of a narrow window, not a fallback for a small one.
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 1279.98px) {
+
+    .ts-columns {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 0;
+    }
+
+    .ts-page[data-step="days"] .ts-detail,
+    .ts-page[data-step="employees"] .ts-panel-days,
+    .ts-page[data-step="employees"] .ts-panel-lines,
+    .ts-page[data-step="lines"] .ts-panel-days,
+    .ts-page[data-step="lines"] .ts-panel-employees {
+        display: none;
+    }
+
+    .ts-back {
+        display: inline-flex;
+        flex: 1 1 100%;
+        order: -1;
+        align-items: center;
+        gap: 0.375rem;
+        padding: 0;
+        font-size: var(--am-fs-sm);
+        font-weight: 600;
+        color: var(--am-blue-text);
+        background: transparent;
+        border: 0;
+    }
+
+    .ts-range {
+        flex: 1 1 100%;
+    }
+
+    .ts-range-input {
+        width: 100%;
+        font-size: 16px; /* Anything smaller and iOS zooms the page on focus. */
+    }
+
+    .ts-summary {
+        gap: var(--am-space-3) var(--am-space-6);
+    }
+
+    /* Column headings describe columns that no longer exist; each cell carries
+       its own label instead. */
+    .ts-panel .list-card thead {
+        display: none;
+    }
+
+    .ts-panel .list-card .table,
+    .ts-panel .list-card .table > tbody {
+        display: block;
+        width: 100%;
+    }
+
+    .ts-panel .list-card .table > tbody > tr {
+        display: grid;
+        gap: 0.35rem 0.75rem;
+        padding: 0.7rem 0.9rem;
+        border-bottom: 1px solid var(--am-rule);
+    }
+
+        .ts-panel .list-card .table > tbody > tr:last-child {
+            border-bottom: 0;
+        }
+
+        .ts-panel .list-card .table > tbody > tr > td {
+            display: block;
+            padding: 0;
+            text-align: left;
+            border: 0;
+        }
+
+    .ts-panel .list-card .table > tbody > tr > td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        font-size: var(--am-fs-label);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--am-steel-light);
+    }
+
+    /* The card's own heading needs no label above it. */
+    .ts-panel .list-card .table > tbody > tr > td.ts-date::before,
+    .ts-panel .list-card .table > tbody > tr > td.ts-employee::before,
+    .ts-panel .list-card .table > tbody > tr > td.ts-cell-source::before,
+    .ts-panel .list-card .table > tbody > tr > td.ts-line-description::before {
+        content: none;
+    }
+
+    /* A lone figure takes the unit instead of a heading repeated down the list;
+       the three figures on an employee card keep theirs, because side by side
+       they would otherwise be three numbers with nothing to tell them apart. */
+    .ts-panel-days .list-card .table > tbody > tr > td.ts-cell-hours::before,
+    .ts-panel-lines .list-card .table > tbody > tr > td.ts-cell-hours::before {
+        content: none;
+    }
+
+        .ts-panel-days .list-card .table > tbody > tr > td.ts-cell-hours::after,
+        .ts-panel-lines .list-card .table > tbody > tr > td.ts-cell-hours::after {
+            content: " h";
+            color: var(--am-steel-light);
+        }
+
+    /* :not(.ts-zero) so a day with nothing on it stays quiet rather than being
+       set in the same weight as one with a full crew's hours. */
+    .ts-panel-days .list-card .table > tbody > tr > td.ts-cell-hours,
+    .ts-panel-lines .list-card .table > tbody > tr > td.ts-cell-hours {
+        font-size: var(--am-fs-h2);
+    }
+
+        .ts-panel-days .list-card .table > tbody > tr > td.ts-cell-hours:not(.ts-zero),
+        .ts-panel-lines .list-card .table > tbody > tr > td.ts-cell-hours:not(.ts-zero) {
+            font-weight: 600;
+            color: var(--am-ink);
+        }
+
+    .ts-panel .list-card .table > tbody > tr > td.ts-action-cell {
+        width: auto;
+    }
+
+    .ts-icon-btn {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    /* Date and weekday lead, the hours sit beside them, the actions stay put. */
+    .ts-panel-days .list-card .table > tbody > tr {
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-areas: "date hours actions";
+        align-items: center;
+    }
+
+    .ts-panel-days .table > tbody > tr > td.ts-date {
+        grid-area: date;
+    }
+
+    .ts-panel-days .ts-date-value {
+        font-size: var(--am-fs-h2);
+    }
+
+    .ts-panel-days .table > tbody > tr > td.ts-cell-hours {
+        grid-area: hours;
+    }
+
+    .ts-panel-days .table > tbody > tr > td.ts-action-cell {
+        grid-area: actions;
+    }
+
+    /* The name leads; the three figures share a line under it. */
+    .ts-panel-employees .list-card .table > tbody > tr {
+        grid-template-columns: repeat(3, minmax(0, 1fr)) auto;
+        grid-template-areas:
+            "who who who actions"
+            "sr  oth tot actions";
+        align-items: center;
+    }
+
+    .ts-panel-employees .table > tbody > tr > td.ts-employee {
+        grid-area: who;
+    }
+
+    .ts-panel-employees .table > tbody > tr > td.ts-cell-sr {
+        grid-area: sr;
+    }
+
+    .ts-panel-employees .table > tbody > tr > td.ts-cell-other {
+        grid-area: oth;
+    }
+
+    .ts-panel-employees .table > tbody > tr > td.ts-cell-total {
+        grid-area: tot;
+    }
+
+    .ts-panel-employees .table > tbody > tr > td.ts-action-cell {
+        grid-area: actions;
+    }
+
+    .ts-panel-lines .list-card .table > tbody > tr {
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        grid-template-areas:
+            "desc   hours actions"
+            "source hours actions";
+        align-items: center;
+    }
+
+    .ts-panel-lines .table > tbody > tr > td.ts-line-description {
+        grid-area: desc;
+    }
+
+    .ts-panel-lines .table > tbody > tr > td.ts-cell-source {
+        grid-area: source;
+    }
+
+    .ts-panel-lines .table > tbody > tr > td.ts-cell-hours {
+        grid-area: hours;
+    }
+
+    .ts-panel-lines .table > tbody > tr > td.ts-action-cell {
+        grid-area: actions;
+    }
+
+    .ts-hours-input {
+        max-width: none;
+        font-size: 16px;
+    }
+
+    .ts-preset {
+        padding: 0.45rem 0.9rem;
+    }
+
+    .ts-modal-actions .btn {
+        flex: 1 1 auto;
+    }
 }

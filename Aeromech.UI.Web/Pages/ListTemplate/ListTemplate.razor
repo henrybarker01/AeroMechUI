@@ -86,16 +86,22 @@
             </table>
         </div>
 
+        @* How much there is stays on show; the controls for moving through it only appear
+           when there is somewhere to move to. Two dead buttons either side of "Page 1 of 1"
+           is chrome, and it reads as clutter on a screen carrying more than one grid. *@
         <div class="list-pager">
             <span class="list-count">@RangeLabel</span>
 
-            <div class="list-pager-controls">
-                <button type="button" class="btn btn-sm btn-outline-secondary"
-                        disabled="@IsFirstPage" @onclick="PreviousPage">Previous</button>
-                <span class="list-page-number">Page @CurrentPage of @TotalPages</span>
-                <button type="button" class="btn btn-sm btn-outline-secondary"
-                        disabled="@IsLastPage" @onclick="NextPage">Next</button>
-            </div>
+            @if (TotalPages > 1)
+            {
+                <div class="list-pager-controls">
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                            disabled="@IsFirstPage" @onclick="PreviousPage">Previous</button>
+                    <span class="list-page-number">Page @CurrentPage of @TotalPages</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary"
+                            disabled="@IsLastPage" @onclick="NextPage">Next</button>
+                </div>
+            }
         </div>
     </div>
 </div>

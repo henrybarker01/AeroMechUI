@@ -1,0 +1,129 @@
+@page "/ShowStockMovementReport"
+
+@using BlazorBootstrap
+
+<PageTitle>Stock Movement Report</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h4 mb-0">Stock Movement Report</h1>
+            <small class="text-muted">
+                Opening level, every movement that touched a part, and the level it closed at &mdash; for any period.
+            </small>
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-auto">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Period">
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(0)">This month</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(1)">Last month</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(2)">Last 3 months</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(3)">Year to date</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row filter-row mb-3">
+        <div class="col-6 col-md-2">
+            <label for="from-date" class="form-label">From</label>
+            <InputDate TValue="DateOnly"
+                       Value="_request.FromDate"
+                       ValueChanged="OnFromDateChanged"
+                       ValueExpression="(() => _request.FromDate)"
+                       class="form-control"
+                       id="from-date" />
+        </div>
+
+        <div class="col-6 col-md-2">
+            <label for="to-date" class="form-label">To</label>
+            <InputDate TValue="DateOnly"
+                       Value="_request.ToDate"
+                       ValueChanged="OnToDateChanged"
+                       ValueExpression="(() => _request.ToDate)"
+                       class="form-control"
+                       id="to-date" />
+        </div>
+
+        <div class="col-12 col-md-4">
+            <label class="form-label">Suppliers</label>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                        type="button"
+                        id="movement-supplier-filter"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
+                    @SelectedSuppliersLabel
+                </button>
+                <div class="dropdown-menu w-100 p-2" aria-labelledby="movement-supplier-filter">
+                    <div class="panel-scroll">
+                        @if (_suppliers.Count == 0)
+                        {
+                            <div class="text-muted small px-1">No suppliers available</div>
+                        }
+                        else
+                        {
+                            @foreach (var supplier in _suppliers)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="@($"movement-supplier-{supplier.SupplierCode}")"
+                                           checked="@_selectedSuppliers.Contains(supplier.SupplierCode)"
+                                           @onchange="@(e => ToggleSupplier(supplier.SupplierCode, (bool?)e.Value == true))" />
+                                    <label class="form-check-label" for="@($"movement-supplier-{supplier.SupplierCode}")">
+                                        @supplier.SupplierCode <span class="text-muted">(@supplier.PartCount)</span>
+                                    </label>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <hr class="my-2" />
+                    <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearSupplierSelection">
+                        Clear selection (report on everything)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4 filter-row-control">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="include-dormant" @bind="_request.IncludePartsWithNoMovement" />
+                <label class="form-check-label" for="include-dormant">
+                    Include parts that did not move in the period
+                </label>
+            </div>
+        </div>
+    </div>
+
+    @* Says something about the report rather than about one field, and it has no room to
+       sit on a line inside a two-column date field, so it runs the width of the row. *@
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="form-text mt-0">
+                An end date in the past is fine &mdash; the opening and closing levels are both worked out from the ledger.
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col text-end">
+            <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2">
+                <i class="bi bi-file-pdf me-1"></i>Generate report
+            </Button>
+            <Button Color="ButtonColor.Secondary" @onclick="DownloadPdf" Disabled="_pdfBytes is null">
+                <i class="bi bi-download me-1"></i>Download PDF
+            </Button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_pdfBase64String))
+    {
+        <PdfViewer @key="_reportVersion" Class="mb-3"
+                   Url='@string.Format("data:application/pdf;base64,{0}", _pdfBase64String)'
+                   OnDocumentLoaded="OnDocumentLoaded"
+                   OnPageChanged="OnPageChanged" />
+    }
+</div>

@@ -1,0 +1,95 @@
+@page "/ShowStockValuationReport"
+
+@using BlazorBootstrap
+
+<PageTitle>Stock Valuation</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h4 mb-0">Stock Valuation by Supplier</h1>
+            <small class="text-muted">
+                What is on the shelf now, per supplier, with cost price and total value.
+            </small>
+        </div>
+    </div>
+
+    <div class="row filter-row mb-3">
+        <div class="col-12 col-md-4">
+            <label class="form-label">Suppliers</label>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                        type="button"
+                        id="valuation-supplier-filter"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
+                    @SelectedSuppliersLabel
+                </button>
+                <div class="dropdown-menu w-100 p-2" aria-labelledby="valuation-supplier-filter">
+                    <div class="panel-scroll">
+                        @if (_suppliers.Count == 0)
+                        {
+                            <div class="text-muted small px-1">No suppliers available</div>
+                        }
+                        else
+                        {
+                            @foreach (var supplier in _suppliers)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="@($"valuation-supplier-{supplier.SupplierCode}")"
+                                           checked="@_selectedSuppliers.Contains(supplier.SupplierCode)"
+                                           @onchange="@(e => ToggleSupplier(supplier.SupplierCode, (bool?)e.Value == true))" />
+                                    <label class="form-check-label" for="@($"valuation-supplier-{supplier.SupplierCode}")">
+                                        @supplier.SupplierCode <span class="text-muted">(@supplier.PartCount)</span>
+                                    </label>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <hr class="my-2" />
+                    <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearSupplierSelection">
+                        Clear selection (value everything)
+                    </button>
+                </div>
+            </div>
+            <div class="form-text">Parts with no supplier code are grouped on their own at the end.</div>
+        </div>
+
+        <div class="col-12 col-md-4 filter-row-control">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="valuation-exclude-zero" @bind="_request.ExcludeZeroQtyParts" />
+                <label class="form-check-label" for="valuation-exclude-zero">
+                    Leave out parts with nothing on the shelf
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="valuation-summary-only" @bind="_request.SummaryOnly" />
+                <label class="form-check-label" for="valuation-summary-only">
+                    Supplier totals only &mdash; leave the part lines off
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col text-end">
+            <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2">
+                <i class="bi bi-file-pdf me-1"></i>Generate report
+            </Button>
+            <Button Color="ButtonColor.Secondary" @onclick="DownloadPdf" Disabled="_pdfBytes is null">
+                <i class="bi bi-download me-1"></i>Download PDF
+            </Button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_pdfBase64String))
+    {
+        <PdfViewer @key="_reportVersion" Class="mb-3"
+                   Url='@string.Format("data:application/pdf;base64,{0}", _pdfBase64String)'
+                   OnDocumentLoaded="OnDocumentLoaded"
+                   OnPageChanged="OnPageChanged" />
+    }
+</div>

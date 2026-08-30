@@ -23,6 +23,9 @@ namespace AeroMech.UI.Web.DependencyInjection
             services.AddScoped<StockReceivingService, StockReceivingService>();
             services.AddScoped<StockTakeService, StockTakeService>();
             services.AddScoped<StockCountSheet, StockCountSheet>();
+            services.AddScoped<StockReportService, StockReportService>();
+            services.AddScoped<StockMovementReport, StockMovementReport>();
+            services.AddScoped<StockValuationReport, StockValuationReport>();
         }
     }
 }

@@ -35,7 +35,7 @@
 
     @if (_mode == SheetMode.Blank)
     {
-        <div class="row align-items-end mb-3">
+        <div class="row filter-row mb-3">
             <div class="col-12 col-md-4">
                 <label for="blank-description" class="form-label">Heading</label>
                 <input type="text" class="form-control" id="blank-description"
@@ -128,7 +128,7 @@
     }
     else
     {
-        <div class="row align-items-end mb-3">
+        <div class="row filter-row mb-3">
             <div class="col-12 col-md-6">
                 <label for="stock-take" class="form-label">Stock take</label>
                 @if (_stockTakes.Count == 0)
