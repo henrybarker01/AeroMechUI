@@ -63,18 +63,12 @@ namespace AeroMech.UI.Web.Services
             => part.Prices?.OrderBy(x => x.Id).FirstOrDefault()?.CostPrice ?? 0;
 
         /// <summary>
-        /// Raises a sheet and, in the same breath, freezes a line per part in scope. The freeze is
-        /// the point: every quantity the count is later judged against is the level as it stood
-        /// now, not as it stands whenever somebody gets round to posting.
+        /// The parts a sheet covers, given the scope asked for. Shared between raising a stock take
+        /// and printing a blank sheet so the two can never disagree about what is on the shelf to
+        /// be counted.
         /// </summary>
-        public async Task<int> CreateStockTake(StockTakeRequestModel request)
+        private static IQueryable<Part> PartsInScope(AeroMechDBContext context, StockTakeRequestModel request)
         {
-            if (string.IsNullOrWhiteSpace(request.StockTakeDescription))
-                throw new InvalidOperationException("A description is required so the sheet can be told apart later.");
-
-            using var context = await _contextFactory.CreateDbContextAsync();
-            using var transaction = await context.Database.BeginTransactionAsync();
-
             var supplierCodes = request.SupplierCodes
                 .Where(x => !string.IsNullOrWhiteSpace(x))
                 .Select(x => x.Trim())
@@ -93,7 +87,23 @@ namespace AeroMech.UI.Web.Services
             if (request.ExcludeZeroQtyParts)
                 query = query.Where(x => x.QtyOnHand != 0);
 
-            var parts = await query
+            return query;
+        }
+
+        /// <summary>
+        /// Raises a sheet and, in the same breath, freezes a line per part in scope. The freeze is
+        /// the point: every quantity the count is later judged against is the level as it stood
+        /// now, not as it stands whenever somebody gets round to posting.
+        /// </summary>
+        public async Task<int> CreateStockTake(StockTakeRequestModel request)
+        {
+            if (string.IsNullOrWhiteSpace(request.StockTakeDescription))
+                throw new InvalidOperationException("A description is required so the sheet can be told apart later.");
+
+            using var context = await _contextFactory.CreateDbContextAsync();
+            using var transaction = await context.Database.BeginTransactionAsync();
+
+            var parts = await PartsInScope(context, request)
                 .Include(x => x.Warehouse)
                 .Include(x => x.Prices)
                 .ToListAsync();
@@ -641,6 +651,73 @@ namespace AeroMech.UI.Web.Services
                 Order = order,
                 ShowExpectedQuantity = !stockTake.BlindCount,
                 Lines = stockTake.Lines.Select(x => new StockCountSheetLine
+                {
+                    PartCode = x.PartCode,
+                    PartDescription = x.PartDescription,
+                    Bin = x.Bin,
+                    SupplierCode = x.SupplierCode,
+                    WarehouseCode = x.WarehouseCode,
+                    QuantityOnHand = x.QuantityOnHand
+                }).ToList()
+            };
+
+            return Document.Create(_countSheet.Compose).GeneratePdf();
+        }
+
+        /// <summary>
+        /// A sheet to print and walk out with, raised against nothing. Nothing is written and no
+        /// stock level is frozen, so what comes back on the paper cannot be posted - this is for
+        /// the spot check and the shelf walk, where the answer wanted is what is actually there
+        /// rather than a difference to be settled.
+        ///
+        /// Scoped by the same rules as a real sheet, so a blank print and a stock take raised over
+        /// the same suppliers list the same parts in the same order.
+        /// </summary>
+        public async Task<byte[]> GenerateBlankCountSheet(
+            StockTakeRequestModel request,
+            StockTakeSheetOrder order = StockTakeSheetOrder.SupplierThenPart)
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            var lines = await PartsInScope(context, request)
+                .Select(x => new StockTakeLineModel
+                {
+                    PartCode = x.PartCode,
+                    PartDescription = x.PartDescription,
+                    Bin = x.Bin,
+                    SupplierCode = x.SupplierCode,
+                    WarehouseCode = x.Warehouse == null ? null : x.Warehouse.WarehouseCode,
+                    QuantityOnHand = x.QtyOnHand
+                })
+                .ToListAsync();
+
+            if (lines.Count == 0)
+                throw new InvalidOperationException("No parts match that selection, so there is nothing to count.");
+
+            var suppliers = request.SupplierCodes
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            _countSheet.Data = new StockCountSheetData
+            {
+                // Named rather than numbered, because a number would imply a sheet in the system
+                // to hand it back to and there is not one.
+                Reference = "Blank sheet",
+                Description = string.IsNullOrWhiteSpace(request.StockTakeDescription)
+                    ? "Ad-hoc count"
+                    : request.StockTakeDescription.Trim(),
+                StockTakeDate = request.StockTakeDate,
+
+                SupplierLabel = suppliers.Count == 0 ? "All suppliers"
+                    : suppliers.Count <= 6 ? string.Join(", ", suppliers)
+                    : $"{suppliers.Count} suppliers",
+
+                Order = order,
+                ShowExpectedQuantity = !request.BlindCount,
+                Lines = SortLines(lines, order).Select(x => new StockCountSheetLine
                 {
                     PartCode = x.PartCode,
                     PartDescription = x.PartDescription,
