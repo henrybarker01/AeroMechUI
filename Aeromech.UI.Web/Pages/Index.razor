@@ -1,89 +1,20 @@
 ﻿@page "/"
+@using AeroMech.UI.Web.Pages.Dashboard
 
 <PageTitle>Home</PageTitle>
 
+@* The route is shared by two different screens, so this page is only the shell that picks
+   between them and fetches what the dashboard needs. The dashboard itself is DashboardView. *@
 <AuthorizeView>
 	<Authorized>
-		<header class="page-header">
-			<div class="page-header-text">
-				<p class="page-eyebrow">Overview</p>
-				<h1 class="page-title">Dashboard</h1>
-			</div>
-		</header>
-
-		@* The numbers first, then the lists. Six equal tiles of list data answered
-		   no question in particular - you had to read a list to find out how the
-		   month was going. *@
-		<div class="kpi-row">
-			<div class="kpi">
-				<p class="kpi-label">Open quotes</p>
-				<p class="kpi-value">@_openQuotes</p>
-				<p class="kpi-note">@_convertedQuotes converted this month</p>
-			</div>
-			<div class="kpi">
-				<p class="kpi-label">Reports in progress</p>
-				<p class="kpi-value">@_openReports</p>
-				<p class="kpi-note @(_openReports > 0 ? "kpi-note-attention" : null)">
-					@(_openReports > 0 ? "awaiting completion" : "all up to date")
-				</p>
-			</div>
-			<div class="kpi">
-				<p class="kpi-label">Reports completed</p>
-				<p class="kpi-value">@_completedReports</p>
-				<p class="kpi-note">in the last month</p>
-			</div>
-		</div>
-
-		<div class="dash-grid">
-			<section class="dash-panel">
-				<div class="dash-panel-head">
-					<h2 class="dash-panel-title">Service Reports</h2>
-					<a href="service-reports">View all</a>
-				</div>
-				<div class="dash-panel-body">
-					<AeroMech.UI.Web.Pages.Widgets.ServiceReport.ServiceReportWidget />
-				</div>
-			</section>
-
-			<section class="dash-panel">
-				<div class="dash-panel-head">
-					<h2 class="dash-panel-title">Quotes</h2>
-					<a href="quotes">View all</a>
-				</div>
-				<div class="dash-panel-body">
-					<AeroMech.UI.Web.Pages.Widgets.Quotes.QuoteWidget />
-				</div>
-			</section>
-
-			<section class="dash-panel">
-				<div class="dash-panel-head">
-					<h2 class="dash-panel-title">Weekly Timesheet</h2>
-					<a href="timesheets">View all</a>
-				</div>
-				<div class="dash-panel-body">
-					<AeroMech.UI.Web.Pages.Widgets.Timesheet.TimesheetWidget />
-				</div>
-			</section>
-
-			<section class="dash-panel">
-				<div class="dash-panel-head">
-					<h2 class="dash-panel-title">Contact List</h2>
-					<a href="clients">View all</a>
-				</div>
-				<div class="dash-panel-body">
-					<AeroMech.UI.Web.Pages.Widgets.ContactList.ContactListWidget />
-				</div>
-			</section>
-
-			<section class="dash-panel">
-				<div class="dash-panel-head">
-					<h2 class="dash-panel-title">Birthdays</h2>
-				</div>
-				<div class="dash-panel-body">
-					<AeroMech.UI.Web.Pages.Widgets.BirthdayList.BirthdayListWidget />
-				</div>
-			</section>
-		</div>
+		@if (_model is null)
+		{
+			<p class="dash-loading">Reading the workshop&hellip;</p>
+		}
+		else
+		{
+			<DashboardView Model="_model" />
+		}
 	</Authorized>
 	<NotAuthorized>
 		<AeroMech.UI.Web.Pages.Login.Login></AeroMech.UI.Web.Pages.Login.Login>

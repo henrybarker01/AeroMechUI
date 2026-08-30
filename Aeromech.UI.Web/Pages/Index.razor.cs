@@ -1,35 +1,43 @@
+using AeroMech.Models.Models;
 using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components.Authorization;
 
 namespace AeroMech.UI.Web.Pages
 {
-    public partial class Index
-    {
-        [Inject] private QuoteService QuoteService { get; set; } = default!;
-        [Inject] private ServiceReportService ServiceReportService { get; set; } = default!;
+	public partial class Index
+	{
+		[Inject] private DashboardService DashboardService { get; set; } = default!;
+		[Inject] private LoaderService LoaderService { get; set; } = default!;
 
-        private int _openQuotes;
-        private int _convertedQuotes;
-        private int _openReports;
-        private int _completedReports;
+		/// <summary>
+		/// This route is also what an anonymous visitor lands on - the sign in form is the
+		/// NotAuthorized branch of this same page - so the dashboard query has to wait for a
+		/// signed in user. Without it the login screen reads the whole workshop behind its own
+		/// form and shows the loader over it.
+		/// </summary>
+		[CascadingParameter] private Task<AuthenticationState>? AuthenticationStateTask { get; set; }
 
-        // The same one month window the list widgets below use, so the counts and the
-        // rows under them always describe the same period.
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (!firstRender) return;
+		private DashboardModel? _model;
 
-            var since = DateTimeOffset.UtcNow.AddMonths(-1);
+		protected override async Task OnAfterRenderAsync(bool firstRender)
+		{
+			if (!firstRender || AuthenticationStateTask is null) return;
 
-            var quotes = await QuoteService.GetQuotes(since);
-            var reports = await ServiceReportService.GetRecentServiceReports(since);
+			var authenticationState = await AuthenticationStateTask;
+			if (authenticationState.User?.Identity?.IsAuthenticated != true) return;
 
-            _openQuotes = quotes.Count(q => !q.IsConverted);
-            _convertedQuotes = quotes.Count(q => q.IsConverted);
-            _openReports = reports.Count(r => !r.IsComplete);
-            _completedReports = reports.Count(r => r.IsComplete);
+			LoaderService.ShowLoader();
+			try
+			{
+				_model = await DashboardService.GetDashboard();
+			}
+			finally
+			{
+				LoaderService.HideLoader();
+			}
 
-            await InvokeAsync(StateHasChanged);
-        }
-    }
+			await InvokeAsync(StateHasChanged);
+		}
+	}
 }

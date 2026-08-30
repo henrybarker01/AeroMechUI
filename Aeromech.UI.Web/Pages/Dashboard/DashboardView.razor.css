@@ -1,0 +1,690 @@
+﻿/* ---------------------------------------------------------------------------
+   Dashboard layout.
+
+   The screen is four bands, each with its tracks named. It used to be two
+   auto-fit grids, which on a 1920px monitor resolved to three 533px cards
+   holding a two digit number, and a four column panel row with the fifth panel
+   orphaned alone underneath. auto-fit is right when the item count varies; this
+   screen's does not, so the columns are a decision rather than a calculation -
+   and naming them is also what lets the drill-down be wider than its neighbour.
+   --------------------------------------------------------------------------- */
+
+.dash {
+    max-width: 1500px;
+    padding-bottom: var(--am-space-6);
+}
+
+/* Chart colours.
+
+   The age ramp is one blue stepped light to dark - newer to older - rather than
+   a green/amber/red set: it is a magnitude, the four steps stay separable under
+   every kind of colour blindness, and each bar carries its band and its value in
+   text beside it. The labour split is the two hues that read as most distinct
+   from one another on white. */
+.dash {
+    --age-1: #86b6ef;
+    --age-2: #5598e7;
+    --age-3: #3a6fcc;
+    --age-4: #1c5cab;
+    --billable: #447ee2;
+    --nonbillable: #eb6834;
+    --chart-baseline: #e1e0d9;
+}
+
+.band {
+    display: grid;
+    gap: var(--am-space-3);
+    margin-bottom: var(--am-space-3);
+}
+
+.band-money {
+    grid-template-columns: 1.6fr 1fr 1fr 1fr;
+}
+
+.band-drill,
+.band-trend {
+    grid-template-columns: 2fr 1fr;
+}
+
+.band-ops {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.band-trend {
+    margin-bottom: 0;
+}
+
+/* ---------------------------------------------------------------------------
+   Cards
+   --------------------------------------------------------------------------- */
+
+.dash-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--am-rule);
+    border-radius: var(--am-radius-lg);
+    background-color: var(--am-surface);
+    box-shadow: var(--am-shadow-1);
+    overflow: hidden;
+}
+
+.dash-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--am-space-3);
+    padding: var(--am-space-3) var(--am-space-4);
+    border-bottom: 1px solid var(--am-rule);
+}
+
+.dash-card-title {
+    margin: 0;
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+.dash-card-head ::deep a {
+    font-size: var(--am-fs-sm);
+    font-weight: 600;
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+    .dash-card-head ::deep a:hover {
+        text-decoration: underline;
+    }
+
+.dash-card-body {
+    flex: 1 1 auto;
+    padding: var(--am-space-3) var(--am-space-4) var(--am-space-4);
+}
+
+/* Only the drill-down is allowed to grow, and it scrolls itself rather than
+   dragging the whole band down with it. Every other panel ends where its content
+   ends - no fixed cap turning a short list into a peephole. */
+.dash-card-scroll {
+    max-height: 30rem;
+    overflow-y: auto;
+}
+
+/* Its neighbour spreads to match instead of leaving a void underneath. */
+.dash-card-spread {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.panel-empty {
+    margin: 0;
+    padding: var(--am-space-2) 0;
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel);
+}
+
+.panel-note {
+    margin: var(--am-space-3) 0 0;
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel);
+}
+
+/* ---------------------------------------------------------------------------
+   Tiles
+   --------------------------------------------------------------------------- */
+
+.tile {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--am-space-4);
+    border: 1px solid var(--am-rule);
+    border-radius: var(--am-radius-lg);
+    background-color: var(--am-surface);
+    box-shadow: var(--am-shadow-1);
+}
+
+.tile-label {
+    margin: 0 0 var(--am-space-2);
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+.tile-value {
+    margin: 0;
+    font-size: 1.875rem;
+    font-weight: 700;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+    color: var(--am-ink);
+}
+
+.tile-note {
+    margin: var(--am-space-2) 0 0;
+    font-size: var(--am-fs-sm);
+    color: var(--am-steel);
+}
+
+    .tile-note b {
+        color: var(--am-ink-2);
+        font-weight: 600;
+    }
+
+.tile-note-flag {
+    color: var(--am-bad);
+}
+
+/* The one number the screen leads with. Tinted rather than outlined so it reads
+   as the subject of the row without a second border weight appearing. */
+.tile-hero {
+    border-color: #f3c9c5;
+    background: linear-gradient(180deg, #fffbfb 0%, var(--am-surface) 62%);
+}
+
+    .tile-hero .tile-label {
+        color: var(--am-bad);
+    }
+
+.hero-value {
+    margin: 0;
+    font-size: 3rem;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--am-ink);
+}
+
+.hero-sub {
+    margin: var(--am-space-2) 0 var(--am-space-3);
+    font-size: var(--am-fs-body);
+    color: var(--am-ink-2);
+}
+
+    .hero-sub b {
+        font-weight: 600;
+    }
+
+.delta {
+    font-weight: 600;
+}
+
+.delta-up {
+    color: var(--am-good);
+}
+
+.delta-down {
+    color: var(--am-bad);
+}
+
+/* ---------------------------------------------------------------------------
+   Age strip and age bars
+   --------------------------------------------------------------------------- */
+
+.agestrip {
+    display: flex;
+    gap: 2px;
+    height: 8px;
+    border-radius: 999px;
+    overflow: hidden;
+    margin-bottom: var(--am-space-2);
+}
+
+    .agestrip i {
+        display: block;
+        height: 100%;
+    }
+
+.agekey {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--am-space-1) var(--am-space-3);
+    font-size: var(--am-fs-label);
+    color: var(--am-steel);
+    letter-spacing: 0.02em;
+}
+
+    .agekey span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .agekey b {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 2px;
+    }
+
+.agerow {
+    display: grid;
+    grid-template-columns: 5.5rem 1fr auto;
+    align-items: center;
+    gap: var(--am-space-3);
+    margin-bottom: var(--am-space-3);
+}
+
+    .agerow:last-child {
+        margin-bottom: 0;
+    }
+
+.agelab {
+    font-size: var(--am-fs-sm);
+    color: var(--am-ink-2);
+    white-space: nowrap;
+}
+
+.agebar {
+    height: 20px;
+    border-radius: 0 4px 4px 0;
+}
+
+.ageval {
+    font-size: var(--am-fs-body);
+    font-weight: 600;
+    color: var(--am-ink);
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.agefoot {
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+    margin: var(--am-space-4) 0 0;
+    padding-top: var(--am-space-3);
+    border-top: 1px solid var(--am-rule);
+    font-size: var(--am-fs-sm);
+    color: var(--am-ink-2);
+}
+
+    .agefoot .dot {
+        flex: 0 0 auto;
+        width: 8px;
+        height: 8px;
+        margin-top: 5px;
+        border-radius: 50%;
+        background-color: var(--am-bad);
+    }
+
+.fill-age-1 { background-color: var(--age-1); }
+.fill-age-2 { background-color: var(--age-2); }
+.fill-age-3 { background-color: var(--age-3); }
+.fill-age-4 { background-color: var(--age-4); }
+.fill-billable { background-color: var(--billable); }
+.fill-other { background-color: var(--nonbillable); }
+
+/* ---------------------------------------------------------------------------
+   Tables
+   --------------------------------------------------------------------------- */
+
+.dash-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--am-fs-body);
+}
+
+.dash-table-sm {
+    font-size: var(--am-fs-sm);
+}
+
+.dash-table th {
+    padding: 0 var(--am-space-2) var(--am-space-2) 0;
+    border-bottom: 1px solid var(--am-rule);
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+    text-align: left;
+    white-space: nowrap;
+}
+
+.dash-table td {
+    padding: 0.4rem var(--am-space-2) 0.4rem 0;
+    border-bottom: 1px solid var(--am-rule);
+    vertical-align: middle;
+    color: var(--am-ink-2);
+}
+
+.dash-table-sm td {
+    padding: 0.38rem var(--am-space-2) 0.38rem 0;
+}
+
+.dash-table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.dash-table .num {
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+}
+
+.dash-table .strong {
+    font-weight: 600;
+    color: var(--am-ink);
+}
+
+.dash-table .muted {
+    color: var(--am-steel);
+}
+
+.dash-table .nowrap {
+    white-space: nowrap;
+}
+
+.dash-table .ref {
+    font-weight: 600;
+    color: var(--am-blue-text);
+    white-space: nowrap;
+}
+
+/* The one column that gives up its width first, so a long client name shortens
+   rather than pushing the numbers out of the card. */
+.col-grow {
+    width: 99%;
+}
+
+.trunc {
+    max-width: 1px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.col-client {
+    width: 14rem;
+}
+
+.col-bar {
+    width: 34%;
+    padding-right: var(--am-space-3) !important;
+}
+
+.bar-track {
+    position: relative;
+    height: 16px;
+}
+
+.bar {
+    height: 16px;
+    border-radius: 0 4px 4px 0;
+    background-color: var(--am-blue);
+}
+
+/* ---------------------------------------------------------------------------
+   Drill down rows
+   --------------------------------------------------------------------------- */
+
+.crow,
+.linkrow {
+    cursor: pointer;
+}
+
+    .crow:hover,
+    .linkrow:hover {
+        background-color: var(--am-ground);
+    }
+
+    .crow.open {
+        background-color: var(--am-blue-light);
+    }
+
+.cname {
+    font-weight: 600;
+    color: var(--am-ink);
+    white-space: nowrap;
+}
+
+.caret {
+    display: inline-block;
+    width: 12px;
+    color: var(--am-steel);
+    transition: transform 0.12s;
+}
+
+.crow.open .caret {
+    transform: rotate(90deg);
+    color: var(--am-blue-text);
+}
+
+/* A client's own reports, set on the page ground so the group reads as one
+   thing that opened rather than as more rows in the same list. */
+.rrow {
+    cursor: pointer;
+}
+
+    .rrow td {
+        background-color: var(--am-ground);
+        font-size: var(--am-fs-sm);
+    }
+
+    .rrow:hover td {
+        background-color: var(--am-blue-light);
+    }
+
+    .rrow .ref {
+        padding-left: 1.6rem;
+    }
+
+.pill {
+    display: inline-block;
+    padding: 1px 7px;
+    border-radius: 999px;
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.pill-ok {
+    background-color: var(--am-good-soft);
+    color: var(--am-good);
+}
+
+.pill-warn {
+    background-color: var(--am-warn-soft);
+    color: var(--am-warn-ink);
+}
+
+.pill-bad {
+    background-color: var(--am-bad-soft);
+    color: var(--am-bad);
+}
+
+/* ---------------------------------------------------------------------------
+   Labour
+   --------------------------------------------------------------------------- */
+
+.util-hero {
+    display: flex;
+    align-items: baseline;
+    gap: var(--am-space-2);
+    margin-bottom: var(--am-space-1);
+}
+
+    .util-hero b {
+        font-size: 1.75rem;
+        font-weight: 700;
+        line-height: 1;
+        color: var(--am-ink);
+    }
+
+    .util-hero span {
+        font-size: var(--am-fs-sm);
+        color: var(--am-steel);
+    }
+
+.legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--am-space-1) var(--am-space-3);
+    margin: var(--am-space-3) 0;
+    font-size: var(--am-fs-label);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--am-steel);
+}
+
+    .legend span {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .legend i {
+        display: inline-block;
+        width: 9px;
+        height: 9px;
+        border-radius: 2px;
+    }
+
+/* The name column is wide enough for "N. Oppermann" rather than the shortest name in the
+   list, so a longer surname is not the one that gets an ellipsis. */
+.urow {
+    display: grid;
+    grid-template-columns: 6rem 1fr 2.6rem;
+    align-items: center;
+    gap: var(--am-space-2);
+    margin-bottom: 7px;
+}
+
+.uname {
+    font-size: var(--am-fs-sm);
+    color: var(--am-ink-2);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 2px of surface between the two fills rather than a stroke around them: the
+   gap is what separates the marks, and a border would add ink that is not data. */
+.ustack {
+    display: flex;
+    gap: 2px;
+    height: 14px;
+}
+
+    .ustack i {
+        display: block;
+        height: 100%;
+    }
+
+        .ustack i:first-child {
+            border-radius: 2px 0 0 2px;
+        }
+
+        .ustack i:last-child {
+            border-radius: 0 4px 4px 0;
+        }
+
+.upct {
+    font-size: var(--am-fs-sm);
+    font-weight: 600;
+    color: var(--am-ink);
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---------------------------------------------------------------------------
+   Six month trend
+   --------------------------------------------------------------------------- */
+
+.cols {
+    position: relative;
+    display: flex;
+    align-items: flex-end;
+    gap: var(--am-space-3);
+    height: 132px;
+    padding-top: var(--am-space-4);
+    border-bottom: 1px solid var(--chart-baseline);
+}
+
+.col {
+    position: relative;
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+}
+
+    /* Capped rather than filling the slot, so the leftover is air. */
+    .col b {
+        display: block;
+        width: 100%;
+        max-width: 24px;
+        border-radius: 4px 4px 0 0;
+        background-color: var(--am-blue);
+    }
+
+    .col.dim b {
+        background-color: #9ec5f4;
+    }
+
+    /* One direct label, on the month the reader is standing in. A value on every
+       column reads as noise and goes unread; the rest carry theirs in the tooltip. */
+    .col em {
+        position: absolute;
+        font-style: normal;
+        font-size: var(--am-fs-sm);
+        font-weight: 600;
+        color: var(--am-ink);
+        white-space: nowrap;
+    }
+
+.colx {
+    display: flex;
+    gap: var(--am-space-3);
+    margin-top: 6px;
+}
+
+    .colx span {
+        flex: 1;
+        text-align: center;
+        font-size: var(--am-fs-label);
+        letter-spacing: 0.03em;
+        color: var(--am-steel);
+    }
+
+/* ---------------------------------------------------------------------------
+   Narrower screens
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 1400px) {
+    .band-ops {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+@media (max-width: 1100px) {
+    .band-money {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .band-drill,
+    .band-trend,
+    .band-ops {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 640px) {
+    .band-money {
+        grid-template-columns: 1fr;
+    }
+
+    .col-client {
+        width: auto;
+    }
+
+    .col-bar {
+        display: none;
+    }
+}

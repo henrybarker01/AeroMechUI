@@ -862,62 +862,8 @@ a:hover, .btn-link:hover {
 }
 
 /* ---------------------------------------------------------------------------
-   Dashboard widget tables.
-
-   These rules were copied into all five widget stylesheets, so a change to the
-   look of one list meant editing five files. They live here once now; the
-   scoped stylesheets keep only what is genuinely their own.
-
-   The gap under the header used to be produced by a :before on the tbody that
-   inserted an "@" and pushed it 99999px off screen. It is padding.
+   Shared table odds and ends.
    --------------------------------------------------------------------------- */
-
-.widger-container {
-    overflow: auto;
-}
-
-.widget-data-table {
-    width: 100%;
-}
-
-.widget-data-header {
-    border-bottom: 1px solid var(--am-rule);
-    font-weight: 600;
-}
-
-    .widget-data-header td {
-        padding: 0 0.5rem 0.5rem 0;
-        font-size: var(--am-fs-label);
-        font-weight: 600;
-        letter-spacing: 0.05em;
-        text-transform: uppercase;
-        color: var(--am-steel);
-        white-space: nowrap;
-    }
-
-.widget-data-row {
-    color: var(--am-ink-2);
-    cursor: pointer;
-}
-
-    .widget-data-row:hover {
-        background-color: var(--am-ground);
-    }
-
-    .widget-data-row > td {
-        border-bottom: 1px solid var(--am-rule);
-    }
-
-    .widget-data-row:last-child > td {
-        border-bottom: 0;
-    }
-
-.widget-data-col {
-    text-align: left;
-    padding: 0.375rem 0.5rem 0.375rem 0;
-    font-size: var(--am-fs-body);
-    vertical-align: middle;
-}
 
 .report-date {
     text-align: right;

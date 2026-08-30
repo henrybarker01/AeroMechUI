@@ -1,0 +1,389 @@
+@using AeroMech.Models.Models
+
+@*
+	The home screen itself, given a model that is already loaded. Kept apart from Index so that
+	page is only the authorisation shell: the sign in form and the dashboard are two different
+	screens that happen to share a route, and having one component own both made it responsible
+	for deciding which to draw as well as for drawing it.
+
+	Four questions, in the order an owner asks them: what are we owed, who owes it, what needs
+	doing today, are we growing. Every block below belongs to one of them, and a block that
+	answered none of them is not here any more.
+*@
+
+<div class="dash">
+	<header class="page-header">
+		<div class="page-header-text">
+			<p class="page-eyebrow">Overview &middot; @DateTime.Now.ToString("MMMM yyyy")</p>
+			<h1 class="page-title">Dashboard</h1>
+		</div>
+	</header>
+
+	<div class="band band-money">
+		<div class="tile @(Model.UnbilledTotal > 0 ? "tile-hero" : null)">
+			<div>
+				<p class="tile-label">Work with no sales order</p>
+				<p class="hero-value">@Money(Model.UnbilledTotal)</p>
+				@if (Model.UnbilledReportCount > 0)
+				{
+					<p class="hero-sub">
+						<b>@Model.UnbilledReportCount @Plural(Model.UnbilledReportCount, "report")</b>
+						not yet billed &middot; oldest <b>@Model.UnbilledOldestDays days</b>
+					</p>
+				}
+				else
+				{
+					<p class="hero-sub">Every report carries a sales order. Nothing is sitting unclaimed.</p>
+				}
+			</div>
+			@if (Model.UnbilledTotal > 0)
+			{
+				<div>
+					<div class="agestrip">
+						@foreach (var bucket in Model.UnbilledAgeBuckets.Where(b => b.Total > 0))
+						{
+							<i class="@AgeFill(bucket)" style="width:@Pct(bucket.Total, Model.UnbilledTotal)%"
+							   title="@bucket.Label: @Money(bucket.Total)"></i>
+						}
+					</div>
+					<div class="agekey">
+						@foreach (var bucket in Model.UnbilledAgeBuckets)
+						{
+							<span><b class="@AgeFill(bucket)"></b>@bucket.Label</span>
+						}
+					</div>
+				</div>
+			}
+		</div>
+
+		<div class="tile">
+			<div>
+				<p class="tile-label">Quote pipeline</p>
+				<p class="tile-value">@Money(Model.PipelineTotal)</p>
+			</div>
+			<p class="tile-note">
+				<b>@Model.OpenQuoteCount open</b> @Plural(Model.OpenQuoteCount, "quote") &middot;
+				<b>@Model.StaleQuoteCount</b> older than @Model.StaleQuoteDays days
+			</p>
+		</div>
+
+		<div class="tile">
+			<div>
+				<p class="tile-label">Billed this month</p>
+				<p class="tile-value">@Money(Model.BilledThisMonth)</p>
+			</div>
+			<p class="tile-note">
+				@if (Model.BilledLastMonth > 0)
+				{
+					var change = (Model.BilledThisMonth - Model.BilledLastMonth) / Model.BilledLastMonth * 100;
+					<span class="delta @(change >= 0 ? "delta-up" : "delta-down")">
+						@(change >= 0 ? "▲" : "▼") @Math.Abs(change).ToString("0")%
+					</span>
+					<span> vs last month &middot; </span>
+				}
+				<b>@Model.BilledThisMonthCount</b> @Plural(Model.BilledThisMonthCount, "report")
+				of @Money(Model.RaisedThisMonth) raised
+			</p>
+		</div>
+
+		<div class="tile">
+			<div>
+				<p class="tile-label">Stock on hand</p>
+				<p class="tile-value">@Money(Model.StockOnHandValue)</p>
+			</div>
+			<p class="tile-note">
+				@Model.StockLineCount @Plural(Model.StockLineCount, "line") holding stock
+				@if (Model.NegativeStockLineCount > 0)
+				{
+					<span> &middot; <b class="tile-note-flag">@Model.NegativeStockLineCount below zero</b></span>
+				}
+			</p>
+		</div>
+	</div>
+
+	<div class="band band-drill">
+		<section class="dash-card">
+			<div class="dash-card-head">
+				<h2 class="dash-card-title">
+					Unbilled work by client@(Model.UnbilledByClient.Count > 0 ? " — click to open" : "")
+				</h2>
+				<a href="service-reports">Service reports</a>
+			</div>
+			<div class="dash-card-body dash-card-scroll">
+				@if (Model.UnbilledByClient.Count == 0)
+				{
+					<p class="panel-empty">Nothing outstanding.</p>
+				}
+				else
+				{
+					<table class="dash-table">
+						<thead>
+							<tr>
+								<th class="col-client">Client</th>
+								<th class="col-bar">Value outstanding</th>
+								<th class="num">Amount</th>
+								<th class="num">Reports</th>
+								<th class="num">Oldest</th>
+							</tr>
+						</thead>
+						<tbody>
+							@foreach (var client in Model.UnbilledByClient)
+							{
+								var isOpen = _openClients.Contains(client.ClientId);
+
+								<tr class="crow @(isOpen ? "open" : null)" tabindex="0"
+									@onclick="() => ToggleClient(client.ClientId)"
+									@onkeydown="e => OnClientKey(e, client.ClientId)">
+									<td class="cname"><span class="caret">&#9656;</span> @client.ClientName</td>
+									<td class="col-bar">
+										<div class="bar-track">
+											<div class="bar" style="width:@Pct(client.Total, MaxClientTotal)%"></div>
+										</div>
+									</td>
+									<td class="num strong">@Money(client.Total)</td>
+									<td class="num">@client.ReportCount</td>
+									<td class="num"><span class="pill @AgePill(client.OldestDays)">@client.OldestDays d</span></td>
+								</tr>
+
+								if (isOpen)
+								{
+									@foreach (var report in client.Reports)
+									{
+										<tr class="rrow" tabindex="0"
+											@onclick="() => OpenReport(report.Id)"
+											@onkeydown="e => OnReportKey(e, report.Id)">
+											<td class="ref">AEM @report.ServiceReportNumber</td>
+											<td class="muted">
+												@report.ReportDate.ToString("dd/MM/yyyy")
+												@if (!string.IsNullOrWhiteSpace(report.Machine))
+												{
+													<span> &middot; @report.Machine</span>
+												}
+											</td>
+											<td class="num">@Money(report.Total)</td>
+											<td class="num"></td>
+											<td class="num"><span class="pill @AgePill(report.AgeDays)">@report.AgeDays d</span></td>
+										</tr>
+									}
+								}
+							}
+						</tbody>
+					</table>
+				}
+			</div>
+		</section>
+
+		<section class="dash-card">
+			<div class="dash-card-head">
+				<h2 class="dash-card-title">How old is it</h2>
+			</div>
+			<div class="dash-card-body dash-card-spread">
+				@if (Model.UnbilledTotal <= 0)
+				{
+					<p class="panel-empty">Nothing outstanding.</p>
+				}
+				else
+				{
+					<div>
+						@foreach (var bucket in Model.UnbilledAgeBuckets)
+						{
+							<div class="agerow">
+								<span class="agelab">@bucket.Label</span>
+								<div>
+									<div class="agebar @AgeFill(bucket)" style="width:@Pct(bucket.Total, MaxBucketTotal)%"
+										 title="@bucket.ReportCount @Plural(bucket.ReportCount, "report")"></div>
+								</div>
+								<span class="ageval">@Money(bucket.Total)</span>
+							</div>
+						}
+					</div>
+					@if (OldestBucket is not null && OldestBucket.Total > 0)
+					{
+						<p class="agefoot">
+							<span class="dot"></span>
+							<span>
+								<b>@Money(OldestBucket.Total)</b> across
+								@OldestBucket.ReportCount @Plural(OldestBucket.ReportCount, "report")
+								@(OldestBucket.ReportCount == 1 ? "has" : "have") been sitting for more than 90 days.
+								Past 90 days a client will usually argue the line.
+							</span>
+						</p>
+					}
+				}
+			</div>
+		</section>
+	</div>
+
+	<div class="band band-ops">
+		<section class="dash-card">
+			<div class="dash-card-head">
+				<h2 class="dash-card-title">Quotes waiting on the client</h2>
+				<a href="quotes">All quotes</a>
+			</div>
+			<div class="dash-card-body">
+				@if (Model.OpenQuotes.Count == 0)
+				{
+					<p class="panel-empty">No open quotes.</p>
+				}
+				else
+				{
+					<table class="dash-table dash-table-sm">
+						<thead>
+							<tr><th>Quote</th><th class="col-grow">Client</th><th class="num">Value</th><th class="num">Open</th></tr>
+						</thead>
+						<tbody>
+							@foreach (var quote in Model.OpenQuotes)
+							{
+								<tr class="linkrow" @onclick="() => OpenQuote(quote.Id)">
+									<td class="ref">AEM@quote.QuoteNumber</td>
+									<td class="trunc" title="@quote.ClientName">@quote.ClientName</td>
+									<td class="num">@Money(quote.Total)</td>
+									<td class="num"><span class="pill @QuotePill(quote.AgeDays)">@quote.AgeDays d</span></td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				}
+			</div>
+		</section>
+
+		<section class="dash-card">
+			<div class="dash-card-head">
+				<h2 class="dash-card-title">Raised in the last @Model.RecentWorkDays days</h2>
+				<a href="service-reports">Service reports</a>
+			</div>
+			<div class="dash-card-body">
+				@if (Model.RecentWork.Count == 0)
+				{
+					<p class="panel-empty">No new unbilled work this fortnight.</p>
+				}
+				else
+				{
+					<table class="dash-table dash-table-sm">
+						<thead>
+							<tr><th>Report</th><th class="col-grow">Client &middot; machine</th><th class="num">Value</th><th class="num">Days</th></tr>
+						</thead>
+						<tbody>
+							@foreach (var report in Model.RecentWork)
+							{
+								<tr class="linkrow" @onclick="() => OpenReport(report.Id)">
+									<td class="ref">AEM @report.ServiceReportNumber</td>
+									<td class="trunc" title="@Describe(report)">@Describe(report)</td>
+									<td class="num">@Money(report.Total)</td>
+									<td class="num"><span class="pill pill-ok">@report.AgeDays</span></td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				}
+			</div>
+		</section>
+
+		<section class="dash-card">
+			<div class="dash-card-head">
+				<h2 class="dash-card-title">Labour this week</h2>
+				<a href="timesheets">Timesheets</a>
+			</div>
+			<div class="dash-card-body">
+				@if (Model.Labour.TotalHours <= 0)
+				{
+					<p class="panel-empty">No hours recorded this week yet.</p>
+				}
+				else
+				{
+					<div class="util-hero">
+						<b>@Model.Labour.BillablePercent%</b>
+						<span>of recorded hours billed to a job</span>
+					</div>
+					<div class="legend">
+						<span><i class="fill-billable"></i>On a job</span>
+						<span><i class="fill-other"></i>Admin, travel, standby</span>
+					</div>
+					@foreach (var employee in Model.Labour.Employees)
+					{
+						<div class="urow">
+							<span class="uname" title="@employee.Name">@employee.Name</span>
+							<div class="ustack">
+								<i class="fill-billable" style="width:@Pct(employee.JobHours, employee.TotalHours)%"
+								   title="@Hours(employee.JobHours) on a job"></i>
+								<i class="fill-other" style="width:@Pct(employee.OtherHours, employee.TotalHours)%"
+								   title="@Hours(employee.OtherHours) admin, travel, standby"></i>
+							</div>
+							<span class="upct">@employee.BillablePercent%</span>
+						</div>
+					}
+				}
+			</div>
+		</section>
+	</div>
+
+	<div class="band band-trend">
+		<section class="dash-card">
+			<div class="dash-card-head">
+				<h2 class="dash-card-title">Value of work billed, last 6 months</h2>
+			</div>
+			<div class="dash-card-body">
+				@if (MaxMonthTotal <= 0)
+				{
+					<p class="panel-empty">No work has been billed in the last six months.</p>
+				}
+				else
+				{
+					<div class="cols">
+						@foreach (var month in Model.BilledByMonth)
+						{
+							<div class="col @(month.IsCurrent ? null : "dim")">
+								@if (month.IsCurrent && month.Total > 0)
+								{
+									<em style="bottom:calc(@Pct(month.Total, MaxMonthTotal)% + 6px)">@Money(month.Total)</em>
+								}
+								<b style="height:@Pct(month.Total, MaxMonthTotal)%" title="@month.Label: @Money(month.Total)"></b>
+							</div>
+						}
+					</div>
+					<div class="colx">
+						@foreach (var month in Model.BilledByMonth)
+						{
+							<span>@month.Label</span>
+						}
+					</div>
+					<p class="panel-note">
+						Value of reports that reached a sales order in each month.
+						@Model.BilledByMonth.Last().Label is still running.
+					</p>
+				}
+			</div>
+		</section>
+
+		<section class="dash-card">
+			<div class="dash-card-head">
+				<h2 class="dash-card-title">Machines not seen in a while</h2>
+				<a href="clients">Clients</a>
+			</div>
+			<div class="dash-card-body">
+				@if (Model.MachinesNotSeen.Count == 0)
+				{
+					<p class="panel-empty">No machines have been serviced yet.</p>
+				}
+				else
+				{
+					<table class="dash-table dash-table-sm">
+						<thead>
+							<tr><th class="col-grow">Machine</th><th>Client</th><th class="num">Days</th></tr>
+						</thead>
+						<tbody>
+							@foreach (var machine in Model.MachinesNotSeen)
+							{
+								<tr>
+									<td class="trunc" title="@machine.Machine">@machine.Machine</td>
+									<td class="muted nowrap">@machine.ClientName</td>
+									<td class="num"><span class="pill @MachinePill(machine.DaysSince)">@machine.DaysSince</span></td>
+								</tr>
+							}
+						</tbody>
+					</table>
+				}
+			</div>
+		</section>
+	</div>
+</div>
