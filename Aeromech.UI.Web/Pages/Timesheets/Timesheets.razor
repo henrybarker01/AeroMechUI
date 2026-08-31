@@ -125,18 +125,15 @@
                             @FormatHours(timesheet.TotalWorked)
                         </td>
                         <td class="ts-action-cell">
-                            <div class="ts-actions">
-                                <button type="button" class="ts-icon-btn" title="Print this day"
-                                        @onclick="() => PrintDay(timesheet)" @onclick:stopPropagation="true">
-                                    <i class="bi bi-printer" aria-hidden="true"></i>
-                                    <span class="visually-hidden">Print @timesheet.Date.ToString("dd MMM yyyy")</span>
-                                </button>
+                            <RowActions>
+                                <RowAction Icon="@Icons.Print" Label="Print this day"
+                                           OnClick="() => PrintDay(timesheet)" />
                                 <button type="button" class="ts-icon-btn ts-chevron" title="Open this day"
                                         @onclick="async () => await ViewDayAsync(timesheet)" @onclick:stopPropagation="true">
                                     <i class="bi bi-chevron-right" aria-hidden="true"></i>
                                     <span class="visually-hidden">Open @timesheet.Date.ToString("dd MMM yyyy")</span>
                                 </button>
-                            </div>
+                            </RowActions>
                         </td>
                     </tr>
                 </RowTemplate>
@@ -231,20 +228,16 @@
                                     @FormatHours(timesheetEmployee.ServiceReportHours + timesheetEmployee.TimesheetHours)
                                 </td>
                                 <td class="ts-action-cell">
-                                    <div class="ts-actions">
-                                        <button type="button" class="ts-icon-btn ts-icon-add" title="Add hours for this employee"
-                                                @onclick="async () => await AddToEmployeeTimesheetAsync(timesheetEmployee)"
-                                                @onclick:stopPropagation="true">
-                                            <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                                            <span class="visually-hidden">Add hours for @timesheetEmployee.EmployeeName</span>
-                                        </button>
+                                    <RowActions>
+                                        <RowAction Icon="@Icons.Add" Label="Add hours for this employee"
+                                                   OnClick="async () => await AddToEmployeeTimesheetAsync(timesheetEmployee)" />
                                         <button type="button" class="ts-icon-btn ts-chevron" title="See this employee's lines"
                                                 @onclick="async () => await ViewEmplyeeTimesheetDetail(timesheetEmployee.EmployeeId)"
                                                 @onclick:stopPropagation="true">
                                             <i class="bi bi-chevron-right" aria-hidden="true"></i>
                                             <span class="visually-hidden">Open @timesheetEmployee.EmployeeName</span>
                                         </button>
-                                    </div>
+                                    </RowActions>
                                 </td>
                             </tr>
                         </RowTemplate>
@@ -316,29 +309,20 @@
                                 </td>
                                 <td class="num ts-cell-hours" data-label="Hours">@FormatHours(timesheetLine.Hours)</td>
                                 <td class="ts-action-cell">
-                                    <div class="ts-actions">
+                                    <RowActions>
                                         @if (timesheetLine.IsServiceReport)
                                         {
-                                            <button type="button" class="ts-icon-btn" title="Open the service report"
-                                                    @onclick="() => ViewServiceReport(timesheetLine.ServiceReportId!.Value)">
-                                                <i class="bi bi-box-arrow-up-right" aria-hidden="true"></i>
-                                                <span class="visually-hidden">Open service report</span>
-                                            </button>
+                                            <RowAction Icon="@Icons.Open" Label="Open the service report"
+                                                       OnClick="() => ViewServiceReport(timesheetLine.ServiceReportId!.Value)" />
                                         }
                                         else
                                         {
-                                            <button type="button" class="ts-icon-btn" title="Edit this line"
-                                                    @onclick="async () => await EditEmployeeTimesheetAsync(timesheetLine)">
-                                                <i class="bi bi-pencil" aria-hidden="true"></i>
-                                                <span class="visually-hidden">Edit this line</span>
-                                            </button>
-                                            <button type="button" class="ts-icon-btn ts-icon-danger" title="Delete this line"
-                                                    @onclick="async () => await DeleteEmployeeTimesheetDetailAsync(timesheetLine)">
-                                                <i class="bi bi-trash" aria-hidden="true"></i>
-                                                <span class="visually-hidden">Delete this line</span>
-                                            </button>
+                                            <RowAction Icon="@Icons.Edit" Label="Edit this line"
+                                                       OnClick="async () => await EditEmployeeTimesheetAsync(timesheetLine)" />
+                                            <RowAction Icon="@Icons.Delete" Label="Delete this line" Danger="true"
+                                                       OnClick="async () => await DeleteEmployeeTimesheetDetailAsync(timesheetLine)" />
                                         }
-                                    </div>
+                                    </RowActions>
                                 </td>
                             </tr>
                         </RowTemplate>

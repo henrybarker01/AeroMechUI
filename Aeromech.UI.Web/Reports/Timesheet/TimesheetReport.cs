@@ -72,17 +72,26 @@ namespace AeroMech.API.Reports
             var employees = Data.Employees;
             var rows = Data.Rows;
 
+            // The employee columns share whatever page width the labels leave over, so the more people
+            // are on the report the narrower each cell gets - step the figures down so they keep fitting.
+            var dataFontSize = employees.Count <= 8 ? 9 : employees.Count <= 14 ? 8 : 7;
+            var totalFontSize = dataFontSize + 1;
+            var numberPadding = employees.Count <= 8 ? 5f : 2f;
+
             container.Table(table =>
             {
                 table.ColumnsDefinition(columns =>
                 {
-                    columns.ConstantColumn(140);
-                    columns.ConstantColumn(220);
+                    // Relative widths so the matrix always fits the page. With fixed widths the table
+                    // grew past the printable area and QuestPDF failed the whole document once there
+                    // were more than six employees.
+                    columns.RelativeColumn(2.2f);
+                    columns.RelativeColumn(3.6f);
 
                     foreach (var _ in employees)
-                        columns.ConstantColumn(55);
+                        columns.RelativeColumn();
 
-                    columns.ConstantColumn(65); // Total column
+                    columns.RelativeColumn(1.15f); // Total column
                 });
 
                 uint currentTableRow = 1;
@@ -138,14 +147,14 @@ namespace AeroMech.API.Reports
                             table.Cell().Row(currentTableRow).Column((uint)(3 + employeeIndex))
                                 .Element(GrandTotalValueCellStyle)
                                 .AlignCenter()
-                                .Padding(5)
+                                .Padding(numberPadding)
                                 .Text(value.ToString("0.00", CultureInfo.InvariantCulture));
                         }
 
                         table.Cell().Row(currentTableRow).Column((uint)(3 + employees.Count))
                             .Element(TotalColumnGrandTotalCellStyle)
                             .AlignCenter()
-                            .Padding(5)
+                            .Padding(numberPadding)
                             .Text(grandTotal.ToString("0.00", CultureInfo.InvariantCulture));
 
                         rowIndex++;
@@ -197,7 +206,7 @@ namespace AeroMech.API.Reports
                         table.Cell().Row(currentTableRow).Column((uint)(3 + employeeIndex))
                             .Element(dataStyle)
                             .AlignCenter()
-                            .Padding(5)
+                            .Padding(numberPadding)
                             .Text(value.ToString("0.00", CultureInfo.InvariantCulture));
                     }
 
@@ -208,14 +217,14 @@ namespace AeroMech.API.Reports
                     table.Cell().Row(currentTableRow).Column((uint)(3 + employees.Count))
                         .Element(totalStyle)
                         .AlignCenter()
-                        .Padding(5)
+                        .Padding(numberPadding)
                         .Text(rowTotal.ToString("0.00", CultureInfo.InvariantCulture));
 
                     rowIndex++;
                     currentTableRow++;
                 }
 
-                static IContainer HeaderBlankCellStyle(IContainer c)
+                IContainer HeaderBlankCellStyle(IContainer c)
                     => c.ExtendHorizontal().Height(110)
                         .BorderTop(1f)
                         .BorderLeft(1f)
@@ -223,7 +232,7 @@ namespace AeroMech.API.Reports
                         .BorderBottom(1f)
                         .BorderColor(Colors.Black);
 
-                static IContainer HeaderEmployeeCellStyle(IContainer c)
+                IContainer HeaderEmployeeCellStyle(IContainer c)
                     => c.ExtendHorizontal().Height(110)
                         .BorderTop(1f)
                         .BorderLeft(1f)
@@ -233,7 +242,7 @@ namespace AeroMech.API.Reports
                         .PaddingHorizontal(2)
                         .PaddingVertical(4);
 
-                static IContainer HeaderTotalCellStyle(IContainer c)
+                IContainer HeaderTotalCellStyle(IContainer c)
                     => c.ExtendHorizontal().Height(110)
                         .BorderTop(1f)
                         .BorderLeft(1f)
@@ -244,8 +253,8 @@ namespace AeroMech.API.Reports
                         .PaddingHorizontal(2)
                         .PaddingVertical(4);
 
-                static IContainer RowCellStyle(IContainer c)
-                    => c.ExtendHorizontal().DefaultTextStyle(x => x.FontSize(9))
+                IContainer RowCellStyle(IContainer c)
+                    => c.ExtendHorizontal().DefaultTextStyle(x => x.FontSize(dataFontSize))
                         .PaddingVertical(0)
                         .PaddingHorizontal(0)
                         .BorderTop(1f)
@@ -254,8 +263,8 @@ namespace AeroMech.API.Reports
                         .BorderBottom(1f)
                         .BorderColor(Colors.Black);
 
-                static IContainer FirstColumnRowCellStyle(IContainer c)
-                    => c.ExtendHorizontal().DefaultTextStyle(x => x.FontSize(9))
+                IContainer FirstColumnRowCellStyle(IContainer c)
+                    => c.ExtendHorizontal().DefaultTextStyle(x => x.FontSize(dataFontSize))
                         .PaddingVertical(0)
                         .PaddingHorizontal(0)
                         .BorderLeft(1f)
@@ -264,8 +273,8 @@ namespace AeroMech.API.Reports
                         .BorderBottom(1f)
                         .BorderColor(Colors.Black);
 
-                static IContainer RowColumn2CellStyle(IContainer c)
-                    => c.ExtendHorizontal().DefaultTextStyle(x => x.FontSize(9))
+                IContainer RowColumn2CellStyle(IContainer c)
+                    => c.ExtendHorizontal().DefaultTextStyle(x => x.FontSize(dataFontSize))
                         .PaddingVertical(0)
                         .PaddingHorizontal(0)
                         .BorderTop(1f)
@@ -274,46 +283,46 @@ namespace AeroMech.API.Reports
                         .BorderBottom(1f)
                         .BorderColor(Colors.Black);
 
-                static IContainer TotalRowCellStyle(IContainer c)
+                IContainer TotalRowCellStyle(IContainer c)
                     => RowCellStyle(c)
-                        .DefaultTextStyle(x => x.FontSize(9).SemiBold())
+                        .DefaultTextStyle(x => x.FontSize(dataFontSize).SemiBold())
                         .Background(Colors.Grey.Lighten3);
 
-                static IContainer TotalRowColumn2CellStyle(IContainer c)
+                IContainer TotalRowColumn2CellStyle(IContainer c)
                     => RowColumn2CellStyle(c)
-                        .DefaultTextStyle(x => x.FontSize(9).SemiBold())
+                        .DefaultTextStyle(x => x.FontSize(dataFontSize).SemiBold())
                         .Background(Colors.Grey.Lighten3);
 
-                static IContainer SectionCellStyle(IContainer c)
+                IContainer SectionCellStyle(IContainer c)
                     => FirstColumnRowCellStyle(c)
-                        .DefaultTextStyle(x => x.FontSize(9).SemiBold())
+                        .DefaultTextStyle(x => x.FontSize(dataFontSize).SemiBold())
                         .Background(Colors.Grey.Lighten3)
                         .AlignLeft()
                         .AlignMiddle();
 
-                static IContainer GrandTotalLeftCellStyle(IContainer c)
+                IContainer GrandTotalLeftCellStyle(IContainer c)
                     => FirstColumnRowCellStyle(c)
-                        .DefaultTextStyle(x => x.FontSize(10).Bold())
+                        .DefaultTextStyle(x => x.FontSize(totalFontSize).Bold())
                         .Background(Colors.Grey.Lighten2);
 
-                static IContainer GrandTotalValueCellStyle(IContainer c)
+                IContainer GrandTotalValueCellStyle(IContainer c)
                     => RowCellStyle(c)
-                        .DefaultTextStyle(x => x.FontSize(10).Bold())
+                        .DefaultTextStyle(x => x.FontSize(totalFontSize).Bold())
                         .Background(Colors.Grey.Lighten2);
 
-                static IContainer TotalColumnCellStyle(IContainer c)
+                IContainer TotalColumnCellStyle(IContainer c)
                     => RowCellStyle(c)
-                        .DefaultTextStyle(x => x.FontSize(9).Bold())
+                        .DefaultTextStyle(x => x.FontSize(dataFontSize).Bold())
                         .Background(Colors.Grey.Lighten2);
 
-                static IContainer TotalColumnTotalRowCellStyle(IContainer c)
+                IContainer TotalColumnTotalRowCellStyle(IContainer c)
                     => RowCellStyle(c)
-                        .DefaultTextStyle(x => x.FontSize(9).Bold())
+                        .DefaultTextStyle(x => x.FontSize(dataFontSize).Bold())
                         .Background(Colors.Grey.Lighten1);
 
-                static IContainer TotalColumnGrandTotalCellStyle(IContainer c)
+                IContainer TotalColumnGrandTotalCellStyle(IContainer c)
                     => RowCellStyle(c)
-                        .DefaultTextStyle(x => x.FontSize(10).Bold())
+                        .DefaultTextStyle(x => x.FontSize(totalFontSize).Bold())
                         .Background(Colors.Grey.Lighten1);
             });
         }

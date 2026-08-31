@@ -380,6 +380,24 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             NavigationManager.NavigateTo($"/ShowPDF/{serviceReportId}");
         }
 
+        /// <summary>
+        /// Prints the report on the quote document. Some clients work backwards: the job is
+        /// written up first and only then does the client want the numbers to sign off, so the
+        /// same record is printed as a quote. Nothing is created and nothing changes on the
+        /// report - no quote row and no quote number - so the quotes list keeps showing only work
+        /// that was actually quoted up front.
+        /// </summary>
+        private async Task SaveAndPrintQuote()
+        {
+            if (!ValidateForPrint()) return;
+
+            var savedId = await SaveServiceReport(_serviceReport);
+            if (savedId == 0) return;
+
+            ToastService.Notify(new(ToastType.Success, "Service report saved successfully."));
+            NavigationManager.NavigateTo($"/ShowQuote/from-service-report/{savedId}");
+        }
+
         private string SearchTerm { get; set; } = string.Empty;
         private IEnumerable<PartModel> FilteredParts =>
             parts.Where(p => string.IsNullOrEmpty(SearchTerm) ||

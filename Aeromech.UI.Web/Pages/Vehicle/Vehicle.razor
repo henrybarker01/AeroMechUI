@@ -144,7 +144,7 @@
             <SortHeader Title="EngineHours" SortBy="v => v.EngineHours" />
             <SortHeader Title="Job Number" SortBy="v => v.JobNumber" />
             <SortHeader Title="Chassis Number" SortBy="v => v.ChassisNumber" />
-            <th>Action</th>
+            <th class="row-actions-col">Actions</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="vehicle">
@@ -158,11 +158,11 @@
             <td>@vehicle.EngineHours</td>
             <td>@vehicle.JobNumber</td>
             <td>@vehicle.ChassisNumber</td>
-            <td>
-                <div class="action-col">
-                    <Icon Name="IconName.Trash3" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteVehicle(vehicle)" Class="me-2" Style="cursor: pointer" />
-                    <Icon Name="IconName.Pencil" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditVehicleClick(vehicle)" Style="cursor: pointer" />
-                </div>
+            <td class="row-actions-col">
+                <RowActions>
+                    <RowAction Icon="@Icons.Edit" Label="Edit this vehicle" OnClick="() => OnEditVehicleClick(vehicle)" />
+                    <RowAction Icon="@Icons.Delete" Label="Delete this vehicle" Danger="true" OnClick="() => DeleteVehicle(vehicle)" />
+                </RowActions>
             </td>
         </tr>
     </RowTemplate>

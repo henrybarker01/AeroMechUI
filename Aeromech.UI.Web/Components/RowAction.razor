@@ -1,0 +1,12 @@
+@* A real button rather than a clickable icon: it takes focus, it says what it
+   does on hover and to a screen reader, and it carries a target big enough to
+   hit. Row clicks are swallowed so an action never also opens the row. *@
+<button type="button"
+        class="row-action @(Danger ? "row-action-danger" : null) @Class"
+        title="@Label"
+        disabled="@Disabled"
+        @onclick="OnClick"
+        @onclick:stopPropagation="true">
+    <i class="bi @Icon" aria-hidden="true"></i>
+    <span class="visually-hidden">@Label</span>
+</button>

@@ -55,7 +55,7 @@ namespace AeroMech.UI.Web.Services
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
             var serviceReportEmployees = await _aeroMechDBContext.ServiceReportEmployees.AsNoTracking()
-                .Where(sr => sr.DutyDate >= startDate && !sr.IsDeleted && !sr.Employee!.ExcludeFromTimesheets)
+                .Where(sr => sr.DutyDate >= startDate && !sr.IsDeleted && !sr.Employee!.IsDeleted && !sr.Employee!.ExcludeFromTimesheets)
                 .ToListAsync();
 
             foreach (var sr in serviceReportEmployees)
@@ -68,7 +68,7 @@ namespace AeroMech.UI.Web.Services
             }
 
             var timesheetDetailEmployees = await _aeroMechDBContext.TimesheetEmployeeDetails.AsNoTracking()
-                .Where(x => x.Date >= startDate && !x.IsDeleted && !x.Employee!.ExcludeFromTimesheets)
+                .Where(x => x.Date >= startDate && !x.IsDeleted && !x.Employee!.IsDeleted && !x.Employee!.ExcludeFromTimesheets)
                 .ToListAsync();
 
             foreach (var timesheetDetailEmployee in timesheetDetailEmployees)
@@ -338,9 +338,13 @@ namespace AeroMech.UI.Web.Services
 
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
+            // Only employees who take part in timesheets get a column, and every figure on the report is
+            // read off those columns - so anyone else's lines have to be left out here too. Loading them
+            // produced rows of zeros and totals that came up short of the hours actually booked.
             var serviceReportQuery = _aeroMechDBContext.ServiceReportEmployees
                 .AsNoTracking()
-                .Where(x => !x.IsDeleted && x.DutyDate >= fromDate && x.DutyDate <= toDate);
+                .Where(x => !x.IsDeleted && x.DutyDate >= fromDate && x.DutyDate <= toDate
+                    && !x.Employee!.IsDeleted && !x.Employee!.ExcludeFromTimesheets);
 
             if (isClientFiltered)
             {
@@ -364,7 +368,8 @@ namespace AeroMech.UI.Web.Services
                 ? new List<TimesheetReportItem>()
                 : await _aeroMechDBContext.TimesheetEmployeeDetails
                     .AsNoTracking()
-                    .Where(x => !x.IsDeleted && x.Date >= fromDate && x.Date <= toDate)
+                    .Where(x => !x.IsDeleted && x.Date >= fromDate && x.Date <= toDate
+                        && !x.Employee!.IsDeleted && !x.Employee!.ExcludeFromTimesheets)
                     .Select(x => new TimesheetReportItem(
                         x.EmployeeId,
                         x.Employee!.FirstName,
@@ -458,6 +463,10 @@ namespace AeroMech.UI.Web.Services
                 }
             }
 
+            // Built from the section totals rather than the raw items, so the bottom row can never
+            // disagree with the subtotals printed above it.
+            var sectionTotals = rows.Where(r => r.IsTotalRow).ToList();
+
             rows.Add(new TimesheetReportRow
             {
                 SectionTitle = "Total",
@@ -467,8 +476,7 @@ namespace AeroMech.UI.Web.Services
                 IsGrandTotalRow = true,
                 HoursByEmployeeId = employees.ToDictionary(
                     e => e.EmployeeId,
-                    e => serviceReportItems.Where(x => x.EmployeeId == e.EmployeeId).Sum(x => x.Hours)
-                       + timesheetDetailItems.Where(x => x.EmployeeId == e.EmployeeId).Sum(x => x.Hours))
+                    e => sectionTotals.Sum(r => r.HoursByEmployeeId.TryGetValue(e.EmployeeId, out var hours) ? hours : 0))
             });
 
             return rows;

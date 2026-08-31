@@ -49,7 +49,7 @@
             <SortHeader Title="Service Type" SortBy="sr => sr.ServiceType.ToString()" />
             <SortHeader Title="Total" SortBy="sr => CalculateTotal(sr)" />
             <SortHeader Title="Status" SortBy="sr => RowStatus(sr).Rank" />
-            <th></th>
+            <th class="row-actions-col">Actions</th>
         </tr>
     </HeaderTemplate>
 
@@ -68,9 +68,11 @@
             <td>@sr.ServiceType</td>
             <td>@CalculateTotal(sr).ToString("C", CultureInfo.CurrentCulture)</td>
             <td>@status.Label</td>
-            <td>
-                <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => Edit(sr.Id)" Style="cursor: pointer" />
-                <Icon Name="IconName.Printer" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => Print(sr.Id)" Style="cursor: pointer" />
+            <td class="row-actions-col">
+                <RowActions>
+                    <RowAction Icon="@Icons.Edit" Label="Edit this service report" OnClick="() => Edit(sr.Id)" />
+                    <RowAction Icon="@Icons.Print" Label="Print this service report" OnClick="() => Print(sr.Id)" />
+                </RowActions>
             </td>
         </tr>
     </RowTemplate>

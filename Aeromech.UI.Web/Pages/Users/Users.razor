@@ -79,7 +79,7 @@
             <SortHeader Title="User Name" SortBy="u => u.UserName" />
             <SortHeader Title="Email" SortBy="u => u.Email" />
             <SortHeader Title="Phone Number" SortBy="u => u.PhoneNumber" />
-            <th></th>
+            <th class="row-actions-col">Actions</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="user">
@@ -87,9 +87,11 @@
             <td>@user.UserName</td>
             <td>@user.Email</td>
             <td>@user.PhoneNumber</td>
-            <td>
-                <Icon Name="IconName.BuildingFillDash" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteUser(user)" Class="me-2" Style="cursor: pointer" />
-                <Icon Name="IconName.BuildingFillGear" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => EditUser(user)" Style="cursor: pointer" />
+            <td class="row-actions-col">
+                <RowActions>
+                    <RowAction Icon="@Icons.Edit" Label="Edit this user" OnClick="() => EditUser(user)" />
+                    <RowAction Icon="@Icons.Delete" Label="Delete this user" Danger="true" OnClick="() => DeleteUser(user)" />
+                </RowActions>
             </td>
         </tr>
     </RowTemplate>

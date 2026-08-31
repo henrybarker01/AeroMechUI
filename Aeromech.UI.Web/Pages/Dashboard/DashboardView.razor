@@ -235,7 +235,7 @@
 							@foreach (var quote in Model.OpenQuotes)
 							{
 								<tr class="linkrow" @onclick="() => OpenQuote(quote.Id)">
-									<td class="ref">AEM@quote.QuoteNumber</td>
+									<td class="ref">@($"AEM {quote.QuoteNumber}")</td>
 									<td class="trunc" title="@quote.ClientName">@quote.ClientName</td>
 									<td class="num">@Money(quote.Total)</td>
 									<td class="num"><span class="pill @QuotePill(quote.AgeDays)">@quote.AgeDays d</span></td>

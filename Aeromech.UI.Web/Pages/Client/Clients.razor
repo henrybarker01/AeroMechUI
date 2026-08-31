@@ -145,7 +145,7 @@
             <SortHeader Title="Weekdays Overtime" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime)?.Rate ?? 0" />
             <SortHeader Title="Overtime" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime)?.Rate ?? 0" />
             <SortHeader Title="Sundays & Public Holidays" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays)?.Rate ?? 0" />
-            <th></th>
+            <th class="row-actions-col">Actions</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="client">
@@ -159,9 +159,11 @@
             <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
             <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
             <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
-            <td>
-                <Icon Name="IconName.BuildingFillDash" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteClient(client)" Class="me-2" Style="cursor: pointer" />
-                <Icon Name="IconName.BuildingFillGear" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditClientClick(client)" Style="cursor: pointer" />
+            <td class="row-actions-col">
+                <RowActions>
+                    <RowAction Icon="@Icons.Edit" Label="Edit this client" OnClick="() => OnEditClientClick(client)" />
+                    <RowAction Icon="@Icons.Delete" Label="Delete this client" Danger="true" OnClick="() => DeleteClient(client)" />
+                </RowActions>
             </td>
         </tr>
     </RowTemplate>

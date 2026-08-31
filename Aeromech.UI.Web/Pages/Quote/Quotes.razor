@@ -22,7 +22,7 @@
             <SortHeader Title="Service Type" SortBy="q => q.ServiceType.ToString()" />
             <SortHeader Title="Total" SortBy="q => CalculateTotal(q)" />
             <SortHeader Title="Status" SortBy="q => q.IsConverted" />
-            <th></th>
+            <th class="row-actions-col">Actions</th>
         </tr>
     </HeaderTemplate>
 
@@ -45,13 +45,15 @@
                     <span>Open</span>
                 }
             </td>
-            <td>
-                <Icon Name="IconName.Pencil" Size="IconSize.x5" Class="me-2" Color="IconColor.Primary" @onclick="() => EditQuote(q.Id)" Style="cursor: pointer" />
-                <Icon Name="IconName.Printer" Size="IconSize.x5" Class="me-2" Color="IconColor.Secondary" @onclick="() => PrintQuote(q.Id)" Style="cursor: pointer" />
-                @if (!q.IsConverted)
-                {
-                    <Icon Name="IconName.FileEarmarkCheck" Size="IconSize.x5" Color="IconColor.Success" Title="Convert to service report" @onclick="() => ConvertQuote(q.Id)" Style="cursor: pointer" />
-                }
+            <td class="row-actions-col">
+                <RowActions>
+                    <RowAction Icon="@Icons.Edit" Label="Edit this quote" OnClick="() => EditQuote(q.Id)" />
+                    <RowAction Icon="@Icons.Print" Label="Print this quote" OnClick="() => PrintQuote(q.Id)" />
+                    @if (!q.IsConverted)
+                    {
+                        <RowAction Icon="@Icons.Convert" Label="Convert to a service report" OnClick="() => ConvertQuote(q.Id)" />
+                    }
+                </RowActions>
             </td>
         </tr>
     </RowTemplate>

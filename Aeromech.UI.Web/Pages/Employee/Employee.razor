@@ -128,7 +128,7 @@
             <SortHeader Title="Phone Number" SortBy="e => e.PhoneNumber" />
             <SortHeader Title="Email" SortBy="e => e.Email" />
             <SortHeader Title="Timesheets" SortBy="e => e.ExcludeFromTimesheets" />
-            <th></th>
+            <th class="row-actions-col">Actions</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="employee">
@@ -141,9 +141,11 @@
             <td>@employee.Email</td>
             <td>@(employee.ExcludeFromTimesheets ? "Excluded" : "Included")</td>
 
-            <td>
-                <Icon Name="IconName.PersonFillDash" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeleteEmployee(employee)" Class="me-2" Style="cursor: pointer" />
-                <Icon Name="IconName.PersonFillGear" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditEmployeeClick(employee)" Style="cursor: pointer" />
+            <td class="row-actions-col">
+                <RowActions>
+                    <RowAction Icon="@Icons.Edit" Label="Edit this employee" OnClick="() => OnEditEmployeeClick(employee)" />
+                    <RowAction Icon="@Icons.Delete" Label="Delete this employee" Danger="true" OnClick="() => DeleteEmployee(employee)" />
+                </RowActions>
             </td>
         </tr>
     </RowTemplate>

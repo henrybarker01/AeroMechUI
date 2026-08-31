@@ -108,7 +108,7 @@
             <SortHeader Title="Qty On Hand" SortBy="p => p.QtyOnHand" />
             <SortHeader Title="Cost Price" SortBy="p => p.CostPrice" />
             <SortHeader Title="Total Value" SortBy="p => p.QtyOnHand * p.CostPrice" />
-            <th></th>
+            <th class="row-actions-col">Actions</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="part">
@@ -123,11 +123,11 @@
             <td>@part.QtyOnHand</td>
             <td>@part.CostPrice.ToString("C", CultureInfo.CurrentCulture)</td>
             <td>@((part.QtyOnHand * part.CostPrice).ToString("C", CultureInfo.CurrentCulture))</td>
-            <td>
-                <div class="action-col">
-                    <Icon Name="IconName.Trash3" Size="IconSize.x5" Color="IconColor.Danger" @onclick="() => DeletePart(part)" Class="me-2" Style="cursor: pointer" />
-                    <Icon Name="IconName.Pencil" Size="IconSize.x5" Color="IconColor.Secondary" @onclick="() => OnEditPartClick(part)" Style="cursor: pointer" />
-                </div>
+            <td class="row-actions-col">
+                <RowActions>
+                    <RowAction Icon="@Icons.Edit" Label="Edit this part" OnClick="() => OnEditPartClick(part)" />
+                    <RowAction Icon="@Icons.Delete" Label="Delete this part" Danger="true" OnClick="() => DeletePart(part)" />
+                </RowActions>
             </td>
         </tr>
     </RowTemplate>

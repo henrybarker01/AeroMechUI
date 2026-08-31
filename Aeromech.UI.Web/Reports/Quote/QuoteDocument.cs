@@ -55,10 +55,15 @@ namespace AeroMech.API.Reports
 
                     column.Item().Text($"Service Quote").Style(titleStyle);
 
-                    column.Item().Text(text =>
+                    // A service report printed as a quote only carries a quote number if it
+                    // started life as one, so the line is left off rather than printing AEM0.
+                    if (quote.QuoteNumber > 0)
                     {
-                        text.Span($"Quote No:  AEM{quote.QuoteNumber}").SemiBold().FontSize(12);
-                    });
+                        column.Item().Text(text =>
+                        {
+                            text.Span($"Quote No:  AEM{quote.QuoteNumber}").SemiBold().FontSize(12);
+                        });
+                    }
 
                     // A quote only carries a service report number once it has been accepted and
                     // converted, so the line is left off until then.

@@ -156,10 +156,11 @@
                                 <td class="align-middle">
                                     @LabourTotal(labour).ToString("F", CultureInfo.InvariantCulture)
                                 </td>
-                                <td>
-                                    <div class="col-1">
-                                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemoveLabour(labour)" Style="cursor: pointer" />
-                                    </div>
+                                <td class="row-actions-col">
+                                    <RowActions>
+                                        <RowAction Icon="@Icons.Remove" Label="Remove this labour line" Danger="true"
+                                                   OnClick="() => RemoveLabour(labour)" />
+                                    </RowActions>
                                 </td>
                             </tr>
                         }
@@ -239,10 +240,11 @@
                                 <td>
                                     @PartTotal(part).ToString("F", CultureInfo.InvariantCulture)
                                 </td>
-                                <td>
-                                    <div class="col-1">
-                                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemovePart(part)" Style="cursor: pointer" />
-                                    </div>
+                                <td class="row-actions-col">
+                                    <RowActions>
+                                        <RowAction Icon="@Icons.Remove" Label="Remove this part" Danger="true"
+                                                   OnClick="() => RemovePart(part)" />
+                                    </RowActions>
                                 </td>
                             </tr>
                         }

@@ -1,4 +1,4 @@
-﻿@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
 
 /* ---------------------------------------------------------------------------
    Design tokens.
@@ -871,11 +871,69 @@ a:hover, .btn-link:hover {
     font-variant-numeric: tabular-nums;
 }
 
-.action-buttons {
+/* ---------------------------------------------------------------------------
+   Row actions.
+
+   Every grid's edit / delete / print controls go through <RowActions>, so they
+   read the same way everywhere: an outlined button you can see without hovering
+   for it, a hit target you can land on, a focus ring, and red reserved for the
+   ones you cannot take back.
+   --------------------------------------------------------------------------- */
+
+.row-actions {
     display: flex;
     flex-direction: row;
-    gap: 0.25rem;
+    align-items: center;
     justify-content: flex-end;
+    gap: var(--am-space-1);
+}
+
+.row-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.875rem;
+    height: 1.875rem;
+    padding: 0;
+    font-size: 0.875rem;
+    line-height: 1;
+    color: var(--am-ink-2);
+    background-color: var(--am-surface);
+    border: 1px solid var(--am-rule-strong);
+    border-radius: var(--am-radius);
+    transition: color 0.12s ease, background-color 0.12s ease, border-color 0.12s ease;
+}
+
+    .row-action:hover {
+        color: var(--am-blue-text);
+        background-color: var(--am-blue-light);
+        border-color: var(--am-blue);
+    }
+
+    .row-action:focus-visible {
+        outline: 2px solid var(--am-blue);
+        outline-offset: 1px;
+    }
+
+    .row-action:disabled {
+        color: var(--am-steel-light);
+        background-color: var(--am-ground);
+        border-color: var(--am-rule);
+        pointer-events: none;
+    }
+
+.row-action-danger:hover {
+    color: var(--am-bad);
+    background-color: var(--am-bad-soft);
+    border-color: var(--am-bad);
+}
+
+/* The actions column takes only the width its buttons need, and holds it, so
+   they do not shift about from row to row. */
+.row-actions-col {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
 }
 
 .email {
@@ -887,11 +945,6 @@ a:hover, .btn-link:hover {
 /* ---------------------------------------------------------------------------
    Small utilities that were repeated as inline style attributes.
    --------------------------------------------------------------------------- */
-
-/* Row action cells: holds its width so the icons do not shift between rows. */
-.action-col {
-    min-width: 65px;
-}
 
 /* Long free-text cells give way before the numeric columns do. */
 .instruction-col {
@@ -1613,10 +1666,6 @@ a:hover, .btn-link:hover {
     font-variant-numeric: tabular-nums;
 }
 
-.st-action-col {
-    width: 96px;
-    text-align: right;
-}
 
 .table > tbody > tr.st-take-row > td.st-description {
     max-width: 260px;
@@ -1993,15 +2042,8 @@ a:hover, .btn-link:hover {
     white-space: nowrap;
 }
 
-.ts-actions {
-    display: flex;
-    align-items: center;
-    justify-content: flex-end;
-    gap: var(--am-space-1);
-}
-
-/* Real buttons rather than bare icons: they take focus, they say what they do,
-   and they carry a target big enough to hit. */
+/* Only the drill-in chevrons are left on this: they are a hint that the row
+   opens, not an action of their own, so they stay quieter than a <RowAction>. */
 .ts-icon-btn {
     display: inline-flex;
     align-items: center;
@@ -2027,10 +2069,6 @@ a:hover, .btn-link:hover {
         outline-offset: 1px;
     }
 
-.ts-icon-danger:hover {
-    color: var(--am-bad);
-    background-color: var(--am-bad-soft);
-}
 
 .ts-chevron {
     color: var(--am-steel-light);
@@ -2334,7 +2372,8 @@ a:hover, .btn-link:hover {
         width: auto;
     }
 
-    .ts-icon-btn {
+    .ts-icon-btn,
+    .row-action {
         width: 2.5rem;
         height: 2.5rem;
     }

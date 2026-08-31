@@ -261,11 +261,11 @@
                                     @(getTotal(employee).ToString("F", CultureInfo.InvariantCulture))
 
                                 </td>
-                                <td>
-                                    <div class="col-1">
-                                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemoveLabour(employee.Id)" />
-                                    </div>
-
+                                <td class="row-actions-col">
+                                    <RowActions>
+                                        <RowAction Icon="@Icons.Remove" Label="Remove this labour line" Danger="true"
+                                                   OnClick="() => RemoveLabour(employee.Id)" />
+                                    </RowActions>
                                 </td>
                             </tr>
                         }
@@ -377,10 +377,11 @@
                                 @(((Convert.ToDouble(part.CostPrice) * part.QTY) - ((part.Discount / 100) * (Convert.ToDouble(part.CostPrice) * part.QTY))).ToString("F", CultureInfo.InvariantCulture))
 
                                 </td>
-                                <td>
-                                    <div class="col-1">
-                                        <Icon Name="IconName.PersonFillDash" Size="IconSize.x3" Color="IconColor.Danger" @onclick="() => RemovePart(part.Id)" Style="cursor: pointer" />
-                                    </div>
+                                <td class="row-actions-col">
+                                    <RowActions>
+                                        <RowAction Icon="@Icons.Remove" Label="Remove this part" Danger="true"
+                                                   OnClick="() => RemovePart(part.Id)" />
+                                    </RowActions>
                                 </td>
                             </tr>
                             @* } *@
@@ -463,6 +464,7 @@
             <div class="row">
                 <div class="footer-buttons">
                     <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="Save" Style="margin-right 20px">Save</Button>
+                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndPrintQuote" Style="margin-right 20px">Save &amp; Print Quote</Button>
                     <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndGenerateServiceReport" Style="margin-right 20px">Save & Print FSR</Button>
                     <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndNew">Save & New</Button>
                 </div>

@@ -144,7 +144,7 @@
             <SortHeader Title="Counted" SortBy="t => t.ProgressPercent" />
             <SortHeader Title="Differences" SortBy="t => t.VarianceCount" />
             <SortHeader Title="Value" SortBy="t => t.TotalVarianceValue" />
-            <th class="st-action-col">Action</th>
+            <th class="row-actions-col">Actions</th>
         </tr>
     </HeaderTemplate>
 
@@ -167,20 +167,14 @@
             <td class="st-number @(take.TotalVarianceValue < 0 ? "st-value-down" : take.TotalVarianceValue > 0 ? "st-value-up" : null)">
                 @(take.VarianceCount == 0 ? "" : take.TotalVarianceValue.ToString("C", CultureInfo.CurrentCulture))
             </td>
-            <td class="st-action-col" @onclick:stopPropagation="true">
-                <div class="action-buttons">
-                    <button type="button" class="btn btn-sm btn-outline-secondary"
-                            title="Print count sheet" @onclick="() => DownloadCountSheet(take)">
-                        <i class="bi bi-printer" aria-hidden="true"></i>
-                    </button>
+            <td class="row-actions-col" @onclick:stopPropagation="true">
+                <RowActions>
+                    <RowAction Icon="@Icons.Print" Label="Print the count sheet" OnClick="() => DownloadCountSheet(take)" />
                     @if (take.IsOpen)
                     {
-                        <button type="button" class="btn btn-sm btn-outline-danger"
-                                title="Cancel this stock take" @onclick="() => CancelStockTake(take)">
-                            <i class="bi bi-x-lg" aria-hidden="true"></i>
-                        </button>
+                        <RowAction Icon="@Icons.Remove" Label="Cancel this stock take" Danger="true" OnClick="() => CancelStockTake(take)" />
                     }
-                </div>
+                </RowActions>
             </td>
         </tr>
     </RowTemplate>

@@ -267,6 +267,86 @@ namespace AeroMech.UI.Web.Services
             };
         }
 
+        /// <summary>
+        /// Renders the quote document for work that was written up as a service report first.
+        /// Some clients still work backwards - the report is captured and only then does the
+        /// client want the numbers to sign off - so the same document is composed from the report
+        /// rather than keeping a second copy of the pricing in the quotes table. Nothing is
+        /// written: no quote row, no quote number, and the report itself is left untouched.
+        /// </summary>
+        public byte[] DownloadQuoteForServiceReport(ServiceReportModel serviceReport)
+        {
+            _quoteDocument.quote = BuildQuoteFromServiceReport(serviceReport);
+
+            return Document.Create(_quoteDocument.Compose).GeneratePdf();
+        }
+
+        /// <summary>
+        /// Reads a service report back as a quote, the other way round from
+        /// <see cref="BuildServiceReportFromQuote"/>. Captured labour is per person and a quote
+        /// prices per rate type, so the hours are grouped back up - a quote has nowhere to name
+        /// who did the work. The result is never saved; it only exists to be printed, so it prints
+        /// under the report's own number and carries a quote number only if the report was
+        /// converted from a real quote.
+        /// </summary>
+        private static QuoteModel BuildQuoteFromServiceReport(ServiceReportModel serviceReport)
+        {
+            var labour = (serviceReport.Employees ?? new())
+                .Where(x => !x.IsDeleted && (x.Hours ?? 0) > 0)
+                // Two people on the same rate type can still sit on different rates or discounts,
+                // so only lines that price identically are allowed to collapse into one.
+                .GroupBy(x => (x.RateType, x.Rate, Discount: x.Discount ?? 0))
+                .Select(g => new QuoteLabourModel
+                {
+                    RateType = g.Key.RateType,
+                    Rate = g.Key.Rate,
+                    Discount = g.Key.Discount,
+                    Hours = g.Sum(x => x.Hours ?? 0)
+                })
+                .OrderBy(x => x.RateType.ToString(), StringComparer.Ordinal)
+                .ToList();
+
+            return new QuoteModel
+            {
+                Id = 0,
+                // A report that started as a quote keeps that quote's number on the print; one
+                // written from scratch has none, and prints under its report number alone.
+                QuoteNumber = serviceReport.QuoteNumber,
+                QuoteDate = serviceReport.ReportDate,
+                ClientId = serviceReport.ClientId,
+                Client = serviceReport.Client,
+                VehicleId = serviceReport.VehicleId,
+                Vehicle = serviceReport.Vehicle,
+                VehicleHours = serviceReport.VehicleHours,
+                ServiceType = serviceReport.ServiceType,
+                Instruction = serviceReport.Instruction,
+                DetailedServiceReport = serviceReport.DetailedServiceReport,
+                Description = serviceReport.Description,
+                ServiceReportId = serviceReport.Id == 0 ? null : serviceReport.Id,
+                ServiceReportNumber = serviceReport.ServiceReportNumber == 0 ? null : serviceReport.ServiceReportNumber,
+                Labour = labour,
+                Parts = (serviceReport.Parts ?? new())
+                    .Where(x => !x.IsDeleted)
+                    .Select(part => new QuotePartModel
+                    {
+                        Id = part.Id,
+                        PartId = part.PartId,
+                        PartCode = part.PartCode,
+                        PartDescription = part.PartDescription,
+                        CostPrice = part.CostPrice,
+                        SellingPrice = part.SellingPrice,
+                        Discount = part.Discount,
+                        QTY = part.QTY,
+                        Bin = part.Bin,
+                        ProductClass = part.ProductClass,
+                        SupplierCode = part.SupplierCode,
+                        CycleCount = part.CycleCount,
+                        QtyOnHand = part.QtyOnHand,
+                        IsAdHockPart = part.IsAdHockPart
+                    }).ToList()
+            };
+        }
+
         public double CalculateQuoteTotal(QuoteModel quote)
         {
             var totalLabour = quote.Labour.Where(x => !x.IsDeleted)
