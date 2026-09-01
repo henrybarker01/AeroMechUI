@@ -13,12 +13,25 @@ namespace AeroMech.UI.Web.Services
     {
         private const string NoClientSectionTitle = "No Client";
 
+        private enum TimesheetReportType
+        {
+            Weekly,
+            Daily,
+            DateRange
+        }
+
         private sealed record TimesheetReportItem(int EmployeeId, string FirstName, string LastName, string RowKey, double Hours, string? ClientName);
 
         private sealed record TimesheetReportData(
             List<TimesheetReportEmployee> Employees,
             List<TimesheetReportRow> Rows,
-            List<string> ClientNames);
+            List<string> ClientNames,
+            bool IsClientFiltered);
+
+        private sealed record TimesheetReportParameters(
+            string ReportType,
+            string PeriodLabel,
+            string ClientFilterLabel);
 
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly IMapper _mapper;
@@ -248,16 +261,17 @@ namespace AeroMech.UI.Web.Services
         public async Task<byte[]> DownloadTimesheetReportAsync(DateOnly anyDateInWeek, IReadOnlyCollection<int>? clientIds = null)
         {
             var weekStart = GetWeekStart(anyDateInWeek);
-            var data = await BuildReportDataAsync(weekStart, weekStart.AddDays(6), clientIds);
+            var weekEnd = weekStart.AddDays(6);
+            var data = await BuildReportDataAsync(weekStart, weekEnd, clientIds);
 
-            return GeneratePdfFile(data, weekStart);
+            return GeneratePdfFile(data, CreateReportParameters(TimesheetReportType.Weekly, weekStart, weekEnd, data));
         }
 
         public async Task<byte[]> DownloadDailyTimesheetReportAsync(DateOnly date, IReadOnlyCollection<int>? clientIds = null)
         {
             var data = await BuildReportDataAsync(date, date, clientIds);
 
-            return GeneratePdfFile(data, date);
+            return GeneratePdfFile(data, CreateReportParameters(TimesheetReportType.Daily, date, date, data));
         }
 
         public async Task<byte[]> DownloadDateRangeTimesheetReportAsync(DateOnly fromDate, DateOnly toDate, IReadOnlyCollection<int>? clientIds = null)
@@ -267,20 +281,19 @@ namespace AeroMech.UI.Web.Services
 
             var data = await BuildReportDataAsync(fromDate, toDate, clientIds);
 
-            return GeneratePdfFile(data, fromDate);
+            return GeneratePdfFile(data, CreateReportParameters(TimesheetReportType.DateRange, fromDate, toDate, data));
         }
 
         public async Task<byte[]> ExportWeeklyTimesheetToExcelAsync(DateOnly anyDateInWeek, IReadOnlyCollection<int>? clientIds = null)
         {
             var weekStart = GetWeekStart(anyDateInWeek);
-            var data = await BuildReportDataAsync(weekStart, weekStart.AddDays(6), clientIds);
+            var weekEnd = weekStart.AddDays(6);
+            var data = await BuildReportDataAsync(weekStart, weekEnd, clientIds);
 
             return GenerateExcelFile(
                 data.Employees,
                 data.Rows,
-                weekStart,
-                ISOWeek.GetWeekOfYear(weekStart.ToDateTime(TimeOnly.MinValue)),
-                data.ClientNames);
+                CreateReportParameters(TimesheetReportType.Weekly, weekStart, weekEnd, data));
         }
 
         public async Task<byte[]> ExportDailyTimesheetToExcelAsync(DateOnly date, IReadOnlyCollection<int>? clientIds = null)
@@ -290,9 +303,7 @@ namespace AeroMech.UI.Web.Services
             return GenerateExcelFile(
                 data.Employees,
                 data.Rows,
-                date,
-                ISOWeek.GetWeekOfYear(date.ToDateTime(TimeOnly.MinValue)),
-                data.ClientNames);
+                CreateReportParameters(TimesheetReportType.Daily, date, date, data));
         }
 
         public async Task<byte[]> ExportDateRangeTimesheetToExcelAsync(DateOnly fromDate, DateOnly toDate, IReadOnlyCollection<int>? clientIds = null)
@@ -305,23 +316,54 @@ namespace AeroMech.UI.Web.Services
             return GenerateExcelFile(
                 data.Employees,
                 data.Rows,
-                fromDate,
-                ISOWeek.GetWeekOfYear(fromDate.ToDateTime(TimeOnly.MinValue)),
-                data.ClientNames);
+                CreateReportParameters(TimesheetReportType.DateRange, fromDate, toDate, data));
         }
 
-        private byte[] GeneratePdfFile(TimesheetReportData data, DateOnly startDate)
+        private byte[] GeneratePdfFile(TimesheetReportData data, TimesheetReportParameters parameters)
         {
             _timesheetReport.Data = new TimesheetReportDocumentData
             {
-                WeekStartDate = startDate,
-                WeekNumber = ISOWeek.GetWeekOfYear(startDate.ToDateTime(TimeOnly.MinValue)),
-                SelectedClientNames = data.ClientNames,
+                ReportType = parameters.ReportType,
+                PeriodLabel = parameters.PeriodLabel,
+                ClientFilterLabel = parameters.ClientFilterLabel,
                 Employees = data.Employees,
                 Rows = data.Rows
             };
 
             return Document.Create(_timesheetReport.Compose).GeneratePdf();
+        }
+
+        private static TimesheetReportParameters CreateReportParameters(
+            TimesheetReportType reportType,
+            DateOnly fromDate,
+            DateOnly toDate,
+            TimesheetReportData data)
+        {
+            var periodLabel = fromDate == toDate
+                ? fromDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)
+                : $"{fromDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture)} – {toDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture)}";
+
+            if (reportType == TimesheetReportType.Weekly)
+            {
+                var weekNumber = ISOWeek.GetWeekOfYear(fromDate.ToDateTime(TimeOnly.MinValue));
+                periodLabel = $"Week {weekNumber} · {periodLabel}";
+            }
+
+            var clientFilterLabel = !data.IsClientFiltered
+                ? "All clients"
+                : data.ClientNames.Count > 0
+                    ? string.Join(", ", data.ClientNames)
+                    : "No matching clients";
+
+            var reportTypeLabel = reportType switch
+            {
+                TimesheetReportType.Weekly => "Weekly",
+                TimesheetReportType.Daily => "Daily",
+                TimesheetReportType.DateRange => "Date range",
+                _ => throw new ArgumentOutOfRangeException(nameof(reportType))
+            };
+
+            return new TimesheetReportParameters(reportTypeLabel, periodLabel, clientFilterLabel);
         }
 
         /// <summary>
@@ -414,7 +456,7 @@ namespace AeroMech.UI.Web.Services
 
             var rows = BuildReportRows(timesheetDetailItems, serviceReportItems, employees, includeGapsSection: !isClientFiltered);
 
-            return new TimesheetReportData(employees, rows, clientNames);
+            return new TimesheetReportData(employees, rows, clientNames, isClientFiltered);
         }
 
         private static List<TimesheetReportRow> BuildReportRows(
@@ -535,9 +577,7 @@ namespace AeroMech.UI.Web.Services
         private static byte[] GenerateExcelFile(
             List<TimesheetReportEmployee> employees,
             List<TimesheetReportRow> rows,
-            DateOnly startDate,
-            int weekNumber,
-            List<string> clientNames)
+            TimesheetReportParameters parameters)
         {
             using var workbook = new XLWorkbook();
             var worksheet = workbook.Worksheets.Add("Timesheet Report");
@@ -549,23 +589,20 @@ namespace AeroMech.UI.Web.Services
             worksheet.Cell(currentRow, 1).Style.Font.FontSize = 16;
             currentRow += 2;
 
-            worksheet.Cell(currentRow, 1).Value = "Week No:";
-            worksheet.Cell(currentRow, 2).Value = weekNumber;
+            worksheet.Cell(currentRow, 1).Value = "Type:";
+            worksheet.Cell(currentRow, 2).Value = parameters.ReportType;
             worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
             currentRow++;
 
-            worksheet.Cell(currentRow, 1).Value = "Date:";
-            worksheet.Cell(currentRow, 2).Value = startDate.ToString("dd/MM/yyyy");
+            worksheet.Cell(currentRow, 1).Value = "Period:";
+            worksheet.Cell(currentRow, 2).Value = parameters.PeriodLabel;
             worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
             currentRow++;
 
-            if (clientNames.Count > 0)
-            {
-                worksheet.Cell(currentRow, 1).Value = "Clients:";
-                worksheet.Cell(currentRow, 2).Value = string.Join(", ", clientNames);
-                worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
-                currentRow++;
-            }
+            worksheet.Cell(currentRow, 1).Value = "Clients:";
+            worksheet.Cell(currentRow, 2).Value = parameters.ClientFilterLabel;
+            worksheet.Cell(currentRow, 1).Style.Font.Bold = true;
+            currentRow++;
 
             currentRow++;
 

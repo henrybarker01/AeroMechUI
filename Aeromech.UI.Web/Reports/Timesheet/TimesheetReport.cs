@@ -54,14 +54,30 @@ namespace AeroMech.API.Reports
             {
                 column.Spacing(10);
 
-                column.Item().AlignRight().Column(info =>
-                {
-                    info.Item().Text($"Week No :\t\t\t\t{Data.WeekNumber}").SemiBold().FontSize(10);
-                    info.Item().Text($"Date :\t\t\t\t{Data.WeekStartDate:dd/MM/yyyy}").SemiBold().FontSize(10);
+                column.Item()
+                    .Background(Colors.Grey.Lighten4)
+                    .PaddingVertical(5)
+                    .PaddingHorizontal(8)
+                    .Row(parameters =>
+                    {
+                        parameters.RelativeItem().Column(item =>
+                        {
+                            item.Item().Text("TYPE").FontSize(7).FontColor(Colors.Grey.Darken1);
+                            item.Item().Text(Data.ReportType).FontSize(9).SemiBold();
+                        });
 
-                    if (Data.SelectedClientNames.Count > 0)
-                        info.Item().Text($"Clients :\t\t\t\t{string.Join(", ", Data.SelectedClientNames)}").SemiBold().FontSize(10);
-                });
+                        parameters.RelativeItem(1.5f).Column(item =>
+                        {
+                            item.Item().Text("PERIOD").FontSize(7).FontColor(Colors.Grey.Darken1);
+                            item.Item().Text(Data.PeriodLabel).FontSize(9).SemiBold();
+                        });
+
+                        parameters.RelativeItem(2f).Column(item =>
+                        {
+                            item.Item().Text("CLIENTS").FontSize(7).FontColor(Colors.Grey.Darken1);
+                            item.Item().Text(Data.ClientFilterLabel).FontSize(9).SemiBold();
+                        });
+                    });
 
                 column.Item().Element(ComposeMatrixTable);
             });
@@ -330,9 +346,9 @@ namespace AeroMech.API.Reports
 
     public class TimesheetReportDocumentData
     {
-        public int WeekNumber { get; set; }
-        public DateOnly WeekStartDate { get; set; }
-        public List<string> SelectedClientNames { get; set; } = new();
+        public string ReportType { get; set; } = string.Empty;
+        public string PeriodLabel { get; set; } = string.Empty;
+        public string ClientFilterLabel { get; set; } = string.Empty;
         public List<TimesheetReportEmployee> Employees { get; set; } = new();
         public List<TimesheetReportRow> Rows { get; set; } = new();
     }
