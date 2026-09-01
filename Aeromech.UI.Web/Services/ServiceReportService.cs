@@ -3,6 +3,7 @@ using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
 using AeroMech.Models.Enums;
+using AeroMech.Models.Models;
 using AeroMech.UI.Web.Pages.Employee;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
@@ -447,6 +448,32 @@ namespace AeroMech.UI.Web.Services
             _fieldServiceReport.serviceReport = serviceReportModel;
 
             return Document.Create(_fieldServiceReport.Compose).GeneratePdf();
+        }
+
+        /// <summary>
+        /// Every service report, reduced to what a picker needs to show. The reports view offers
+        /// the whole history, and loading each one in full - parts, employees and prices behind
+        /// them - to fill a dropdown would read far more than it displays.
+        /// </summary>
+        public async Task<List<ServiceReportOptionModel>> GetServiceReportOptions()
+        {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            return await _aeroMechDBContext.ServiceReports
+                .AsNoTracking()
+                .Where(x => !x.IsDeleted)
+                .OrderByDescending(x => x.ReportDate)
+                .ThenByDescending(x => x.ServiceReportNumber)
+                .Select(x => new ServiceReportOptionModel
+                {
+                    Id = x.Id,
+                    ServiceReportNumber = x.ServiceReportNumber,
+                    ReportDate = x.ReportDate,
+                    ClientName = x.Client == null ? null : x.Client.Name,
+                    MachineType = x.Vehicle == null ? null : x.Vehicle.MachineType,
+                    SerialNumber = x.Vehicle == null ? null : x.Vehicle.SerialNumber
+                })
+                .ToListAsync();
         }
 
         public async Task<List<ServiceReportModel>> GetRecentServiceReports(DateTimeOffset fromDate = default)
