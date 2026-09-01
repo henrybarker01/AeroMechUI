@@ -43,6 +43,7 @@
 
     private readonly List<ReportRow> _reports = new()
     {
+        new("Audit Log", "Who changed what and when - stock adjustments, price changes and the documents behind them.", "/ShowAuditLogReport"),
         new("Field Service Report", "The report as it goes out to the client, for a chosen job.", "/ShowPDF"),
         new("Stock Count Sheet", "Blank count sheet to walk the shelves with, or the sheet for a stock take.", "/ShowStockTakeSheet"),
         new("Stock Movement", "Opening level, every movement and closing level for a period.", "/ShowStockMovementReport"),

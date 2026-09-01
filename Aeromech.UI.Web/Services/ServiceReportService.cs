@@ -18,13 +18,20 @@ namespace AeroMech.UI.Web.Services
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly FieldServiceReport _fieldServiceReport;
         private readonly IMemoryCache _memoryCache;
+        private readonly AuditService _auditService;
 
-        public ServiceReportService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, FieldServiceReport fieldServiceReport, IMemoryCache memoryCache)
+        public ServiceReportService(
+            IDbContextFactory<AeroMechDBContext> contextFactory,
+            IMapper mapper,
+            FieldServiceReport fieldServiceReport,
+            IMemoryCache memoryCache,
+            AuditService auditService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _fieldServiceReport = fieldServiceReport;
             _memoryCache = memoryCache;
+            _auditService = auditService;
         }
 
         // Date picker is date-only. Persist as UTC midnight for the selected calendar date (no timezone day-shift).
@@ -51,6 +58,12 @@ namespace AeroMech.UI.Web.Services
             sr.Employees.ForEach(x => x.Id = 0);
 
             sr.AdHockParts = new List<ServiceReportAdHockPart>();
+
+            // The stock issued here cannot be recorded yet: the movements are known before the
+            // report has a number to quote, and an entry saying stock left the shelf without
+            // saying which job took it would explain nothing. They are held and written below,
+            // once the number is settled and in the same save as the stock they describe.
+            var stockIssued = new List<(int PartId, string? PartCode, int Before, int After)>();
 
             foreach (var part in serviceReport.Parts.ToList())
             {
@@ -83,7 +96,10 @@ namespace AeroMech.UI.Web.Services
                     _aeroMechDBContext.StockAdjustment.Add(adjustment);
 
                     var partToUpdate = await _aeroMechDBContext.Parts.SingleAsync(x => x.Id == part.Id);
+                    var qtyBefore = partToUpdate.QtyOnHand;
                     partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
+
+                    stockIssued.Add((partToUpdate.Id, partToUpdate.PartCode, qtyBefore, partToUpdate.QtyOnHand));
                 }
             }
 
@@ -120,6 +136,24 @@ namespace AeroMech.UI.Web.Services
             }
 
             _aeroMechDBContext.ServiceReports.Add(sr);
+
+            if (stockIssued.Count > 0)
+            {
+                var auditUser = await _auditService.ResolveUser();
+
+                foreach (var issued in stockIssued)
+                {
+                    _auditService.RecordStockChange(
+                        _aeroMechDBContext,
+                        auditUser,
+                        issued.PartId,
+                        issued.PartCode,
+                        issued.Before,
+                        issued.After,
+                        $"Stock issued to service report AEM{sr.ServiceReportNumber}.");
+                }
+            }
+
             await _aeroMechDBContext.SaveChangesAsync();
 
             // Deliberately not cached: sr has no Client, Vehicle or Part navigations loaded,
@@ -155,6 +189,9 @@ namespace AeroMech.UI.Web.Services
             {
                 serviceReportToEdit.Parts = new List<ServiceReportPart>();
             }
+
+            var auditUser = await _auditService.ResolveUser();
+            var reportReference = $"AEM{serviceReportToEdit.ServiceReportNumber}";
 
             foreach (var part in serviceReport.Parts)
             {
@@ -205,6 +242,7 @@ namespace AeroMech.UI.Web.Services
                             });
 
                             var partToUpdate = await _aeroMechDBContext.Parts.SingleAsync(x => x.Id == p.PartId);
+                            var qtyBefore = partToUpdate.QtyOnHand;
                             partToUpdate.QtyOnHand = partToUpdate.QtyOnHand + p.Qty;
 
                             _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment()
@@ -218,6 +256,18 @@ namespace AeroMech.UI.Web.Services
                             });
 
                             partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
+
+                            // The ledger carries the reversal and the re-issue separately, because
+                            // that is what the stock did. The audit trail records the one thing
+                            // the person did: they changed the quantity on the job.
+                            _auditService.RecordStockChange(
+                                _aeroMechDBContext,
+                                auditUser,
+                                partToUpdate.Id,
+                                partToUpdate.PartCode,
+                                qtyBefore,
+                                partToUpdate.QtyOnHand,
+                                $"Quantity on service report {reportReference} changed from {p.Qty} to {part.QTY}.");
                         }
                         else if (part.IsDeleted && !p.IsDeleted)
                         {
@@ -231,7 +281,17 @@ namespace AeroMech.UI.Web.Services
                                 StockAdjustmentType = StockAdjustmentType.ServiceReportReversal
                             });
                             var partToUpdate = await _aeroMechDBContext.Parts.SingleAsync(x => x.Id == p.PartId);
+                            var qtyBefore = partToUpdate.QtyOnHand;
                             partToUpdate.QtyOnHand = partToUpdate.QtyOnHand + part.QTY;
+
+                            _auditService.RecordStockChange(
+                                _aeroMechDBContext,
+                                auditUser,
+                                partToUpdate.Id,
+                                partToUpdate.PartCode,
+                                qtyBefore,
+                                partToUpdate.QtyOnHand,
+                                $"Stock returned when the part was taken off service report {reportReference}.");
                         }
 
                         p.Qty = part.QTY;
@@ -262,7 +322,17 @@ namespace AeroMech.UI.Web.Services
                         });
 
                         var partToUpdate = await _aeroMechDBContext.Parts.SingleAsync(x => x.Id == part.Id);
+                        var qtyBefore = partToUpdate.QtyOnHand;
                         partToUpdate.QtyOnHand = partToUpdate.QtyOnHand - part.QTY;
+
+                        _auditService.RecordStockChange(
+                            _aeroMechDBContext,
+                            auditUser,
+                            partToUpdate.Id,
+                            partToUpdate.PartCode,
+                            qtyBefore,
+                            partToUpdate.QtyOnHand,
+                            $"Stock issued when the part was added to service report {reportReference}.");
                     }
                 }
             }

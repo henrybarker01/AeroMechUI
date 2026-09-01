@@ -1,0 +1,36 @@
+# Test environment: a second web container served at https://test.vmi.aeromech.co
+# with its own database (aeromech_test) in the existing Postgres container.
+#
+# It builds from a SEPARATE checkout of the repo (default ../AeroMechUI-test) so
+# any branch can be deployed to test without touching the production checkout.
+# Use ./deploy-test.sh <branch> to deploy, or run manually with:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.test.yml up -d --build web-test
+services:
+  web-test:
+    build:
+      context: ${TEST_BUILD_CONTEXT:-../AeroMechUI-test}
+      dockerfile: Aeromech.UI.Web/Dockerfile
+    restart: unless-stopped
+    # Not exposed publicly; Caddy proxies to it on the internal network
+    environment:
+      ASPNETCORE_ENVIRONMENT: Production
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      # Own database: EF Core's Database.Migrate() creates it on first start
+      ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${TEST_POSTGRES_DB:-aeromech_test};Username=${POSTGRES_USER:-aeromech};Password=${POSTGRES_PASSWORD}"
+      # Initial user, seeded only when the database has no users yet
+      SeedUser__UserName: ${TEST_SEED_USERNAME:-}
+      SeedUser__Email: ${TEST_SEED_EMAIL:-}
+      SeedUser__Password: ${TEST_SEED_PASSWORD:-}
+    volumes:
+      # Separate DataProtection keys from production
+      - dpkeys_test:/root/.aspnet/DataProtection-Keys
+    depends_on:
+      db:
+        condition: service_healthy
+
+  caddy:
+    depends_on:
+      - web-test
+
+volumes:
+  dpkeys_test:
