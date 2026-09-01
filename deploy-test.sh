@@ -35,10 +35,22 @@ fi
 git -C "$TEST_BUILD_CONTEXT" checkout "$BRANCH"
 git -C "$TEST_BUILD_CONTEXT" reset --hard "origin/$BRANCH"
 
+COMPOSE=(docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.test.yml)
+
 echo "Building and starting web-test..."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.test.yml up -d --build web-test
+"${COMPOSE[@]}" up -d --build web-test
 
 echo "Reloading Caddy config..."
-docker compose -f docker-compose.yml -f docker-compose.prod.yml -f docker-compose.test.yml exec caddy caddy reload --config /etc/caddy/Caddyfile
+# Make sure caddy is up (and created with the test overlay applied)
+"${COMPOSE[@]}" up -d caddy
+# `git pull` replaces the Caddyfile with a new inode, but a single-file bind
+# mount keeps pointing at the old one, so `caddy reload` inside the container
+# can silently reload stale config. Restart caddy when its copy is out of date.
+if "${COMPOSE[@]}" exec -T caddy cat /etc/caddy/Caddyfile | cmp -s - Caddyfile; then
+    "${COMPOSE[@]}" exec caddy caddy reload --config /etc/caddy/Caddyfile
+else
+    echo "Caddyfile in the container is stale; restarting caddy to remount it..."
+    "${COMPOSE[@]}" restart caddy
+fi
 
 echo "Done. Test environment is running $BRANCH at https://test.vmi.aeromech.co"
