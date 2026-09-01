@@ -1,3 +1,7 @@
 vmi.aeromech.co {
 	reverse_proxy web:8080
 }
+
+test.vmi.aeromech.co {
+	reverse_proxy web-test:8080
+}
