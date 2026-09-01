@@ -1,0 +1,160 @@
+@page "/ShowAuditLogReport"
+
+@using AeroMech.Data.Enums
+@using BlazorBootstrap
+
+<PageTitle>Audit Log Report</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h4 mb-0">Audit Log Report</h1>
+            <small class="text-muted">
+                Who changed what and when &mdash; stock adjustments, price changes and the documents behind them.
+            </small>
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-auto">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Period">
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(0)">Today</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(1)">Last 7 days</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(2)">This month</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(3)">Last 3 months</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row filter-row mb-3">
+        <div class="col-6 col-md-2">
+            <label for="from-date" class="form-label">From</label>
+            <InputDate TValue="DateOnly"
+                       Value="_request.FromDate"
+                       ValueChanged="OnFromDateChanged"
+                       ValueExpression="(() => _request.FromDate)"
+                       class="form-control"
+                       id="from-date" />
+        </div>
+
+        <div class="col-6 col-md-2">
+            <label for="to-date" class="form-label">To</label>
+            <InputDate TValue="DateOnly"
+                       Value="_request.ToDate"
+                       ValueChanged="OnToDateChanged"
+                       ValueExpression="(() => _request.ToDate)"
+                       class="form-control"
+                       id="to-date" />
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Users</label>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                        type="button"
+                        id="audit-user-filter"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
+                    @SelectedUsersLabel
+                </button>
+                <div class="dropdown-menu w-100 p-2" aria-labelledby="audit-user-filter">
+                    <div class="panel-scroll">
+                        @if (_users.Count == 0)
+                        {
+                            <div class="text-muted small px-1">Nothing has been recorded yet</div>
+                        }
+                        else
+                        {
+                            @foreach (var user in _users)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="@($"audit-user-{user}")"
+                                           checked="@_selectedUsers.Contains(user)"
+                                           @onchange="@(e => ToggleUser(user, (bool?)e.Value == true))" />
+                                    <label class="form-check-label" for="@($"audit-user-{user}")">@user</label>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <hr class="my-2" />
+                    <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearUserSelection">
+                        Clear selection (report on everybody)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-3">
+            <label class="form-label">Activity</label>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                        type="button"
+                        id="audit-area-filter"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
+                    @SelectedAreasLabel
+                </button>
+                <div class="dropdown-menu w-100 p-2" aria-labelledby="audit-area-filter">
+                    <div class="panel-scroll">
+                        @foreach (var area in _areas)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input"
+                                       type="checkbox"
+                                       id="@($"audit-area-{area}")"
+                                       checked="@_selectedAreas.Contains(area)"
+                                       @onchange="@(e => ToggleArea(area, (bool?)e.Value == true))" />
+                                <label class="form-check-label" for="@($"audit-area-{area}")">
+                                    @DescribeArea(area)
+                                </label>
+                            </div>
+                        }
+                    </div>
+                    <hr class="my-2" />
+                    <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearAreaSelection">
+                        Clear selection (report on everything)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-2">
+            <label for="audit-search" class="form-label">Matching</label>
+            <input type="text" class="form-control" id="audit-search" placeholder="Part, invoice, sheet"
+                   @bind="_request.SearchTerm" @bind:event="oninput" />
+        </div>
+    </div>
+
+    @* Says something about the report rather than about one field, and it has no room to
+       sit on a line inside a two-column date field, so it runs the width of the row. *@
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="form-text mt-0">
+                Entries are kept as they were written and cannot be edited &mdash; the newest are listed first.
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col text-end">
+            <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2">
+                <i class="bi bi-file-pdf me-1"></i>Generate report
+            </Button>
+            <Button Color="ButtonColor.Secondary" @onclick="DownloadPdf" Disabled="_pdfBytes is null">
+                <i class="bi bi-download me-1"></i>Download PDF
+            </Button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_pdfBase64String))
+    {
+        <PdfViewer @key="_reportVersion" Class="mb-3"
+                   Url='@string.Format("data:application/pdf;base64,{0}", _pdfBase64String)'
+                   OnDocumentLoaded="OnDocumentLoaded"
+                   OnPageChanged="OnPageChanged" />
+    }
+</div>

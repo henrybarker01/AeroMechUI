@@ -28,17 +28,20 @@ namespace AeroMech.UI.Web.Services
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly PartsService _partsService;
         private readonly StockCountSheet _countSheet;
+        private readonly AuditService _auditService;
 
         public StockTakeService(
             IDbContextFactory<AeroMechDBContext> contextFactory,
             IMapper mapper,
             PartsService partsService,
-            StockCountSheet countSheet)
+            StockCountSheet countSheet,
+            AuditService auditService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _partsService = partsService;
             _countSheet = countSheet;
+            _auditService = auditService;
         }
 
         /// <summary>
@@ -159,6 +162,20 @@ namespace AeroMech.UI.Web.Services
             }
 
             context.StockTakes.Add(stockTake);
+
+            await context.SaveChangesAsync();
+
+            // After the save, because the sheet has no number to quote until it has one. Still
+            // inside the transaction, so a sheet cannot exist without the entry that raised it.
+            _auditService.Record(
+                context,
+                await _auditService.ResolveUser(raisedBy),
+                AuditArea.StockTake,
+                AuditAction.Created,
+                nameof(StockTake),
+                stockTake.Id,
+                $"ST-{stockTake.StockTakeNumber:0000}",
+                $"Stock take raised over {parts.Count} part(s): {stockTake.StockTakeDescription}.");
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
@@ -497,6 +514,16 @@ namespace AeroMech.UI.Web.Services
             stockTake.UpdatedAt = DateTimeOffset.UtcNow;
             stockTake.UpdatedBy = by ?? string.Empty;
 
+            _auditService.Record(
+                context,
+                await _auditService.ResolveUser(by),
+                AuditArea.StockTake,
+                AuditAction.Cancelled,
+                nameof(StockTake),
+                stockTake.Id,
+                $"ST-{stockTake.StockTakeNumber:0000}",
+                $"Stock take cancelled without posting: {stockTake.StockTakeDescription}.");
+
             await context.SaveChangesAsync();
         }
 
@@ -550,6 +577,8 @@ namespace AeroMech.UI.Web.Services
 
             var now = DateTimeOffset.UtcNow;
             var user = postedBy ?? string.Empty;
+            var auditUser = await _auditService.ResolveUser(user);
+            var reference = $"ST-{stockTake.StockTakeNumber:0000}";
             var partIds = settled.Select(x => x.PartId).ToList();
 
             // Read the parts inside the transaction and correct whatever is found there. The
@@ -561,7 +590,7 @@ namespace AeroMech.UI.Web.Services
             var result = new StockTakePostResultModel
             {
                 StockTakeId = stockTake.Id,
-                Reference = $"ST-{stockTake.StockTakeNumber:0000}",
+                Reference = reference,
                 LinesNotCounted = lines.Count - settled.Count
             };
 
@@ -589,6 +618,8 @@ namespace AeroMech.UI.Web.Services
                 if (delta == 0)
                     continue;
 
+                var qtyBefore = part.QtyOnHand;
+
                 part.QtyOnHand += delta;
 
                 result.LinesAdjusted++;
@@ -611,6 +642,19 @@ namespace AeroMech.UI.Web.Services
                     StockAdjustmentType = StockAdjustmentType.StockTake,
                     StockTake = stockTake
                 });
+
+                // The count found the difference, but somebody accepted it and somebody posted it.
+                // The entry records the correction against the level actually on the part at the
+                // time, which is what a later reader is trying to account for.
+                _auditService.RecordStockChange(
+                    context,
+                    auditUser,
+                    part.Id,
+                    part.PartCode,
+                    qtyBefore,
+                    part.QtyOnHand,
+                    $"Stock corrected by {PartsService.Describe(delta)} posting stock take {reference} "
+                        + $"(counted {finalQuantity} against {line.QuantityOnHand} expected).");
             }
 
             stockTake.Status = StockTakeStatus.Completed;
@@ -618,6 +662,18 @@ namespace AeroMech.UI.Web.Services
             stockTake.CompletedBy = user;
             stockTake.UpdatedAt = now;
             stockTake.UpdatedBy = user;
+
+            _auditService.Record(
+                context,
+                auditUser,
+                AuditArea.StockTake,
+                AuditAction.Posted,
+                nameof(StockTake),
+                stockTake.Id,
+                reference,
+                $"Stock take posted: {result.LinesAdjusted} of {settled.Count} settled line(s) corrected, "
+                    + $"{result.UnitsAdded} unit(s) added, {result.UnitsRemoved} removed, "
+                    + $"value {AuditService.FormatMoney(result.ValueAdjustment)}.");
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();

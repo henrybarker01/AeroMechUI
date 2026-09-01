@@ -78,6 +78,25 @@ namespace AeroMech.Data.Persistence
                 .WithMany()
                 .HasForeignKey(x => x.StockTakeId)
                 .OnDelete(DeleteBehavior.SetNull);
+
+            // The audit log is read in three ways and indexed for each: a period ("what happened
+            // last month"), a person ("what has this user been doing"), and a subject ("every
+            // price change"). Newest first in each, because that is the order it is asked for.
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(x => x.OccurredAt)
+                .IsDescending();
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(x => new { x.UserName, x.OccurredAt })
+                .IsDescending(false, true);
+
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(x => new { x.Area, x.OccurredAt })
+                .IsDescending(false, true);
+
+            // The entity an entry is about, for pulling the history of one part or one invoice.
+            modelBuilder.Entity<AuditLog>()
+                .HasIndex(x => new { x.EntityType, x.EntityId });
         }
 
         public DbSet<Client> Clients { get; set; }
@@ -102,5 +121,6 @@ namespace AeroMech.Data.Persistence
         public DbSet<QuoteLabour> QuoteLabour { get; set; }
         public DbSet<QuotePart> QuoteParts { get; set; }
         public DbSet<QuoteAdHockPart> QuoteAdHockParts { get; set; }
+        public DbSet<AuditLog> AuditLogs { get; set; }
     }
 }

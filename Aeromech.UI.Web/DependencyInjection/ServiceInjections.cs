@@ -7,6 +7,14 @@ namespace AeroMech.UI.Web.DependencyInjection
     {
         public static void AddServices(this IServiceCollection services)
         {
+            // The audit trail names the signed-in user, and outside a Blazor circuit that name is
+            // only reachable through the HTTP context.
+            services.AddHttpContextAccessor();
+
+            services.AddScoped<CurrentUserService, CurrentUserService>();
+            services.AddScoped<AuditService, AuditService>();
+            services.AddScoped<AuditReportService, AuditReportService>();
+            services.AddScoped<AuditLogReport, AuditLogReport>();
             services.AddScoped<ClientService, ClientService>();
             services.AddScoped<EmployeeService, EmployeeService>();
             services.AddScoped<PartsService, PartsService>();

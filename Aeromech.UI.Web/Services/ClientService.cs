@@ -1,6 +1,7 @@
 ﻿using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
+using AeroMech.Models.Enums;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
@@ -10,11 +11,13 @@ namespace AeroMech.UI.Web.Services
     {
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly IMapper _mapper;
+        private readonly AuditService _auditService;
 
-        public ClientService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper)
+        public ClientService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, AuditService auditService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
+            _auditService = auditService;
         }
 
         public async Task<List<ClientModel>> GetClients()
@@ -94,28 +97,68 @@ namespace AeroMech.UI.Web.Services
             clientToEdit.Address.City = client.City ?? "";
             clientToEdit.Address.PostalCode = client.PostalCode ?? "";
 
+            // Collected inside the loop and written after it, because the loop body cannot await.
+            // A rate that had none before is recorded the same way as one that moved, with nothing
+            // as its previous value: it is still the figure every invoice raised afterwards uses.
+            var rateChanges = new List<(RateType RateType, decimal? Previous, decimal Current)>();
+
             if (clientToEdit?.Rates?.Count == 0)
             {
                 client.Rates.ForEach(rate =>
                 {
+                    var newRate = Convert.ToDecimal(rate.Rate);
+
                     clientToEdit.Rates.Add(new ClientRate()
                     {
-                        Rate = Convert.ToDecimal(rate.Rate),
+                        Rate = newRate,
                         EffectiveDate = DateTimeOffset.UtcNow,
                         ClientId = client.Id,
                         RateType = rate.RateType,
                         IsActive = true,
                     });
+
+                    rateChanges.Add((rate.RateType, null, newRate));
                 });
             }
             else
             {
                 clientToEdit.Rates.ForEach(rate =>
                 {
+                    var previousRate = rate.Rate;
+
                     rate.Rate = Convert.ToDecimal(client.Rates.FirstOrDefault(x => x.RateType == rate.RateType).Rate);
                     rate.EffectiveDate = DateTimeOffset.UtcNow;
                     rate.IsActive = true;
+
+                    // What a client is charged is a price like any other, and the one that shows up
+                    // on every invoice raised afterwards. Recorded per rate type, because that is
+                    // the granularity it is argued about at.
+                    if (previousRate != rate.Rate)
+                    {
+                        rateChanges.Add((rate.RateType, previousRate, rate.Rate));
+                    }
                 });
+            }
+
+            if (rateChanges.Count > 0)
+            {
+                var user = await _auditService.ResolveUser();
+
+                foreach (var change in rateChanges)
+                {
+                    _auditService.RecordPriceChange(
+                        _aeroMechDBContext,
+                        user,
+                        nameof(Data.Models.Client),
+                        clientToEdit!.Id,
+                        clientToEdit.Name,
+                        change.RateType.ToString(),
+                        change.Previous.HasValue ? AuditService.FormatMoney(change.Previous.Value) : string.Empty,
+                        AuditService.FormatMoney(change.Current),
+                        change.Previous.HasValue
+                            ? $"{change.RateType.GetDisplayName()} rate changed for {clientToEdit.Name}."
+                            : $"{change.RateType.GetDisplayName()} rate set for {clientToEdit.Name}.");
+                }
             }
 
             await _aeroMechDBContext.SaveChangesAsync();

@@ -1,3 +1,4 @@
+using AeroMech.Data.Enums;
 using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models.Enums;
@@ -17,12 +18,18 @@ namespace AeroMech.UI.Web.Services
         private readonly IMapper _mapper;
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly PartsService _partsService;
+        private readonly AuditService _auditService;
 
-        public StockReceivingService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, PartsService partsService)
+        public StockReceivingService(
+            IDbContextFactory<AeroMechDBContext> contextFactory,
+            IMapper mapper,
+            PartsService partsService,
+            AuditService auditService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _partsService = partsService;
+            _auditService = auditService;
         }
 
         // Date pickers are date-only. Persist as UTC midnight for the selected calendar date so
@@ -127,6 +134,11 @@ namespace AeroMech.UI.Web.Services
             var receivedAt = DateTimeOffset.UtcNow;
             var receivedBy = string.IsNullOrWhiteSpace(receipt.ReceivedBy) ? string.Empty : receipt.ReceivedBy;
 
+            // The screen already names who is receiving, and that name is what goes on the
+            // document. The audit trail keeps the same one so the two cannot disagree, falling
+            // back to the signed-in user where the screen supplied nothing.
+            var auditUser = await _auditService.ResolveUser(receivedBy);
+
             var stockReceipt = new StockReceipt
             {
                 SupplierCode = receipt.SupplierCode.Trim(),
@@ -168,6 +180,8 @@ namespace AeroMech.UI.Web.Services
                 part.QtyOnHand = qtyBefore + line.QtyReceived;
 
                 var costPriceUpdated = receipt.UpdateCostPrices && line.CostPriceDiffers;
+                var costPriceBefore = CurrentCostPrice(part);
+
                 if (costPriceUpdated)
                     ApplyCostPrice(part, line.UnitCost, receivedAt);
 
@@ -194,7 +208,51 @@ namespace AeroMech.UI.Web.Services
                     StockAdjustmentType = StockAdjustmentType.StockReceipt,
                     StockReceipt = stockReceipt
                 });
+
+                // A line at a time rather than one entry for the invoice, because the question
+                // asked of an audit trail is almost always about one part.
+                _auditService.RecordStockChange(
+                    context,
+                    auditUser,
+                    part.Id,
+                    part.PartCode,
+                    qtyBefore,
+                    part.QtyOnHand,
+                    $"Stock received on invoice {stockReceipt.InvoiceNumber} from {stockReceipt.SupplierCode}.");
+
+                // Receiving is the one path that changes a price as a side effect of moving stock,
+                // which makes it the one most easily missed when a cost is later queried.
+                if (costPriceUpdated)
+                {
+                    _auditService.RecordPriceChange(
+                        context,
+                        auditUser,
+                        nameof(Part),
+                        part.Id,
+                        part.PartCode,
+                        nameof(PartPrice.CostPrice),
+                        AuditService.FormatMoney(costPriceBefore),
+                        AuditService.FormatMoney(line.UnitCost),
+                        $"Cost price updated from invoice {stockReceipt.InvoiceNumber} while receiving stock.");
+                }
             }
+
+            await context.SaveChangesAsync();
+
+            // Written after the save because the receipt has no id until then, and an entry that
+            // cannot point at the invoice it is about would not be worth keeping. Still inside the
+            // transaction, so the receipt and its audit entry stand or fall together.
+            _auditService.Record(
+                context,
+                auditUser,
+                AuditArea.StockReceiving,
+                AuditAction.Posted,
+                nameof(StockReceipt),
+                stockReceipt.Id,
+                stockReceipt.InvoiceNumber,
+                $"Invoice {stockReceipt.InvoiceNumber} from {stockReceipt.SupplierCode} received: "
+                    + $"{lines.Count} line(s), {lines.Sum(x => x.QtyReceived)} unit(s), "
+                    + $"total {AuditService.FormatMoney(receipt.InvoiceTotal)}.");
 
             await context.SaveChangesAsync();
             await transaction.CommitAsync();
