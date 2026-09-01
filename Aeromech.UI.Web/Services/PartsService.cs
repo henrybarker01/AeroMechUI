@@ -1,4 +1,5 @@
-﻿using AeroMech.Data.Models;
+﻿using AeroMech.Data.Enums;
+using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
 using AeroMech.Models.Enums;
@@ -12,11 +13,13 @@ namespace AeroMech.UI.Web.Services
     {
         private readonly IMapper _mapper;
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
-        
-        public PartsService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper)
+        private readonly AuditService _auditService;
+
+        public PartsService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, AuditService auditService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
+            _auditService = auditService;
         }
 
         public async Task<List<PartModel>> GetParts()
@@ -63,7 +66,23 @@ namespace AeroMech.UI.Web.Services
             var part = await _aeroMechDBContext.Parts.FindAsync(prt.Id);
             if (part != null)
             {
+                var user = await _auditService.ResolveUser();
+
                 part.IsDeleted = true;
+
+                // Recorded with the level the part was carrying when it went. A part removed with
+                // stock still against it is the kind of thing a stock figure later has to be
+                // explained by, and the quantity is not readable from anywhere else afterwards.
+                _auditService.Record(
+                    _aeroMechDBContext,
+                    user,
+                    AuditArea.Parts,
+                    AuditAction.Deleted,
+                    nameof(Part),
+                    part.Id,
+                    part.PartCode,
+                    $"Part deleted while carrying {part.QtyOnHand} on hand.");
+
                 await _aeroMechDBContext.SaveChangesAsync();
             }
         }
@@ -72,8 +91,16 @@ namespace AeroMech.UI.Web.Services
         {
             using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
 
+            var user = await _auditService.ResolveUser();
+
             if (part.Id == 0)
             {
+                // The part has no id until it is saved, and an audit entry that cannot name what
+                // it is about is worth little. So the save happens inside a transaction and the
+                // entries are written against the id it produced: either both land or neither
+                // does, and a part cannot come into existence unrecorded.
+                using var transaction = await _aeroMechDBContext.Database.BeginTransactionAsync();
+
                 AeroMech.Data.Models.Part prt = _mapper.Map<AeroMech.Data.Models.Part>(part);
                 prt.Prices = new List<PartPrice>() { new PartPrice() {
                     CostPrice = Convert.ToDouble(part.CostPrice),
@@ -102,6 +129,34 @@ namespace AeroMech.UI.Web.Services
                 }
 
                 await _aeroMechDBContext.SaveChangesAsync();
+
+                _auditService.Record(
+                    _aeroMechDBContext,
+                    user,
+                    AuditArea.Parts,
+                    AuditAction.Created,
+                    nameof(Part),
+                    prt.Id,
+                    prt.PartCode,
+                    $"Part added at a cost price of {AuditService.FormatMoney(Convert.ToDouble(part.CostPrice))}.");
+
+                // The opening quantity is a stock movement like any other, and the one most worth
+                // being able to point at: it is the only figure on the part nobody had to justify.
+                if (prt.QtyOnHand != 0)
+                {
+                    _auditService.RecordStockChange(
+                        _aeroMechDBContext,
+                        user,
+                        prt.Id,
+                        prt.PartCode,
+                        0,
+                        prt.QtyOnHand,
+                        "Opening stock recorded when the part was added.");
+                }
+
+                await _aeroMechDBContext.SaveChangesAsync();
+                await transaction.CommitAsync();
+
                 return prt.Id;
             }
             else
@@ -114,6 +169,25 @@ namespace AeroMech.UI.Web.Services
                 // without a receipt or a count behind it, so the difference is what has to reach
                 // the ledger for the level to stay explainable.
                 var previousQtyOnHand = partToEdit.QtyOnHand;
+
+                // Read for the same reason, one step further: what a field was is the half of a
+                // change that stops existing the moment it is written over.
+                var changedFields = new List<(string Field, string? OldValue, string? NewValue)>();
+
+                void TrackChange(string field, string? oldValue, string? newValue)
+                {
+                    if (!string.Equals(oldValue ?? string.Empty, newValue ?? string.Empty, StringComparison.Ordinal))
+                        changedFields.Add((field, oldValue, newValue));
+                }
+
+                TrackChange(nameof(Part.PartCode), partToEdit.PartCode, part.PartCode);
+                TrackChange(nameof(Part.PartDescription), partToEdit.PartDescription, part.PartDescription);
+                TrackChange(nameof(Part.Bin), partToEdit.Bin, part.Bin);
+                TrackChange(nameof(Part.CycleCount), AuditService.FormatQuantity(partToEdit.CycleCount), AuditService.FormatQuantity(part.CycleCount));
+                TrackChange(nameof(Part.SupplierCode), partToEdit.SupplierCode, part.SupplierCode);
+                TrackChange(nameof(Part.ProductClass), partToEdit.ProductClass, part.ProductClass);
+
+                var previousCostPrice = partToEdit.Prices?.OrderBy(x => x.Id).FirstOrDefault()?.CostPrice;
 
                 partToEdit.PartCode = part.PartCode;
                 partToEdit.PartDescription = part.PartDescription;
@@ -135,12 +209,25 @@ namespace AeroMech.UI.Web.Services
                         AdjustedById = new Guid(),
                         StockAdjustmentType = StockAdjustmentType.StockAdjustment
                     });
+
+                    // Typed straight onto the part, with no receipt or count behind it. This is
+                    // the adjustment an audit trail exists for, so it is spelled out as such.
+                    _auditService.RecordStockChange(
+                        _aeroMechDBContext,
+                        user,
+                        partToEdit.Id,
+                        partToEdit.PartCode,
+                        previousQtyOnHand,
+                        partToEdit.QtyOnHand,
+                        $"Stock adjusted by {Describe(partToEdit.QtyOnHand - previousQtyOnHand)} by editing the part.");
                 }
+
+                var newCostPrice = Convert.ToDouble(part.CostPrice);
 
                 if (partToEdit.Prices == null || partToEdit.Prices.Count == 0)
                 {
                     partToEdit.Prices = new List<PartPrice>() { new PartPrice() {
-                        CostPrice = Convert.ToDouble(part.CostPrice),
+                        CostPrice = newCostPrice,
                         EffectiveDate = DateTimeOffset.UtcNow,
                         IsDeleted = false,
                         SellingPrice = 0
@@ -148,12 +235,48 @@ namespace AeroMech.UI.Web.Services
                 }
                 else
                 {
-                    partToEdit.Prices.First().CostPrice = Convert.ToDouble(part.CostPrice);
+                    partToEdit.Prices.First().CostPrice = newCostPrice;
+                }
+
+                if (previousCostPrice is null || Math.Abs(previousCostPrice.Value - newCostPrice) > 0.0001)
+                {
+                    _auditService.RecordPriceChange(
+                        _aeroMechDBContext,
+                        user,
+                        nameof(Part),
+                        partToEdit.Id,
+                        partToEdit.PartCode,
+                        nameof(PartPrice.CostPrice),
+                        previousCostPrice is null ? string.Empty : AuditService.FormatMoney(previousCostPrice.Value),
+                        AuditService.FormatMoney(newCostPrice),
+                        "Cost price changed by editing the part.");
+                }
+
+                foreach (var change in changedFields)
+                {
+                    _auditService.Record(
+                        _aeroMechDBContext,
+                        user,
+                        AuditArea.Parts,
+                        AuditAction.Updated,
+                        nameof(Part),
+                        partToEdit.Id,
+                        partToEdit.PartCode,
+                        $"{change.Field} changed by editing the part.",
+                        change.Field,
+                        change.OldValue,
+                        change.NewValue);
                 }
 
                 await _aeroMechDBContext.SaveChangesAsync();
                 return partToEdit.Id;
             }
         }
+
+        /// <summary>
+        /// A movement reads as a signed figure, because "adjusted by 5" and "adjusted by -5" are
+        /// the two things a reader most needs to tell apart at a glance.
+        /// </summary>
+        internal static string Describe(int delta) => delta > 0 ? $"+{delta}" : delta.ToString();
     }
 }
