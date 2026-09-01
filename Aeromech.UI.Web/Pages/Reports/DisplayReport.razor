@@ -2,11 +2,54 @@
 @page "/ShowPDF/{reportId:int}"
 @using BlazorBootstrap
 
-@if (pdfBase64String != null)
-{
-    <Button class="download-report" Color="ButtonColor.Primary" @onclick="DownloadFileFromStream">Download</Button>
-    <PdfViewer Class="mb-3"
-               Url="@string.Format("data:application/pdf;base64,{0}", pdfBase64String)"
-               OnDocumentLoaded="OnDocumentLoaded"
-               OnPageChanged="OnPageChanged" />
-}
+<PageTitle>Field Service Report</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h4 mb-0">Field Service Report</h1>
+            <small class="text-muted">
+                The report as it goes out to the client: what was found, what was done, and the
+                labour and parts it took.
+            </small>
+        </div>
+    </div>
+
+    <div class="row filter-row mb-3">
+        <div class="col-12 col-md-6">
+            <label for="service-report" class="form-label">Service report</label>
+            @if (_serviceReports.Count == 0)
+            {
+                <div class="form-control-plaintext text-muted">No service reports have been written yet.</div>
+            }
+            else
+            {
+                <select class="form-select" id="service-report" @onchange="OnServiceReportChanged">
+                    @foreach (var report in _serviceReports)
+                    {
+                        <option value="@report.Id" selected="@(_selectedId == report.Id)">@report.Label</option>
+                    }
+                </select>
+            }
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col text-end">
+            <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2" Disabled="_selectedId is null">
+                <i class="bi bi-file-pdf me-1"></i>View report
+            </Button>
+            <Button Color="ButtonColor.Secondary" @onclick="DownloadPdf" Disabled="_pdfBytes is null">
+                <i class="bi bi-download me-1"></i>Download PDF
+            </Button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_pdfBase64String))
+    {
+        <PdfViewer @key="_reportVersion" Class="mb-3"
+                   Url='@string.Format("data:application/pdf;base64,{0}", _pdfBase64String)'
+                   OnDocumentLoaded="OnDocumentLoaded"
+                   OnPageChanged="OnPageChanged" />
+    }
+</div>

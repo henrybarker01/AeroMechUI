@@ -27,14 +27,7 @@
                         </div>
 
                         <div class="mt-auto d-flex justify-content-end">
-                            @if (!string.IsNullOrWhiteSpace(report.Route))
-                            {
-                                <button class="btn btn-primary btn-sm" @onclick="() => Navigation.NavigateTo(report.Route)">Run</button>
-                            }
-                            else
-                            {
-                                <button class="btn btn-outline-secondary btn-sm" disabled>Coming soon</button>
-                            }
+                            <button class="btn btn-primary btn-sm" @onclick="() => Navigation.NavigateTo(report.Route)">Run</button>
                         </div>
                     </div>
                 </div>
@@ -44,19 +37,18 @@
 </div>
 
 @code {
-    private sealed record ReportRow(string Name, string? Description, string? Route);
+    // Every row here runs. A report that cannot be run yet does not belong on this page: a card
+    // that does nothing reads as a broken feature rather than as a promise.
+    private sealed record ReportRow(string Name, string Description, string Route);
 
     private readonly List<ReportRow> _reports = new()
     {
-        new("Field Service Report", "Service report PDF for a selected report.", null),
-        new("Material Requisition", "Generate material requisition PDF.", null),
-        new("Employee Potential", "Employee potential summary report.", null),
+        new("Field Service Report", "The report as it goes out to the client, for a chosen job.", "/ShowPDF"),
         new("Stock Count Sheet", "Blank count sheet to walk the shelves with, or the sheet for a stock take.", "/ShowStockTakeSheet"),
         new("Stock Movement", "Opening level, every movement and closing level for a period.", "/ShowStockMovementReport"),
         new("Stock Valuation", "Current stock per supplier, with cost price and total value.", "/ShowStockValuationReport"),
         new("Timesheet", "Weekly timesheet matrix by employee.", "/ShowTimesheetReport"),
-        new("Vehicle Part No Service Record", "Vehicles missing service record part numbers.", null),
-        new("Vehicle Service Record", "Vehicle service record history.", null),
-        new("Vehicle Type Service Record", "Service records grouped by vehicle type.", null)
+        new("Vehicle Service Record", "Everything done to a machine, in the order it happened.", "/ShowVehicleServiceRecord"),
+        new("Vehicle Type Service Record", "The same history read across every machine of a type.", "/ShowVehicleServiceRecord/by-type")
     };
 }

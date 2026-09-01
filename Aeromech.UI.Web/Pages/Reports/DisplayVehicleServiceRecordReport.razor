@@ -1,0 +1,176 @@
+@page "/ShowVehicleServiceRecord"
+@page "/ShowVehicleServiceRecord/{Mode}"
+
+@using AeroMech.Models.Models
+@using BlazorBootstrap
+
+<PageTitle>@Heading</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h4 mb-0">@Heading</h1>
+            <small class="text-muted">@Blurb</small>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-auto">
+            <div class="btn-group" role="group" aria-label="Grouping">
+                <button type="button"
+                        class="btn @(_request.Grouping == VehicleServiceRecordGrouping.ByVehicle ? "btn-primary" : "btn-outline-primary")"
+                        @onclick="() => SetGrouping(VehicleServiceRecordGrouping.ByVehicle)">
+                    By machine
+                </button>
+                <button type="button"
+                        class="btn @(_request.Grouping == VehicleServiceRecordGrouping.ByMachineType ? "btn-primary" : "btn-outline-primary")"
+                        @onclick="() => SetGrouping(VehicleServiceRecordGrouping.ByMachineType)">
+                    By machine type
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row filter-row mb-3">
+        @if (_request.Grouping == VehicleServiceRecordGrouping.ByVehicle)
+        {
+            <div class="col-12 col-md-4">
+                <label class="form-label">Machines</label>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                            type="button"
+                            id="record-vehicle-filter"
+                            data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside"
+                            aria-expanded="false">
+                        @SelectedVehiclesLabel
+                    </button>
+                    <div class="dropdown-menu w-100 p-2" aria-labelledby="record-vehicle-filter">
+                        <div class="panel-scroll">
+                            @if (_vehicles.Count == 0)
+                            {
+                                <div class="text-muted small px-1">No machines on the books yet</div>
+                            }
+                            else
+                            {
+                                @foreach (var vehicle in _vehicles)
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               id="@($"record-vehicle-{vehicle.Id}")"
+                                               checked="@_selectedVehicleIds.Contains(vehicle.Id)"
+                                               @onchange="@(e => ToggleVehicle(vehicle.Id, (bool?)e.Value == true))" />
+                                        <label class="form-check-label" for="@($"record-vehicle-{vehicle.Id}")">@vehicle.Label</label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <hr class="my-2" />
+                        <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearVehicleSelection">
+                            Clear selection (every machine)
+                        </button>
+                    </div>
+                </div>
+                <div class="form-text">One heading per machine, in the order the work happened.</div>
+            </div>
+        }
+        else
+        {
+            <div class="col-12 col-md-4">
+                <label class="form-label">Machine types</label>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                            type="button"
+                            id="record-type-filter"
+                            data-bs-toggle="dropdown"
+                            data-bs-auto-close="outside"
+                            aria-expanded="false">
+                        @SelectedTypesLabel
+                    </button>
+                    <div class="dropdown-menu w-100 p-2" aria-labelledby="record-type-filter">
+                        <div class="panel-scroll">
+                            @if (_machineTypes.Count == 0)
+                            {
+                                <div class="text-muted small px-1">No machine types recorded yet</div>
+                            }
+                            else
+                            {
+                                @* Machine type is free text, so the value cannot be trusted to make
+                                   a valid element id. The position in the list can. *@
+                                @for (var index = 0; index < _machineTypes.Count; index++)
+                                {
+                                    var machineType = _machineTypes[index];
+                                    var elementId = $"record-type-{index}";
+
+                                    <div class="form-check">
+                                        <input class="form-check-input"
+                                               type="checkbox"
+                                               id="@elementId"
+                                               checked="@_selectedTypes.Contains(machineType)"
+                                               @onchange="@(e => ToggleMachineType(machineType, (bool?)e.Value == true))" />
+                                        <label class="form-check-label" for="@elementId">@machineType</label>
+                                    </div>
+                                }
+                            }
+                        </div>
+                        <hr class="my-2" />
+                        <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearTypeSelection">
+                            Clear selection (every type)
+                        </button>
+                    </div>
+                </div>
+                <div class="form-text">Machines carrying no type are grouped on their own at the end.</div>
+            </div>
+        }
+
+        <div class="col-6 col-md-2">
+            <label for="record-from" class="form-label">From date</label>
+            <input type="date" class="form-control" id="record-from"
+                   value="@_request.FromDate?.ToString("yyyy-MM-dd")"
+                   @onchange="OnFromDateChanged" />
+            <div class="form-text">Leave blank for the full history.</div>
+        </div>
+
+        <div class="col-6 col-md-2">
+            <label for="record-to" class="form-label">To date</label>
+            <input type="date" class="form-control" id="record-to"
+                   value="@_request.ToDate?.ToString("yyyy-MM-dd")"
+                   @onchange="OnToDateChanged" />
+        </div>
+
+        <div class="col-12 col-md-4 filter-row-control">
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="record-include-parts" @bind="_request.IncludeParts" />
+                <label class="form-check-label" for="record-include-parts">
+                    List the parts fitted at each visit
+                </label>
+            </div>
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox" id="record-include-empty" @bind="_request.IncludeVehiclesWithNoServices" />
+                <label class="form-check-label" for="record-include-empty">
+                    Keep machines that have never been in
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col text-end">
+            <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2">
+                <i class="bi bi-file-pdf me-1"></i>Generate report
+            </Button>
+            <Button Color="ButtonColor.Secondary" @onclick="DownloadPdf" Disabled="_pdfBytes is null">
+                <i class="bi bi-download me-1"></i>Download PDF
+            </Button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_pdfBase64String))
+    {
+        <PdfViewer @key="_reportVersion" Class="mb-3"
+                   Url='@string.Format("data:application/pdf;base64,{0}", _pdfBase64String)'
+                   OnDocumentLoaded="OnDocumentLoaded"
+                   OnPageChanged="OnPageChanged" />
+    }
+</div>
