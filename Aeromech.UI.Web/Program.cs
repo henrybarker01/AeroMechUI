@@ -76,6 +76,7 @@ QuestPDF.Settings.License = LicenseType.Community;
 var app = builder.Build();
 
 app.MigrateDatabase();
+app.SeedInitialUser();
 
 
 // Configure the HTTP request pipeline.
