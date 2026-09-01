@@ -13,6 +13,13 @@ namespace AeroMech.UI.Web.Services
     {
         private const string NoClientSectionTitle = "No Client";
 
+        private enum TimesheetReportType
+        {
+            Weekly,
+            Daily,
+            DateRange
+        }
+
         private sealed record TimesheetReportItem(int EmployeeId, string FirstName, string LastName, string RowKey, double Hours, string? ClientName);
 
         private sealed record TimesheetReportData(
@@ -257,14 +264,14 @@ namespace AeroMech.UI.Web.Services
             var weekEnd = weekStart.AddDays(6);
             var data = await BuildReportDataAsync(weekStart, weekEnd, clientIds);
 
-            return GeneratePdfFile(data, CreateReportParameters("Weekly", weekStart, weekEnd, data));
+            return GeneratePdfFile(data, CreateReportParameters(TimesheetReportType.Weekly, weekStart, weekEnd, data));
         }
 
         public async Task<byte[]> DownloadDailyTimesheetReportAsync(DateOnly date, IReadOnlyCollection<int>? clientIds = null)
         {
             var data = await BuildReportDataAsync(date, date, clientIds);
 
-            return GeneratePdfFile(data, CreateReportParameters("Daily", date, date, data));
+            return GeneratePdfFile(data, CreateReportParameters(TimesheetReportType.Daily, date, date, data));
         }
 
         public async Task<byte[]> DownloadDateRangeTimesheetReportAsync(DateOnly fromDate, DateOnly toDate, IReadOnlyCollection<int>? clientIds = null)
@@ -274,7 +281,7 @@ namespace AeroMech.UI.Web.Services
 
             var data = await BuildReportDataAsync(fromDate, toDate, clientIds);
 
-            return GeneratePdfFile(data, CreateReportParameters("Date range", fromDate, toDate, data));
+            return GeneratePdfFile(data, CreateReportParameters(TimesheetReportType.DateRange, fromDate, toDate, data));
         }
 
         public async Task<byte[]> ExportWeeklyTimesheetToExcelAsync(DateOnly anyDateInWeek, IReadOnlyCollection<int>? clientIds = null)
@@ -286,7 +293,7 @@ namespace AeroMech.UI.Web.Services
             return GenerateExcelFile(
                 data.Employees,
                 data.Rows,
-                CreateReportParameters("Weekly", weekStart, weekEnd, data));
+                CreateReportParameters(TimesheetReportType.Weekly, weekStart, weekEnd, data));
         }
 
         public async Task<byte[]> ExportDailyTimesheetToExcelAsync(DateOnly date, IReadOnlyCollection<int>? clientIds = null)
@@ -296,7 +303,7 @@ namespace AeroMech.UI.Web.Services
             return GenerateExcelFile(
                 data.Employees,
                 data.Rows,
-                CreateReportParameters("Daily", date, date, data));
+                CreateReportParameters(TimesheetReportType.Daily, date, date, data));
         }
 
         public async Task<byte[]> ExportDateRangeTimesheetToExcelAsync(DateOnly fromDate, DateOnly toDate, IReadOnlyCollection<int>? clientIds = null)
@@ -309,7 +316,7 @@ namespace AeroMech.UI.Web.Services
             return GenerateExcelFile(
                 data.Employees,
                 data.Rows,
-                CreateReportParameters("Date range", fromDate, toDate, data));
+                CreateReportParameters(TimesheetReportType.DateRange, fromDate, toDate, data));
         }
 
         private byte[] GeneratePdfFile(TimesheetReportData data, TimesheetReportParameters parameters)
@@ -327,7 +334,7 @@ namespace AeroMech.UI.Web.Services
         }
 
         private static TimesheetReportParameters CreateReportParameters(
-            string reportType,
+            TimesheetReportType reportType,
             DateOnly fromDate,
             DateOnly toDate,
             TimesheetReportData data)
@@ -336,7 +343,7 @@ namespace AeroMech.UI.Web.Services
                 ? fromDate.ToString("d MMMM yyyy", CultureInfo.InvariantCulture)
                 : $"{fromDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture)} – {toDate.ToString("d MMM yyyy", CultureInfo.InvariantCulture)}";
 
-            if (reportType == "Weekly")
+            if (reportType == TimesheetReportType.Weekly)
             {
                 var weekNumber = ISOWeek.GetWeekOfYear(fromDate.ToDateTime(TimeOnly.MinValue));
                 periodLabel = $"Week {weekNumber} · {periodLabel}";
@@ -348,7 +355,15 @@ namespace AeroMech.UI.Web.Services
                     ? string.Join(", ", data.ClientNames)
                     : "No matching clients";
 
-            return new TimesheetReportParameters(reportType, periodLabel, clientFilterLabel);
+            var reportTypeLabel = reportType switch
+            {
+                TimesheetReportType.Weekly => "Weekly",
+                TimesheetReportType.Daily => "Daily",
+                TimesheetReportType.DateRange => "Date range",
+                _ => throw new ArgumentOutOfRangeException(nameof(reportType))
+            };
+
+            return new TimesheetReportParameters(reportTypeLabel, periodLabel, clientFilterLabel);
         }
 
         /// <summary>

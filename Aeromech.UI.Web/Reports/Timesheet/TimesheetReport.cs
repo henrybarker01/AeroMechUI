@@ -59,25 +59,25 @@ namespace AeroMech.API.Reports
                     .PaddingVertical(5)
                     .PaddingHorizontal(8)
                     .Row(parameters =>
-                {
-                    parameters.RelativeItem().Column(item =>
                     {
-                        item.Item().Text("TYPE").FontSize(7).FontColor(Colors.Grey.Darken1);
-                        item.Item().Text(Data.ReportType).FontSize(9).SemiBold();
-                    });
+                        parameters.RelativeItem().Column(item =>
+                        {
+                            item.Item().Text("TYPE").FontSize(7).FontColor(Colors.Grey.Darken1);
+                            item.Item().Text(Data.ReportType).FontSize(9).SemiBold();
+                        });
 
-                    parameters.RelativeItem(1.5f).Column(item =>
-                    {
-                        item.Item().Text("PERIOD").FontSize(7).FontColor(Colors.Grey.Darken1);
-                        item.Item().Text(Data.PeriodLabel).FontSize(9).SemiBold();
-                    });
+                        parameters.RelativeItem(1.5f).Column(item =>
+                        {
+                            item.Item().Text("PERIOD").FontSize(7).FontColor(Colors.Grey.Darken1);
+                            item.Item().Text(Data.PeriodLabel).FontSize(9).SemiBold();
+                        });
 
-                    parameters.RelativeItem(2f).Column(item =>
-                    {
-                        item.Item().Text("CLIENTS").FontSize(7).FontColor(Colors.Grey.Darken1);
-                        item.Item().Text(Data.ClientFilterLabel).FontSize(9).SemiBold();
+                        parameters.RelativeItem(2f).Column(item =>
+                        {
+                            item.Item().Text("CLIENTS").FontSize(7).FontColor(Colors.Grey.Darken1);
+                            item.Item().Text(Data.ClientFilterLabel).FontSize(9).SemiBold();
+                        });
                     });
-                });
 
                 column.Item().Element(ComposeMatrixTable);
             });
