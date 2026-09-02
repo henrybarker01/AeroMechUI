@@ -1,4 +1,5 @@
-﻿using AeroMech.Data.Models;
+﻿using AeroMech.Data.Enums;
+using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
 using AeroMech.Models.Enums;
@@ -67,8 +68,45 @@ namespace AeroMech.UI.Web.Services
                 });
             });
 
+            using var transaction = await _aeroMechDBContext.Database.BeginTransactionAsync();
+
             _aeroMechDBContext.Clients.Add(newClient);
             await _aeroMechDBContext.SaveChangesAsync();
+
+            // Written against the id the save produced, inside the same transaction, so a client
+            // cannot come into existence without an entry that names it - and one that was rolled
+            // back leaves none saying it did.
+            var user = await _auditService.ResolveUser();
+
+            _auditService.Record(
+                _aeroMechDBContext,
+                user,
+                AuditArea.Clients,
+                AuditAction.Created,
+                nameof(Data.Models.Client),
+                newClient.Id,
+                newClient.Name,
+                $"Client {newClient.Name} added.");
+
+            // The rates a client is set up with are the figures its first invoices use, recorded
+            // the way an edit records a rate that moved - with nothing as the previous value.
+            foreach (var rate in newClient.Rates)
+            {
+                _auditService.RecordPriceChange(
+                    _aeroMechDBContext,
+                    user,
+                    nameof(Data.Models.Client),
+                    newClient.Id,
+                    newClient.Name,
+                    rate.RateType.ToString(),
+                    string.Empty,
+                    AuditService.FormatMoney(rate.Rate),
+                    $"{rate.RateType.GetDisplayName()} rate set for {newClient.Name}.");
+            }
+
+            await _aeroMechDBContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
             return newClient.Id;
         }
 

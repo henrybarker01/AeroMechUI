@@ -1,4 +1,5 @@
 ﻿using AeroMech.API.Reports;
+using AeroMech.Data.Enums;
 using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
@@ -21,12 +22,14 @@ namespace AeroMech.UI.Web.Services
         private readonly IMapper _mapper;
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly QuoteDocument _quoteDocument;
+        private readonly AuditService _auditService;
 
-        public QuoteService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, QuoteDocument quoteDocument)
+        public QuoteService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, QuoteDocument quoteDocument, AuditService auditService)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _quoteDocument = quoteDocument;
+            _auditService = auditService;
         }
 
         // Date picker is date-only. Persist as UTC midnight for the selected calendar date (no timezone day-shift).
@@ -59,7 +62,27 @@ namespace AeroMech.UI.Web.Services
             }
 
             _aeroMechDBContext.Quotes.Add(quoteToAdd);
+
+            // Saved first so the entry can name the id the save produced, and inside one
+            // transaction so a quote cannot be raised without a record that it was.
+            using var transaction = await _aeroMechDBContext.Database.BeginTransactionAsync();
+
             await _aeroMechDBContext.SaveChangesAsync();
+
+            var reference = $"AEM{quoteToAdd.QuoteNumber}";
+
+            _auditService.Record(
+                _aeroMechDBContext,
+                await _auditService.ResolveUser(),
+                AuditArea.Quotes,
+                AuditAction.Created,
+                nameof(Quote),
+                quoteToAdd.Id,
+                reference,
+                $"Quote {reference} created.");
+
+            await _aeroMechDBContext.SaveChangesAsync();
+            await transaction.CommitAsync();
 
             return quoteToAdd.Id;
         }
@@ -162,6 +185,18 @@ namespace AeroMech.UI.Web.Services
                 }
             }
 
+            var reference = $"AEM{quoteToEdit.QuoteNumber}";
+
+            _auditService.Record(
+                _aeroMechDBContext,
+                await _auditService.ResolveUser(),
+                AuditArea.Quotes,
+                AuditAction.Updated,
+                nameof(Quote),
+                quoteToEdit.Id,
+                reference,
+                $"Quote {reference} updated.");
+
             await _aeroMechDBContext.SaveChangesAsync();
 
             return quoteToEdit.Id;
@@ -205,6 +240,18 @@ namespace AeroMech.UI.Web.Services
                 throw new InvalidOperationException($"Quote AEM{quote.QuoteNumber} has already been converted to a service report and cannot be deleted.");
 
             quote.IsDeleted = true;
+
+            var reference = $"AEM{quote.QuoteNumber}";
+
+            _auditService.Record(
+                _aeroMechDBContext,
+                await _auditService.ResolveUser(),
+                AuditArea.Quotes,
+                AuditAction.Deleted,
+                nameof(Quote),
+                quote.Id,
+                reference,
+                $"Quote {reference} deleted.");
 
             await _aeroMechDBContext.SaveChangesAsync();
         }

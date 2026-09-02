@@ -1,4 +1,5 @@
 ﻿using AeroMech.API.Reports;
+using AeroMech.Data.Enums;
 using AeroMech.Data.Models;
 using AeroMech.Data.Persistence;
 using AeroMech.Models;
@@ -137,21 +138,32 @@ namespace AeroMech.UI.Web.Services
 
             _aeroMechDBContext.ServiceReports.Add(sr);
 
-            if (stockIssued.Count > 0)
-            {
-                var auditUser = await _auditService.ResolveUser();
+            // Resolved once for every entry this save writes. The report itself is recorded even
+            // when no stock moved: a job that issued nothing is still a job that was raised, and a
+            // trail that only mentioned reports which touched stock would leave it out.
+            var auditUser = await _auditService.ResolveUser();
+            var reportReference = $"AEM{sr.ServiceReportNumber}";
 
-                foreach (var issued in stockIssued)
-                {
-                    _auditService.RecordStockChange(
-                        _aeroMechDBContext,
-                        auditUser,
-                        issued.PartId,
-                        issued.PartCode,
-                        issued.Before,
-                        issued.After,
-                        $"Stock issued to service report AEM{sr.ServiceReportNumber}.");
-                }
+            _auditService.Record(
+                _aeroMechDBContext,
+                auditUser,
+                AuditArea.ServiceReport,
+                AuditAction.Created,
+                nameof(ServiceReport),
+                null,
+                reportReference,
+                $"Service report {reportReference} created.");
+
+            foreach (var issued in stockIssued)
+            {
+                _auditService.RecordStockChange(
+                    _aeroMechDBContext,
+                    auditUser,
+                    issued.PartId,
+                    issued.PartCode,
+                    issued.Before,
+                    issued.After,
+                    $"Stock issued to service report {reportReference}.");
             }
 
             await _aeroMechDBContext.SaveChangesAsync();

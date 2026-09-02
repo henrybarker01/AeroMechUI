@@ -63,6 +63,10 @@ namespace AeroMech.UI.Web.Services
             AuditArea.ServiceReport => "Service reports",
             AuditArea.Clients => "Clients",
             AuditArea.Users => "Users",
+            AuditArea.Vehicles => "Vehicles",
+            AuditArea.Employees => "Employees",
+            AuditArea.Quotes => "Quotes",
+            AuditArea.Timesheets => "Timesheets",
             _ => "Other"
         };
 
