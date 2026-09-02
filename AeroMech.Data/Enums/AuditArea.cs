@@ -25,6 +25,18 @@ namespace AeroMech.Data.Enums
         Clients = 7,
 
         /// <summary>Who has access to the system.</summary>
-        Users = 8
+        Users = 8,
+
+        /// <summary>The machines on a client's fleet.</summary>
+        Vehicles = 9,
+
+        /// <summary>The people who work the jobs.</summary>
+        Employees = 10,
+
+        /// <summary>Work priced up before any of it is done.</summary>
+        Quotes = 11,
+
+        /// <summary>Hours booked against a person's day that no job accounts for.</summary>
+        Timesheets = 12
     }
 }

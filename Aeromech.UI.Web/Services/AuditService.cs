@@ -57,6 +57,14 @@ namespace AeroMech.UI.Web.Services
             => value.ToString("0.00", CultureInfo.InvariantCulture);
 
         /// <summary>
+        /// Hours are a count of time, not money, so they read to two-decimal precision only when
+        /// the fraction is there to show - "8" and "7.5", not "8.00". Invariant for the same
+        /// reason as the rest: a row must read the same wherever it is later opened.
+        /// </summary>
+        public static string FormatHours(double value)
+            => value.ToString("0.##", CultureInfo.InvariantCulture);
+
+        /// <summary>
         /// Queues one entry against the caller's context. It is written when the caller saves, so
         /// a caller that never saves records nothing - which is correct, because nothing happened.
         /// </summary>

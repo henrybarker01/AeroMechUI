@@ -102,6 +102,16 @@ namespace AeroMech.UI.Web.Services
                 using var transaction = await _aeroMechDBContext.Database.BeginTransactionAsync();
 
                 AeroMech.Data.Models.Part prt = _mapper.Map<AeroMech.Data.Models.Part>(part);
+
+                // The Add Part screen carries a placeholder warehouse with id 0 because the shop
+                // runs a single site and offers no picker. Left as it is, EF reads the mapped
+                // navigation as a brand new warehouse to insert while the opening movement below
+                // still holds id 0 - the very key its foreign key rejects. Bind the part and its
+                // movement to the warehouse that already exists instead.
+                var warehouseId = await ResolveWarehouseId(_aeroMechDBContext, prt);
+                prt.Warehouse = null;
+                prt.WarehouseId = warehouseId;
+
                 prt.Prices = new List<PartPrice>() { new PartPrice() {
                     CostPrice = Convert.ToDouble(part.CostPrice),
                     EffectiveDate = DateTimeOffset.UtcNow,
@@ -120,7 +130,7 @@ namespace AeroMech.UI.Web.Services
                     _aeroMechDBContext.StockAdjustment.Add(new StockAdjustment
                     {
                         Part = prt,
-                        WarehouseId = prt.WarehouseId,
+                        WarehouseId = warehouseId,
                         QTY = prt.QtyOnHand,
                         AdjustementDate = DateTimeOffset.UtcNow,
                         AdjustedById = new Guid(),
@@ -278,5 +288,43 @@ namespace AeroMech.UI.Web.Services
         /// the two things a reader most needs to tell apart at a glance.
         /// </summary>
         internal static string Describe(int delta) => delta > 0 ? $"+{delta}" : delta.ToString();
+
+        /// <summary>
+        /// The Add Part screen has no warehouse picker - the shop runs a single site - so it sends
+        /// a placeholder warehouse with id 0. Turn that into the id of a warehouse that actually
+        /// exists: honour a real id if one is already set, otherwise match on the placeholder's
+        /// code, and otherwise fall back to the only warehouse there is. A part cannot be stocked
+        /// nowhere, so the absence of any warehouse is stated plainly rather than left to surface
+        /// as a foreign key violation.
+        /// </summary>
+        private static async Task<int> ResolveWarehouseId(AeroMechDBContext context, AeroMech.Data.Models.Part part)
+        {
+            if (part.WarehouseId != 0)
+                return part.WarehouseId;
+
+            var code = part.Warehouse?.WarehouseCode;
+
+            if (!string.IsNullOrWhiteSpace(code))
+            {
+                var byCode = await context.Warehouse
+                    .Where(x => x.WarehouseCode == code)
+                    .OrderBy(x => x.Id)
+                    .Select(x => (int?)x.Id)
+                    .FirstOrDefaultAsync();
+
+                if (byCode is not null)
+                    return byCode.Value;
+            }
+
+            var firstWarehouseId = await context.Warehouse
+                .OrderBy(x => x.Id)
+                .Select(x => (int?)x.Id)
+                .FirstOrDefaultAsync();
+
+            if (firstWarehouseId is not null)
+                return firstWarehouseId.Value;
+
+            throw new InvalidOperationException("No warehouse is set up to add the part to.");
+        }
     }
 }

@@ -1,10 +1,13 @@
-﻿using AeroMech.Data.Persistence;
+﻿using AeroMech.Data.Enums;
+using AeroMech.Data.Persistence;
 using AeroMech.Models.Models;
 using AeroMech.API.Reports;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using QuestPDF.Fluent;
+using System.ComponentModel;
 using System.Globalization;
+using System.Reflection;
 using ClosedXML.Excel;
 
 namespace AeroMech.UI.Web.Services
@@ -36,15 +39,18 @@ namespace AeroMech.UI.Web.Services
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly IMapper _mapper;
         private readonly TimesheetReport _timesheetReport;
+        private readonly AuditService _auditService;
 
         public TimesheetService(IDbContextFactory<AeroMechDBContext> contextFactory,
             IMapper mapper,
-            TimesheetReport timesheetReport
+            TimesheetReport timesheetReport,
+            AuditService auditService
             )
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _timesheetReport = timesheetReport;
+            _auditService = auditService;
         }
 
         public async Task<List<TimesheetDateModel>> GetTimesheetDatesFrom(DateOnly startDate)
@@ -215,7 +221,28 @@ namespace AeroMech.UI.Web.Services
             timesheetEmployeeDetail.UpdatedBy = string.Empty;
 
             _aeroMechDBContext.TimesheetEmployeeDetails.Add(timesheetEmployeeDetail);
+
+            // Saved first so the entry can name the id the save produced, and inside one
+            // transaction so a line of hours cannot land on the sheet without a record of it.
+            using var transaction = await _aeroMechDBContext.Database.BeginTransactionAsync();
+
             await _aeroMechDBContext.SaveChangesAsync();
+
+            var user = await _auditService.ResolveUser();
+            var employeeName = await ResolveEmployeeName(_aeroMechDBContext, timesheetEmployeeDetail.EmployeeId);
+
+            _auditService.Record(
+                _aeroMechDBContext,
+                user,
+                AuditArea.Timesheets,
+                AuditAction.Created,
+                nameof(Data.Models.TimesheetEmployeeDetail),
+                timesheetEmployeeDetail.Id,
+                employeeName,
+                $"{AuditService.FormatHours(timesheetEmployeeDetail.Hours)} hours of {DescribeGapType(timesheetEmployeeDetail.Description)} added for {FormatDate(timesheetEmployeeDetail.Date)}.");
+
+            await _aeroMechDBContext.SaveChangesAsync();
+            await transaction.CommitAsync();
         }
 
         public async Task EditEmployeeTimesheetDetailAsync(TimesheetEmployeeDetailModel timesheetEmployeeDetailModel)
@@ -226,9 +253,51 @@ namespace AeroMech.UI.Web.Services
 
             if (timesheetEmployeeDetail != null)
             {
+                // Read before they are written over: what a figure was is the half of a change that
+                // stops existing the moment the new value lands on top of it.
+                var previousHours = timesheetEmployeeDetail.Hours;
+                var previousDescription = timesheetEmployeeDetail.Description;
+
                 timesheetEmployeeDetail.Hours = timesheetEmployeeDetailModel.Hours;
                 timesheetEmployeeDetail.Description = timesheetEmployeeDetailModel.Description;
                 timesheetEmployeeDetail.UpdatedBy = string.Empty;
+
+                var user = await _auditService.ResolveUser();
+                var employeeName = await ResolveEmployeeName(_aeroMechDBContext, timesheetEmployeeDetail.EmployeeId);
+                var date = FormatDate(timesheetEmployeeDetail.Date);
+
+                if (Math.Abs(previousHours - timesheetEmployeeDetail.Hours) > 0.0001)
+                {
+                    _auditService.Record(
+                        _aeroMechDBContext,
+                        user,
+                        AuditArea.Timesheets,
+                        AuditAction.Updated,
+                        nameof(Data.Models.TimesheetEmployeeDetail),
+                        timesheetEmployeeDetail.Id,
+                        employeeName,
+                        $"Hours changed for {date}.",
+                        nameof(Data.Models.TimesheetEmployeeDetail.Hours),
+                        AuditService.FormatHours(previousHours),
+                        AuditService.FormatHours(timesheetEmployeeDetail.Hours));
+                }
+
+                if (previousDescription != timesheetEmployeeDetail.Description)
+                {
+                    _auditService.Record(
+                        _aeroMechDBContext,
+                        user,
+                        AuditArea.Timesheets,
+                        AuditAction.Updated,
+                        nameof(Data.Models.TimesheetEmployeeDetail),
+                        timesheetEmployeeDetail.Id,
+                        employeeName,
+                        $"Reason changed for {date}.",
+                        nameof(Data.Models.TimesheetEmployeeDetail.Description),
+                        DescribeGapType(previousDescription),
+                        DescribeGapType(timesheetEmployeeDetail.Description));
+                }
+
                 await _aeroMechDBContext.SaveChangesAsync();
             }
         }
@@ -242,9 +311,46 @@ namespace AeroMech.UI.Web.Services
             {
                 timesheetEmployeeDetail.IsDeleted = true;
                 timesheetEmployeeDetail.UpdatedBy = string.Empty;
+
+                var user = await _auditService.ResolveUser();
+                var employeeName = await ResolveEmployeeName(_aeroMechDBContext, timesheetEmployeeDetail.EmployeeId);
+
+                _auditService.Record(
+                    _aeroMechDBContext,
+                    user,
+                    AuditArea.Timesheets,
+                    AuditAction.Deleted,
+                    nameof(Data.Models.TimesheetEmployeeDetail),
+                    timesheetEmployeeDetail.Id,
+                    employeeName,
+                    $"{AuditService.FormatHours(timesheetEmployeeDetail.Hours)} hours of {DescribeGapType(timesheetEmployeeDetail.Description)} removed for {FormatDate(timesheetEmployeeDetail.Date)}.");
+
                 await _aeroMechDBContext.SaveChangesAsync();
             }
         }
+
+        private static async Task<string?> ResolveEmployeeName(AeroMechDBContext context, int employeeId)
+        {
+            var employee = await context.Employees
+                .Where(x => x.Id == employeeId)
+                .Select(x => new { x.FirstName, x.LastName })
+                .FirstOrDefaultAsync();
+
+            return employee is null ? null : $"{employee.FirstName} {employee.LastName}".Trim();
+        }
+
+        private static string FormatDate(DateOnly date)
+            => date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+        /// <summary>
+        /// The same wording the timesheet screen shows, read off the enum's
+        /// <see cref="DescriptionAttribute"/>, so "Public Holiday" reads as two words in the trail
+        /// exactly as it does where it was entered rather than as "PublicHoliday".
+        /// </summary>
+        private static string DescribeGapType(TimesheetGapTypes gapType)
+            => typeof(TimesheetGapTypes).GetField(gapType.ToString())?
+                   .GetCustomAttribute<DescriptionAttribute>()?.Description
+               ?? gapType.ToString();
 
         public async Task<List<ClientOptionModel>> GetTimesheetReportClientsAsync()
         {
