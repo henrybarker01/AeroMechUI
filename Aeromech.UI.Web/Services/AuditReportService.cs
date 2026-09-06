@@ -31,6 +31,8 @@ namespace AeroMech.UI.Web.Services
         /// <summary>
         /// The sign-in traffic the login report is drawn from - who got in, who was refused, who
         /// signed out. What separates it from the rest of the trail is the action, not the area.
+        /// The audit log report excludes these for the same reason the login report exists: a
+        /// day's sign-ins would bury the handful of changes the log is being read for.
         /// </summary>
         private static readonly AuditAction[] LoginActions =
         {
@@ -50,6 +52,8 @@ namespace AeroMech.UI.Web.Services
         /// The people who actually appear in the log, for the filter to offer. Read from the log
         /// itself rather than from the user list so that somebody whose account has since been
         /// removed can still be selected - those are the entries most often being looked for.
+        /// Sign-in traffic is left out because the report leaves it out: a name that only ever
+        /// signed in would be a filter choice that matches nothing.
         /// </summary>
         public async Task<List<string>> GetUsers()
         {
@@ -57,6 +61,7 @@ namespace AeroMech.UI.Web.Services
 
             return await context.AuditLogs
                 .AsNoTracking()
+                .Where(x => !LoginActions.Contains(x.Action))
                 .Select(x => x.UserName)
                 .Distinct()
                 .OrderBy(x => x)
@@ -158,9 +163,12 @@ namespace AeroMech.UI.Web.Services
 
             using var context = await _contextFactory.CreateDbContextAsync();
 
+            // Sign-in traffic has its own report; here it would only bury what is being looked
+            // for under a line per person per morning.
             var query = context.AuditLogs
                 .AsNoTracking()
-                .Where(x => x.OccurredAt >= fromStart && x.OccurredAt < toEndExclusive);
+                .Where(x => x.OccurredAt >= fromStart && x.OccurredAt < toEndExclusive)
+                .Where(x => !LoginActions.Contains(x.Action));
 
             if (userNames.Count > 0)
                 query = query.Where(x => userNames.Contains(x.UserName));
