@@ -1,0 +1,149 @@
+@page "/ShowUserLoginReport"
+
+@using AeroMech.Data.Enums
+@using BlazorBootstrap
+
+<PageTitle>User Login Report</PageTitle>
+
+<div class="container-fluid">
+    <div class="row mb-3">
+        <div class="col">
+            <h1 class="h4 mb-0">User Login Report</h1>
+            <small class="text-muted">
+                Who signed in, who signed out, and who was turned away.
+            </small>
+        </div>
+    </div>
+
+    <div class="row mb-2">
+        <div class="col-auto">
+            <div class="btn-group btn-group-sm" role="group" aria-label="Period">
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(0)">Today</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(1)">Last 7 days</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(2)">This month</button>
+                <button type="button" class="btn btn-outline-secondary" @onclick="() => SetPeriod(3)">Last 3 months</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="row filter-row mb-3">
+        <div class="col-6 col-md-2">
+            <label for="from-date" class="form-label">From</label>
+            <InputDate TValue="DateOnly"
+                       Value="_request.FromDate"
+                       ValueChanged="OnFromDateChanged"
+                       ValueExpression="(() => _request.FromDate)"
+                       class="form-control"
+                       id="from-date" />
+        </div>
+
+        <div class="col-6 col-md-2">
+            <label for="to-date" class="form-label">To</label>
+            <InputDate TValue="DateOnly"
+                       Value="_request.ToDate"
+                       ValueChanged="OnToDateChanged"
+                       ValueExpression="(() => _request.ToDate)"
+                       class="form-control"
+                       id="to-date" />
+        </div>
+
+        <div class="col-12 col-md-4">
+            <label class="form-label">Users</label>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                        type="button"
+                        id="login-user-filter"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
+                    @SelectedUsersLabel
+                </button>
+                <div class="dropdown-menu w-100 p-2" aria-labelledby="login-user-filter">
+                    <div class="panel-scroll">
+                        @if (_users.Count == 0)
+                        {
+                            <div class="text-muted small px-1">Nothing has been recorded yet</div>
+                        }
+                        else
+                        {
+                            @foreach (var user in _users)
+                            {
+                                <div class="form-check">
+                                    <input class="form-check-input"
+                                           type="checkbox"
+                                           id="@($"login-user-{user}")"
+                                           checked="@_selectedUsers.Contains(user)"
+                                           @onchange="@(e => ToggleUser(user, (bool?)e.Value == true))" />
+                                    <label class="form-check-label" for="@($"login-user-{user}")">@user</label>
+                                </div>
+                            }
+                        }
+                    </div>
+                    <hr class="my-2" />
+                    <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearUserSelection">
+                        Clear selection (report on everybody)
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-md-4">
+            <label class="form-label">Events</label>
+            <div class="dropdown">
+                <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
+                        type="button"
+                        id="login-event-filter"
+                        data-bs-toggle="dropdown"
+                        data-bs-auto-close="outside"
+                        aria-expanded="false">
+                    @SelectedEventsLabel
+                </button>
+                <div class="dropdown-menu w-100 p-2" aria-labelledby="login-event-filter">
+                    @foreach (var loginEvent in _events)
+                    {
+                        <div class="form-check">
+                            <input class="form-check-input"
+                                   type="checkbox"
+                                   id="@($"login-event-{loginEvent}")"
+                                   checked="@_selectedEvents.Contains(loginEvent)"
+                                   @onchange="@(e => ToggleEvent(loginEvent, (bool?)e.Value == true))" />
+                            <label class="form-check-label" for="@($"login-event-{loginEvent}")">
+                                @DescribeEvent(loginEvent)
+                            </label>
+                        </div>
+                    }
+                    <hr class="my-2" />
+                    <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearEventSelection">
+                        Clear selection (report on everything)
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col-12">
+            <div class="form-text mt-0">
+                Entries are kept as they were written and cannot be edited &mdash; the newest are listed first.
+                Refused attempts are printed in red.
+            </div>
+        </div>
+    </div>
+
+    <div class="row mb-3">
+        <div class="col text-end">
+            <Button Color="ButtonColor.Primary" @onclick="ViewReport" Class="me-2">
+                <i class="bi bi-file-pdf me-1"></i>Generate report
+            </Button>
+            <Button Color="ButtonColor.Secondary" @onclick="DownloadPdf" Disabled="_pdfBytes is null">
+                <i class="bi bi-download me-1"></i>Download PDF
+            </Button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrWhiteSpace(_pdfBase64String))
+    {
+        <PdfViewer @key="_reportVersion" Class="mb-3"
+                   Url='@string.Format("data:application/pdf;base64,{0}", _pdfBase64String)' />
+    }
+</div>

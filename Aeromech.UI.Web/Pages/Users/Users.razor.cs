@@ -19,6 +19,9 @@ namespace AeroMech.UI.Web.Pages.Users
         private string _password = string.Empty;
         private string _confirmPassword = string.Empty;
         private string _modalErrorMessage = string.Empty;
+        private bool _mustChangePassword;
+        private bool _isEdit;
+        private string _editingUserId = string.Empty;
 
         private bool MatchesSearch(IdentityUser user, string term)
         {
@@ -47,39 +50,52 @@ namespace AeroMech.UI.Web.Pages.Users
         private async Task AddUserClick()
         {
             _title = "Add User";
+            _isEdit = false;
+            _editingUserId = string.Empty;
             _user = new IdentityUser();
             _password = string.Empty;
             _confirmPassword = string.Empty;
             _modalErrorMessage = string.Empty;
+
+            // A password typed by whoever created the account is not the owner's own; the default
+            // is to make them choose one the first time they sign in.
+            _mustChangePassword = true;
+
             await _modal.ShowAsync();
         }
 
-        private async Task AddUser()
+        private async Task SaveUser()
         {
             _modalErrorMessage = string.Empty;
 
-            if (string.IsNullOrWhiteSpace(_password))
+            var passwordProvided = !string.IsNullOrWhiteSpace(_password);
+
+            if (!_isEdit && !passwordProvided)
             {
                 _modalErrorMessage = "Password is required.";
                 return;
             }
 
-            if (!string.Equals(_password, _confirmPassword, StringComparison.Ordinal))
+            if (passwordProvided && !string.Equals(_password, _confirmPassword, StringComparison.Ordinal))
             {
                 _modalErrorMessage = "Passwords do not match.";
                 return;
             }
 
-            _user.EmailConfirmed = true;
-            _user.LockoutEnabled = true;
-            _user.PhoneNumberConfirmed = true;
-            _user.TwoFactorEnabled = false;
-
             _loaderService.ShowLoader();
 
             try
             {
-                var result = await _userService.CreateUser(_user, _password);
+                var result = _isEdit
+                    ? await _userService.UpdateUser(
+                        _editingUserId,
+                        _user.Email ?? string.Empty,
+                        _user.UserName ?? string.Empty,
+                        _user.PhoneNumber,
+                        passwordProvided ? _password : null,
+                        _mustChangePassword)
+                    : await CreateUser();
+
                 if (result.Succeeded)
                 {
                     await OnHideModalClick();
@@ -92,6 +108,16 @@ namespace AeroMech.UI.Web.Pages.Users
             {
                 _loaderService.HideLoader();
             }
+        }
+
+        private async Task<IdentityResult> CreateUser()
+        {
+            _user.EmailConfirmed = true;
+            _user.LockoutEnabled = true;
+            _user.PhoneNumberConfirmed = true;
+            _user.TwoFactorEnabled = false;
+
+            return await _userService.CreateUser(_user, _password, _mustChangePassword);
         }
 
         private async Task DeleteUser(IdentityUser user)
@@ -108,8 +134,26 @@ namespace AeroMech.UI.Web.Pages.Users
 
         private async Task EditUser(IdentityUser user)
         {
-            //await clientService.Delete(client.Id);
-            //clients?.Remove(client);
+            _title = "Edit User";
+            _isEdit = true;
+            _editingUserId = user.Id;
+
+            // A copy rather than the row the grid holds, so typing into the form and then
+            // closing it changes nothing on screen.
+            _user = new IdentityUser
+            {
+                Id = user.Id,
+                Email = user.Email,
+                UserName = user.UserName,
+                PhoneNumber = user.PhoneNumber
+            };
+
+            _password = string.Empty;
+            _confirmPassword = string.Empty;
+            _modalErrorMessage = string.Empty;
+            _mustChangePassword = await _userService.MustChangePassword(user);
+
+            await _modal.ShowAsync();
         }
 
         private async Task OnHideModalClick()

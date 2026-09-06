@@ -22,6 +22,7 @@
     <PackageReference Include="BootstrapBlazor" Version="10.3.2" />
     <PackageReference Include="ClosedXML" Version="0.105.0" />
     <PackageReference Include="JsonConverter.Newtonsoft.Json" Version="0.8.0" />
+    <PackageReference Include="MailKit" Version="4.17.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.3" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.UI" Version="10.0.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.3">

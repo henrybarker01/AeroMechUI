@@ -1,6 +1,51 @@
 ﻿@inherits LayoutComponentBase;
 
-@* No container here: the login page centres itself against the full viewport,
-   and the stylesheet this layout used to link (css/login.css) did not exist,
-   so every load of this page fetched a 404. *@
-@Body
+@* The split landing shell shared by the sign-in, forgot-password and
+   reset-password pages: a brand panel on the left for presence, and the page's
+   card on the right. Below the laptop breakpoint the brand panel drops away and
+   the card becomes the whole page, so it reflows cleanly at every width. *@
+
+<div class="login-shell">
+    @* Left: a quiet brand panel that gives the page some presence without shouting.
+       It collapses out of view below the laptop breakpoint, where the card stands
+       on its own. *@
+    <aside class="login-hero" aria-hidden="true">
+        <span class="login-hero-glow"></span>
+        <i class="bi bi-gear-wide-connected login-hero-cog login-hero-cog-1"></i>
+        <i class="bi bi-gear login-hero-cog login-hero-cog-2"></i>
+
+        <div class="login-hero-inner">
+            <div class="login-hero-brand">
+                <span class="login-hero-mark">
+                    <img src="./images/aeromech-mark.png" alt="" />
+                </span>
+                <span class="login-hero-word">
+                    <span class="login-hero-name">AeroMech</span>
+                    <span class="login-hero-tag">GSE Supply &amp; Services</span>
+                </span>
+            </div>
+
+            <h2 class="login-hero-headline">Ground support equipment, managed end to end.</h2>
+            <p class="login-hero-lead">
+                Parts, quotes, servicing and workshop records &mdash; one place to keep
+                the fleet moving.
+            </p>
+
+            <ul class="login-hero-list">
+                <li><i class="bi bi-box-seam"></i><span>Inventory &amp; stock control</span></li>
+                <li><i class="bi bi-file-earmark-text"></i><span>Quotes &amp; service reports</span></li>
+                <li><i class="bi bi-truck"></i><span>Fleet &amp; client records</span></li>
+            </ul>
+        </div>
+
+        <p class="login-hero-foot">&copy; @DateTime.UtcNow.Year AeroMech GSE Supply &amp; Services</p>
+    </aside>
+
+    @* Right: the page's card. On small screens this is the whole page. *@
+    <main class="login-main">
+        <div class="login-card">
+            <img class="login-logo" src="./images/AreoMechSmall.png" alt="AeroMech" />
+            @Body
+        </div>
+    </main>
+</div>

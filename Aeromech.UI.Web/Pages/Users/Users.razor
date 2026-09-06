@@ -4,7 +4,7 @@
 
 <Modal @ref="_modal" Title="@_title">
     <BodyTemplate>
-        <EditForm Model="@_user" OnValidSubmit=@AddUser>
+        <EditForm Model="@_user" OnValidSubmit=@SaveUser>
             <DataAnnotationsValidator />
             <div class="container-fluid">
                 @if (!string.IsNullOrWhiteSpace(_modalErrorMessage))
@@ -40,7 +40,7 @@
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="password">Password:</label>
+                        <label for="password">@(_isEdit ? "New Password (leave blank to keep the current one):" : "Password:")</label>
                         <InputText @bind-Value="_password" type="password" class="form-control" id="password"></InputText>
                     </div>
                 </div>
@@ -48,6 +48,14 @@
                     <div class="form-group">
                         <label for="confirm-password">Confirm Password:</label>
                         <InputText @bind-Value="_confirmPassword" type="password" class="form-control" id="confirm-password"></InputText>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="form-check ms-2">
+                        <input class="form-check-input" type="checkbox" id="must-change-password" @bind="_mustChangePassword" />
+                        <label class="form-check-label" for="must-change-password">
+                            Must change password at next sign-in
+                        </label>
                     </div>
                 </div>
             </div>

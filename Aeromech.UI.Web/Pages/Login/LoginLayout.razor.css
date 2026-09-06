@@ -1,12 +1,16 @@
 ﻿/* -----------------------------------------------------------------------------
-   Login / landing page.
+   Login / landing shell, shared by sign-in, forgot-password and reset-password.
 
-   A two-panel layout: a brand panel on the left for presence, the sign-in card
+   A two-panel layout: a brand panel on the left for presence, the page's card
    on the right. Everything is drawn from the design tokens in site.css so the
-   page stays in step with the rest of the app. Below the laptop breakpoint the
+   pages stay in step with the rest of the app. Below the laptop breakpoint the
    brand panel is removed and the card centres itself on the viewport, so there
    is a sensible layout at every width - a tablet or a half-width window is not
    left with an empty screen.
+
+   The shell, hero and card frame are rendered by this layout; the card content
+   (intro, fields, alerts, links) comes from each page through the layout body,
+   so those rules are reached with ::deep.
    ----------------------------------------------------------------------------- */
 
 .login-shell {
@@ -168,7 +172,7 @@
     color: rgba(255, 255, 255, 0.5);
 }
 
-/* --- Right: sign-in card -------------------------------------------------- */
+/* --- Right: the page's card ----------------------------------------------- */
 
 .login-main {
     display: flex;
@@ -195,11 +199,13 @@
     margin: 0 0 var(--am-space-6);
 }
 
-.login-intro {
+/* --- Card content, supplied by each page through the layout body ----------- */
+
+.login-card ::deep .login-intro {
     margin-bottom: var(--am-space-6);
 }
 
-.login-title {
+.login-card ::deep .login-title {
     margin: 0 0 var(--am-space-1);
     font-size: var(--am-fs-h1);
     font-weight: 600;
@@ -207,13 +213,13 @@
     color: var(--am-ink);
 }
 
-.login-subtitle {
+.login-card ::deep .login-subtitle {
     margin: 0;
     font-size: var(--am-fs-body);
     color: var(--am-steel);
 }
 
-.login-alert {
+.login-card ::deep .login-alert {
     display: flex;
     align-items: center;
     gap: var(--am-space-2);
@@ -222,11 +228,11 @@
     font-size: var(--am-fs-body);
 }
 
-.login-field {
+.login-card ::deep .login-field {
     margin-bottom: var(--am-space-4);
 }
 
-.login-label {
+.login-card ::deep .login-label {
     display: block;
     margin-bottom: var(--am-space-1);
     font-size: var(--am-fs-sm);
@@ -234,11 +240,30 @@
     color: var(--am-ink-2);
 }
 
-.login-submit {
+/* display/text-align cover the anchor-styled buttons the recovery pages use. */
+.login-card ::deep .login-submit {
+    display: block;
     width: 100%;
     margin-top: var(--am-space-2);
     padding: var(--am-space-2) var(--am-space-4);
     font-weight: 600;
+    text-align: center;
+}
+
+.login-card ::deep .login-links {
+    margin-top: var(--am-space-4);
+    text-align: center;
+    font-size: var(--am-fs-sm);
+}
+
+.login-card ::deep .login-links a {
+    color: var(--am-steel);
+    text-decoration: none;
+}
+
+.login-card ::deep .login-links a:hover {
+    color: var(--am-ink);
+    text-decoration: underline;
 }
 
 /* --- Reflow --------------------------------------------------------------- */

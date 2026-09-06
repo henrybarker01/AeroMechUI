@@ -16,14 +16,28 @@ namespace AeroMech.UI.Web.Services
     {
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly AuditLogReport _auditLogReport;
+        private readonly UserLoginReport _userLoginReport;
 
         public AuditReportService(
             IDbContextFactory<AeroMechDBContext> contextFactory,
-            AuditLogReport auditLogReport)
+            AuditLogReport auditLogReport,
+            UserLoginReport userLoginReport)
         {
             _contextFactory = contextFactory;
             _auditLogReport = auditLogReport;
+            _userLoginReport = userLoginReport;
         }
+
+        /// <summary>
+        /// The sign-in traffic the login report is drawn from - who got in, who was refused, who
+        /// signed out. What separates it from the rest of the trail is the action, not the area.
+        /// </summary>
+        private static readonly AuditAction[] LoginActions =
+        {
+            AuditAction.LoggedIn,
+            AuditAction.LoginFailed,
+            AuditAction.LoggedOut
+        };
 
         /// <summary>
         /// A year of stock movements is a document nobody can read and a request that would sit
@@ -43,6 +57,24 @@ namespace AeroMech.UI.Web.Services
 
             return await context.AuditLogs
                 .AsNoTracking()
+                .Select(x => x.UserName)
+                .Distinct()
+                .OrderBy(x => x)
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// The names that appear in the sign-in traffic specifically, for the login report's
+        /// filter. Read from the log for the same reason as <see cref="GetUsers"/>: an account
+        /// since removed, or a name somebody merely attempted, is exactly what is being asked for.
+        /// </summary>
+        public async Task<List<string>> GetLoginUsers()
+        {
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            return await context.AuditLogs
+                .AsNoTracking()
+                .Where(x => LoginActions.Contains(x.Action))
                 .Select(x => x.UserName)
                 .Distinct()
                 .OrderBy(x => x)
@@ -79,6 +111,10 @@ namespace AeroMech.UI.Web.Services
             AuditAction.PriceChanged => "Price changed",
             AuditAction.Posted => "Posted",
             AuditAction.Cancelled => "Cancelled",
+            AuditAction.LoggedIn => "Signed in",
+            AuditAction.LoginFailed => "Sign-in failed",
+            AuditAction.LoggedOut => "Signed out",
+            AuditAction.PasswordChanged => "Password changed",
             _ => "Other"
         };
 
@@ -188,6 +224,89 @@ namespace AeroMech.UI.Web.Services
             };
 
             return Document.Create(_auditLogReport.Compose).GeneratePdf();
+        }
+
+        private static string DescribeEvents(IReadOnlyCollection<AuditAction> events)
+            => events.Count == 0 ? "All sign-in activity" : string.Join(", ", events.Select(Describe));
+
+        /// <summary>
+        /// The sign-in traffic over a period - who got in, who was refused, who signed out -
+        /// filtered to the people and the kinds of event asked about, newest first and grouped by
+        /// the day it happened on.
+        /// </summary>
+        public async Task<byte[]> GenerateUserLoginReport(UserLoginReportRequestModel request)
+        {
+            if (request.ToDate < request.FromDate)
+                throw new InvalidOperationException("The end of the period cannot fall before its start.");
+
+            var userNames = request.UserNames
+                .Where(x => !string.IsNullOrWhiteSpace(x))
+                .Select(x => x.Trim())
+                .Distinct(StringComparer.OrdinalIgnoreCase)
+                .OrderBy(x => x, StringComparer.OrdinalIgnoreCase)
+                .ToList();
+
+            var events = request.Events
+                .Where(x => LoginActions.Contains(x))
+                .Distinct()
+                .OrderBy(x => x)
+                .ToList();
+
+            var (fromStart, toEndExclusive) = PeriodBounds(request.FromDate, request.ToDate);
+
+            using var context = await _contextFactory.CreateDbContextAsync();
+
+            var actions = events.Count > 0 ? events.ToArray() : LoginActions;
+
+            var query = context.AuditLogs
+                .AsNoTracking()
+                .Where(x => x.OccurredAt >= fromStart && x.OccurredAt < toEndExclusive)
+                .Where(x => actions.Contains(x.Action));
+
+            if (userNames.Count > 0)
+                query = query.Where(x => userNames.Contains(x.UserName));
+
+            var totalEntries = await query.CountAsync();
+
+            var failedEntries = await query.CountAsync(x => x.Action == AuditAction.LoginFailed);
+
+            var entries = await query
+                .OrderByDescending(x => x.OccurredAt)
+                .ThenByDescending(x => x.Id)
+                .Take(MaxPrintedEntries)
+                .ToListAsync();
+
+            var days = entries
+                .GroupBy(x => DateOnly.FromDateTime(x.OccurredAt.UtcDateTime))
+                .OrderByDescending(x => x.Key)
+                .Select(group => new UserLoginReportDay
+                {
+                    Date = group.Key,
+                    Lines = group.Select(x => new UserLoginReportLine
+                    {
+                        OccurredAt = x.OccurredAt.ToUniversalTime(),
+                        UserName = x.UserName,
+                        Event = Describe(x.Action),
+                        Description = x.Description,
+                        Failed = x.Action == AuditAction.LoginFailed
+                    }).ToList()
+                })
+                .ToList();
+
+            _userLoginReport.Data = new UserLoginReportData
+            {
+                GeneratedAt = DateTimeOffset.UtcNow,
+                FromDate = request.FromDate,
+                ToDate = request.ToDate,
+                UserLabel = DescribeUsers(userNames),
+                EventLabel = DescribeEvents(events),
+                TotalEntries = totalEntries,
+                FailedEntries = failedEntries,
+                Truncated = totalEntries > entries.Count,
+                Days = days
+            };
+
+            return Document.Create(_userLoginReport.Compose).GeneratePdf();
         }
     }
 }

@@ -1,13 +1,28 @@
 ﻿@page
+@using AeroMech.Data.Enums
+@using AeroMech.UI.Web.Services
 @using Microsoft.AspNetCore.Identity
 @attribute [IgnoreAntiforgeryToken]
 @inject SignInManager<IdentityUser> SignInManager
+@inject AuditService AuditService
 @functions {
     public async Task<IActionResult> OnPost()
     {
         if (SignInManager.IsSignedIn(User))
         {
+            // Named before the sign-out, because afterwards there is nobody left to name.
+            var userName = User.Identity?.Name ?? CurrentUserService.UnknownUser;
+
             await SignInManager.SignOutAsync();
+
+            await AuditService.RecordAsync(
+                userName,
+                AuditArea.Users,
+                AuditAction.LoggedOut,
+                nameof(IdentityUser),
+                null,
+                userName,
+                $"{userName} signed out.");
         }
 
         return Redirect("~/");

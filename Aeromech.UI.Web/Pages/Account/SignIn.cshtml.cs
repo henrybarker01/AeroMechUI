@@ -1,5 +1,7 @@
+using AeroMech.Data.Enums;
 using AeroMech.Data.Persistence;
 using AeroMech.Models.Models;
+using AeroMech.UI.Web.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -15,6 +17,8 @@ namespace AeroMech.UI.Web.Pages.Account
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IUserStore<IdentityUser> _userStore;
         private readonly AeroMechDBContext _context;
+        private readonly UserService _userService;
+        private readonly AuditService _auditService;
         private readonly ILogger<SignInModel> _logger;
 
         public SignInModel(
@@ -22,12 +26,16 @@ namespace AeroMech.UI.Web.Pages.Account
             UserManager<IdentityUser> userManager,
             IUserStore<IdentityUser> userStore,
             AeroMechDBContext context,
+            UserService userService,
+            AuditService auditService,
             ILogger<SignInModel> logger)
         {
             _signInManager = signInManager;
             _userManager = userManager;
             _userStore = userStore;
             _context = context;
+            _userService = userService;
+            _auditService = auditService;
             _logger = logger;
         }
 
@@ -80,6 +88,7 @@ namespace AeroMech.UI.Web.Pages.Account
                 if (user == null)
                 {
                     _logger.LogWarning("User not found: {UserName}", credential.UserName);
+                    await RecordLoginFailure(credential.UserName, "no account answers to that name");
                     if (Request.ContentType?.Contains("application/json") == true)
                     {
                         return new JsonResult(new { success = false, message = "Invalid username or password." })
@@ -94,6 +103,7 @@ namespace AeroMech.UI.Web.Pages.Account
                 if (!result.Succeeded)
                 {
                     _logger.LogWarning("Password check failed for user: {UserName}", credential.UserName);
+                    await RecordLoginFailure(credential.UserName, "the password was wrong");
                     if (Request.ContentType?.Contains("application/json") == true)
                     {
                         return new JsonResult(new { success = false, message = "Invalid username or password." })
@@ -109,13 +119,28 @@ namespace AeroMech.UI.Web.Pages.Account
                 await _signInManager.SignInAsync(user, isPersistent: true);
                 _logger.LogInformation("User signed in successfully: {UserName}. Redirecting to home.", credential.UserName);
 
+                await _auditService.RecordAsync(
+                    user.UserName ?? credential.UserName,
+                    AuditArea.Users,
+                    AuditAction.LoggedIn,
+                    nameof(IdentityUser),
+                    null,
+                    user.UserName,
+                    $"{user.UserName} signed in from {ClientAddress()}.");
+
+                // An account whose password was assigned for it goes to the change-password screen
+                // and nowhere else until its owner has chosen their own.
+                var redirectUrl = await _userService.MustChangePassword(user)
+                    ? "/change-password?forced=1"
+                    : "/";
+
                 // Always redirect for proper cookie handling
                 if (Request.ContentType?.Contains("application/json") == true)
                 {
-                    return new JsonResult(new { success = true, message = "Login successful.", redirectUrl = "/" });
+                    return new JsonResult(new { success = true, message = "Login successful.", redirectUrl });
                 }
 
-                return Redirect("/");
+                return Redirect(redirectUrl);
             }
             catch (Exception ex)
             {
@@ -130,5 +155,23 @@ namespace AeroMech.UI.Web.Pages.Account
                 return RedirectToPage("/Login");
             }
         }
+
+        /// <summary>
+        /// A refused sign-in, named by whoever it was attempted against. Recorded against the
+        /// attempted name rather than the signed-in user - there is none - so a run of failures
+        /// against one account reads as exactly that.
+        /// </summary>
+        private Task RecordLoginFailure(string attemptedUserName, string reason)
+            => _auditService.RecordAsync(
+                attemptedUserName,
+                AuditArea.Users,
+                AuditAction.LoginFailed,
+                nameof(IdentityUser),
+                null,
+                attemptedUserName,
+                $"Sign-in refused for {attemptedUserName} from {ClientAddress()}: {reason}.");
+
+        private string ClientAddress()
+            => HttpContext.Connection.RemoteIpAddress?.ToString() ?? "an unknown address";
     }
 }

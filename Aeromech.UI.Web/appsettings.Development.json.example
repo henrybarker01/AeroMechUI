@@ -1,15 +1,13 @@
 {
+  "DetailedErrors": true,
   "Logging": {
     "LogLevel": {
       "Default": "Information",
       "Microsoft.AspNetCore": "Warning"
     }
   },
-  "AllowedHosts": "*",
-
-  "ApiUrl": "",
   "ConnectionStrings": {
-    "DefaultConnection": ""
+    "DefaultConnection": "Host=localhost;Port=5432;Database=aeromechdb;Username=postgres;Password=;Include Error Detail=true"
   },
 
   "Email": {
