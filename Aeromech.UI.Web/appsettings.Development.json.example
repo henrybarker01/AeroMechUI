@@ -1,4 +1,4 @@
-﻿{
+{
   "DetailedErrors": true,
   "Logging": {
     "LogLevel": {
@@ -7,7 +7,7 @@
     }
   },
   "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Port=5432;Database=aeromechdb;Username=postgres;Password=P@ssw0rd;Include Error Detail=true"
+    "DefaultConnection": "Host=localhost;Port=5432;Database=aeromechdb;Username=postgres;Password=;Include Error Detail=true"
   },
 
   "Email": {

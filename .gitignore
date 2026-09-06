@@ -367,3 +367,6 @@ FodyWeavers.xsd
 # Backup output and rclone credentials
 backups/
 rclone/
+
+# Local development settings (contain credentials); copy from *.example
+appsettings.Development.json
