@@ -6,18 +6,25 @@
 <PageTitle>Aeromech.UI.Web</PageTitle>
 
 <div class="page">
-    <div class="sidebar">
-        <NavMenu />
-    </div>
+    <AuthorizeView>
+        <Authorized>
+            <div class="sidebar">
+                <NavMenu />
+            </div>
+        </Authorized>
+    </AuthorizeView>
 
     <main>
         <Loader/>
         <ConfirmationModal />
         <Toasts class="p-3" AutoHide="true" Delay="4000" Placement="ToastsPlacement.TopRight" />
-        <div class="top-row px-4">
-            <LoginDisplay /> 
-           @*  <a href="https://docs.microsoft.com/aspnet/" target="_blank">About</a> *@
-        </div>
+        <AuthorizeView>
+            <Authorized>
+                <div class="top-row px-4">
+                    <LoginDisplay />
+                </div>
+            </Authorized>
+        </AuthorizeView>
 
         <article class="content px-4 main-view-port">
             
