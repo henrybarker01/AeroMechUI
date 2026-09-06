@@ -27,6 +27,14 @@ services:
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT:-Development}
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=${POSTGRES_DB:-aeromech};Username=${POSTGRES_USER:-aeromech};Password=${POSTGRES_PASSWORD}"
+      # Outgoing mail for password reset links; leave unset to disable email
+      Email__Host: ${EMAIL_HOST:-}
+      Email__Port: ${EMAIL_PORT:-587}
+      Email__UseStartTls: ${EMAIL_USE_STARTTLS:-true}
+      Email__UserName: ${EMAIL_USERNAME:-}
+      Email__Password: ${EMAIL_PASSWORD:-}
+      Email__FromAddress: ${EMAIL_FROM_ADDRESS:-}
+      Email__FromName: ${EMAIL_FROM_NAME:-AeroMech}
     depends_on:
       db:
         condition: service_healthy

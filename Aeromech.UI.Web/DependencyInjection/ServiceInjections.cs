@@ -15,6 +15,8 @@ namespace AeroMech.UI.Web.DependencyInjection
             services.AddScoped<AuditService, AuditService>();
             services.AddScoped<AuditReportService, AuditReportService>();
             services.AddScoped<AuditLogReport, AuditLogReport>();
+            services.AddScoped<UserLoginReport, UserLoginReport>();
+            services.AddScoped<EmailService, EmailService>();
             services.AddScoped<ClientService, ClientService>();
             services.AddScoped<EmployeeService, EmployeeService>();
             services.AddScoped<PartsService, PartsService>();

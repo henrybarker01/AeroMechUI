@@ -22,6 +22,18 @@ namespace AeroMech.Data.Enums
         /// <summary>A document was settled against the system - a receipt taken in, a sheet posted.</summary>
         Posted = 6,
 
-        Cancelled = 7
+        Cancelled = 7,
+
+        /// <summary>Somebody signed in.</summary>
+        LoggedIn = 8,
+
+        /// <summary>Somebody tried to sign in and was refused.</summary>
+        LoginFailed = 9,
+
+        /// <summary>Somebody signed out.</summary>
+        LoggedOut = 10,
+
+        /// <summary>A password was changed - by its owner, by an administrator, or through a reset link.</summary>
+        PasswordChanged = 11
     }
 }

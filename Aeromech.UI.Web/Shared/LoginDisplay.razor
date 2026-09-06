@@ -6,6 +6,7 @@
             <span class="user-avatar" aria-hidden="true">@Initials(context.User)</span>
             <span class="user-name">@context.User.Identity?.Name</span>
         </div>
+        <a href="/change-password" class="btn btn-link logout-button">Change password</a>
         <form method="post" action="Identity/Account/Logout" class="logout-form">
             <button type="submit" class="btn btn-link logout-button">Log out</button>
         </form>
