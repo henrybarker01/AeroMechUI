@@ -1,12 +1,180 @@
-﻿/* Centred on the viewport at every width. The card carries a max-width rather
-   than a column span, so there is no breakpoint at which it disappears. */
-.login-page {
+﻿/* -----------------------------------------------------------------------------
+   Login / landing page.
+
+   A two-panel layout: a brand panel on the left for presence, the sign-in card
+   on the right. Everything is drawn from the design tokens in site.css so the
+   page stays in step with the rest of the app. Below the laptop breakpoint the
+   brand panel is removed and the card centres itself on the viewport, so there
+   is a sensible layout at every width - a tablet or a half-width window is not
+   left with an empty screen.
+   ----------------------------------------------------------------------------- */
+
+.login-shell {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    min-height: 100vh;
+    background-color: var(--am-ground);
+}
+
+/* --- Left: brand panel ---------------------------------------------------- */
+
+.login-hero {
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: var(--am-space-12) var(--am-space-12) var(--am-space-8);
+    color: #fff;
+    background: radial-gradient(120% 120% at 15% 0%, var(--am-slate-light) 0%, var(--am-slate) 55%, #1a2735 100%);
+}
+
+/* A soft brand-blue wash so the panel is not a flat slab. */
+.login-hero-glow {
+    position: absolute;
+    top: -18%;
+    right: -20%;
+    width: 34rem;
+    height: 34rem;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(68, 126, 226, 0.55) 0%, rgba(68, 126, 226, 0) 68%);
+    pointer-events: none;
+}
+
+/* Faint cogs as quiet texture. Line icons read fine in white at low opacity;
+   they never compete with the copy. */
+.login-hero-cog {
+    position: absolute;
+    color: #fff;
+    opacity: 0.06;
+    pointer-events: none;
+    line-height: 1;
+}
+
+.login-hero-cog-1 {
+    bottom: -3.5rem;
+    right: -3rem;
+    font-size: 20rem;
+}
+
+.login-hero-cog-2 {
+    top: 3rem;
+    right: 6rem;
+    font-size: 6rem;
+    opacity: 0.05;
+}
+
+.login-hero-inner {
+    position: relative;
+    z-index: 1;
+    max-width: 26rem;
+    margin: auto 0;
+}
+
+.login-hero-brand {
+    display: flex;
+    align-items: center;
+    gap: var(--am-space-3);
+    margin-bottom: var(--am-space-8);
+}
+
+/* The mark carries black detail, so it sits on a white chip rather than straight
+   on the dark panel where that detail would be lost. */
+.login-hero-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    padding: 0.4rem;
+    border-radius: var(--am-radius-lg);
+    background-color: #fff;
+    box-shadow: var(--am-shadow-1);
+    flex: 0 0 auto;
+}
+
+.login-hero-mark img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.login-hero-word {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.15;
+}
+
+.login-hero-name {
+    font-size: var(--am-fs-h2);
+    font-weight: 700;
+    letter-spacing: 0.01em;
+}
+
+.login-hero-tag {
+    font-size: var(--am-fs-sm);
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.login-hero-headline {
+    margin: 0 0 var(--am-space-3);
+    font-size: var(--am-fs-display);
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+}
+
+.login-hero-lead {
+    margin: 0 0 var(--am-space-8);
+    font-size: var(--am-fs-h2);
+    line-height: 1.55;
+    color: rgba(255, 255, 255, 0.78);
+}
+
+.login-hero-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: var(--am-space-4);
+}
+
+.login-hero-list li {
+    display: flex;
+    align-items: center;
+    gap: var(--am-space-3);
+    font-size: var(--am-fs-body);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.login-hero-list i {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: var(--am-radius);
+    background-color: rgba(68, 126, 226, 0.22);
+    color: #fff;
+    font-size: 1rem;
+    flex: 0 0 auto;
+}
+
+.login-hero-foot {
+    position: relative;
+    z-index: 1;
+    margin: var(--am-space-8) 0 0;
+    font-size: var(--am-fs-sm);
+    color: rgba(255, 255, 255, 0.5);
+}
+
+/* --- Right: sign-in card -------------------------------------------------- */
+
+.login-main {
     display: flex;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
-    padding: var(--am-space-6) var(--am-space-4);
-    background-color: var(--am-ground);
+    padding: var(--am-space-8) var(--am-space-6);
 }
 
 .login-card {
@@ -22,10 +190,9 @@
 .login-logo {
     display: block;
     width: 100%;
-    max-width: 12rem;
+    max-width: 13rem;
     height: auto;
-    /* The lockup carries its own whitespace, so it needs less below it. */
-    margin: 0 auto var(--am-space-3);
+    margin: 0 0 var(--am-space-6);
 }
 
 .login-intro {
@@ -47,6 +214,9 @@
 }
 
 .login-alert {
+    display: flex;
+    align-items: center;
+    gap: var(--am-space-2);
     padding: var(--am-space-2) var(--am-space-3);
     margin-bottom: var(--am-space-4);
     font-size: var(--am-fs-body);
@@ -69,4 +239,22 @@
     margin-top: var(--am-space-2);
     padding: var(--am-space-2) var(--am-space-4);
     font-weight: 600;
+}
+
+/* --- Reflow --------------------------------------------------------------- */
+
+/* Below the laptop breakpoint the brand panel is more than the width can carry,
+   so it steps aside and the card takes the viewport. */
+@media (max-width: 900px) {
+    .login-shell {
+        grid-template-columns: 1fr;
+    }
+
+    .login-hero {
+        display: none;
+    }
+
+    .login-main {
+        min-height: 100vh;
+    }
 }

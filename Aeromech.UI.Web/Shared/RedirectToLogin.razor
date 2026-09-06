@@ -1,0 +1,12 @@
+﻿@inject NavigationManager Navigation
+
+@* Sends an anonymous visitor to the standalone /login page, which carries its own
+   menu-less layout. Rendering the sign-in form inside the app shell instead would
+   surround it with the navigation sidebar, which is of no use before sign in. *@
+
+@code {
+    protected override void OnInitialized()
+    {
+        Navigation.NavigateTo("login");
+    }
+}
