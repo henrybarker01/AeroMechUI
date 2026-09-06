@@ -2,14 +2,34 @@
 
 <AuthorizeView>
     <Authorized>
-        <div class="user-chip">
-            <span class="user-avatar" aria-hidden="true">@Initials(context.User)</span>
-            <span class="user-name">@context.User.Identity?.Name</span>
+        @* The user chip doubles as the account menu. Bootstrap's dropdown data API
+           (bundle already loaded in _Host) drives open/close, so no JS interop or
+           component state is needed here. *@
+        <div class="dropdown">
+            <button type="button" class="user-chip" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Account menu">
+                <span class="user-avatar" aria-hidden="true">@Initials(context.User)</span>
+                <span class="user-name">@context.User.Identity?.Name</span>
+                <i class="bi bi-chevron-down user-caret" aria-hidden="true"></i>
+            </button>
+
+            <ul class="dropdown-menu dropdown-menu-end user-menu">
+                <li>
+                    <a class="dropdown-item" href="/change-password">
+                        <i class="bi bi-key" aria-hidden="true"></i>
+                        <span>Change password</span>
+                    </a>
+                </li>
+                <li><hr class="dropdown-divider" /></li>
+                <li>
+                    <form method="post" action="Identity/Account/Logout" class="logout-form">
+                        <button type="submit" class="dropdown-item">
+                            <i class="bi bi-box-arrow-right" aria-hidden="true"></i>
+                            <span>Log out</span>
+                        </button>
+                    </form>
+                </li>
+            </ul>
         </div>
-        <a href="/change-password" class="btn btn-link logout-button">Change password</a>
-        <form method="post" action="Identity/Account/Logout" class="logout-form">
-            <button type="submit" class="btn btn-link logout-button">Log out</button>
-        </form>
     </Authorized>
     <NotAuthorized>
     </NotAuthorized>

@@ -1,9 +1,22 @@
+﻿/* The user chip is now a button that opens the account menu, so it carries the
+   button reset itself and a quiet hover to signal it is interactive. */
 .user-chip {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
     min-width: 0;
+    padding: 0.25rem 0.5rem;
+    border: 0;
+    border-radius: var(--am-radius);
+    background: none;
+    color: inherit;
+    font: inherit;
 }
+
+    .user-chip:hover,
+    .user-chip[aria-expanded="true"] {
+        background-color: var(--am-blue-light);
+    }
 
 .user-avatar {
     display: inline-flex;
@@ -30,20 +43,44 @@
     font-weight: 500;
 }
 
+.user-caret {
+    font-size: 0.7rem;
+    color: var(--am-steel);
+}
+
+.user-menu {
+    min-width: 12rem;
+    border: 1px solid var(--am-rule);
+    border-radius: var(--am-radius-lg);
+    box-shadow: var(--am-shadow-2);
+    font-size: var(--am-fs-body);
+}
+
+    .user-menu .dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        color: var(--am-ink-2);
+        font-weight: 500;
+    }
+
+        .user-menu .dropdown-item:hover,
+        .user-menu .dropdown-item:focus {
+            background-color: var(--am-blue-light);
+            color: var(--am-blue-text-hover);
+        }
+
+    .user-menu .dropdown-item i {
+        color: var(--am-steel);
+        font-size: 0.9rem;
+    }
+
+        .user-menu .dropdown-item:hover i,
+        .user-menu .dropdown-item:focus i {
+            color: var(--am-blue-text-hover);
+        }
+
 .logout-form {
     margin: 0;
 }
-
-.logout-button {
-    padding: 0;
-    border: 0;
-    font-size: var(--am-fs-body);
-    font-weight: 500;
-    color: var(--am-steel);
-    text-decoration: none;
-}
-
-    .logout-button:hover {
-        color: var(--am-blue);
-        text-decoration: underline;
-    }
