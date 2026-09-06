@@ -194,6 +194,11 @@ namespace AeroMech.UI.Web.Services
             serviceReportToEdit.Instruction = serviceReport.Instruction;
             serviceReportToEdit.IsComplete = serviceReport.IsComplete;
             serviceReportToEdit.JobNumber = serviceReport.Vehicle.JobNumber;
+
+            // Held before the assignment overwrites it, so a change to the sales order number can
+            // be recorded against the person who made it. This is the value the office reads to
+            // know a job was billed, so who changed it and to what has to be answerable.
+            var previousSalesOrderNumber = serviceReportToEdit.SalesOrderNumber;
             serviceReportToEdit.SalesOrderNumber = serviceReport.SalesOrderNumber;
             serviceReportToEdit.ServiceType = serviceReport.ServiceType.ToString();
 
@@ -204,6 +209,35 @@ namespace AeroMech.UI.Web.Services
 
             var auditUser = await _auditService.ResolveUser();
             var reportReference = $"AEM{serviceReportToEdit.ServiceReportNumber}";
+
+            // A sales order number that moved is worth a line of its own. Null and blank read as
+            // the same absence, so trimming to nothing on either side is not a change; anything
+            // else is, whether the number was first entered, corrected, or cleared. The value
+            // either side is carried so the report can show what it was and what it became.
+            var salesOrderBefore = (previousSalesOrderNumber ?? string.Empty).Trim();
+            var salesOrderAfter = (serviceReportToEdit.SalesOrderNumber ?? string.Empty).Trim();
+
+            if (!string.Equals(salesOrderBefore, salesOrderAfter, StringComparison.Ordinal))
+            {
+                var change = salesOrderBefore.Length == 0
+                    ? $"Sales order number {salesOrderAfter} set on service report {reportReference}."
+                    : salesOrderAfter.Length == 0
+                        ? $"Sales order number cleared on service report {reportReference} (was {salesOrderBefore})."
+                        : $"Sales order number on service report {reportReference} changed from {salesOrderBefore} to {salesOrderAfter}.";
+
+                _auditService.Record(
+                    _aeroMechDBContext,
+                    auditUser,
+                    AuditArea.ServiceReport,
+                    AuditAction.Updated,
+                    nameof(ServiceReport),
+                    serviceReportToEdit.Id,
+                    reportReference,
+                    change,
+                    nameof(ServiceReport.SalesOrderNumber),
+                    previousSalesOrderNumber,
+                    serviceReportToEdit.SalesOrderNumber);
+            }
 
             foreach (var part in serviceReport.Parts)
             {
