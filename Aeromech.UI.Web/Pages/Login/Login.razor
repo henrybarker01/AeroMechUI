@@ -3,83 +3,38 @@
 @using Microsoft.AspNetCore.Authorization
 @attribute [AllowAnonymous]
 
-@* A split landing page: a brand panel on the left for presence, and the sign-in
-   card on the right. Below the laptop breakpoint the brand panel drops away and
-   the card becomes the whole page, so it reflows cleanly at every width. *@
+@* The sign-in card. The split landing shell (brand panel + card frame) is
+   drawn by LoginLayout, shared with the password-recovery pages. *@
 
-<div class="login-shell">
-    @* Left: a quiet brand panel that gives the page some presence without shouting.
-       It collapses out of view below the laptop breakpoint, where the card stands
-       on its own. *@
-    <aside class="login-hero" aria-hidden="true">
-        <span class="login-hero-glow"></span>
-        <i class="bi bi-gear-wide-connected login-hero-cog login-hero-cog-1"></i>
-        <i class="bi bi-gear login-hero-cog login-hero-cog-2"></i>
+<div class="login-intro">
+    <h1 class="login-title">Sign in</h1>
+    <p class="login-subtitle">Enter your details to continue to AeroMech.</p>
+</div>
 
-        <div class="login-hero-inner">
-            <div class="login-hero-brand">
-                <span class="login-hero-mark">
-                    <img src="./images/aeromech-mark.png" alt="" />
-                </span>
-                <span class="login-hero-word">
-                    <span class="login-hero-name">AeroMech</span>
-                    <span class="login-hero-tag">GSE Supply &amp; Services</span>
-                </span>
-            </div>
+@if (!string.IsNullOrEmpty(_errorMessage))
+{
+    <div class="alert alert-danger login-alert" role="alert">
+        <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
+        <span>@_errorMessage</span>
+    </div>
+}
 
-            <h2 class="login-hero-headline">Ground support equipment, managed end to end.</h2>
-            <p class="login-hero-lead">
-                Parts, quotes, servicing and workshop records &mdash; one place to keep
-                the fleet moving.
-            </p>
+<form method="post" action="/Account/SignIn" id="loginForm" @onsubmit="HandleSubmit" @onsubmit:preventDefault="true">
+    <div class="login-field">
+        <label class="login-label" for="user-name">User name</label>
+        <input type="text" class="form-control" id="user-name" name="UserName"
+               autocomplete="username" @bind="_credential.UserName" placeholder="e-mail" />
+    </div>
 
-            <ul class="login-hero-list">
-                <li><i class="bi bi-box-seam"></i><span>Inventory &amp; stock control</span></li>
-                <li><i class="bi bi-file-earmark-text"></i><span>Quotes &amp; service reports</span></li>
-                <li><i class="bi bi-truck"></i><span>Fleet &amp; client records</span></li>
-            </ul>
-        </div>
+    <div class="login-field">
+        <label class="login-label" for="password">Password</label>
+        <input type="password" class="form-control" id="password" name="Password"
+               autocomplete="current-password" @bind="_credential.Password" placeholder="Password" />
+    </div>
 
-        <p class="login-hero-foot">&copy; @DateTime.UtcNow.Year AeroMech GSE Supply &amp; Services</p>
-    </aside>
+    <button type="submit" id="login" name="login" class="btn btn-primary login-submit">Sign in</button>
+</form>
 
-    @* Right: the sign-in card. On small screens this is the whole page. *@
-    <main class="login-main">
-        <div class="login-card">
-            <img class="login-logo" src="./images/AreoMechSmall.png" alt="AeroMech" />
-
-            <div class="login-intro">
-                <h1 class="login-title">Sign in</h1>
-                <p class="login-subtitle">Enter your details to continue to AeroMech.</p>
-            </div>
-
-            @if (!string.IsNullOrEmpty(_errorMessage))
-            {
-                <div class="alert alert-danger login-alert" role="alert">
-                    <i class="bi bi-exclamation-circle" aria-hidden="true"></i>
-                    <span>@_errorMessage</span>
-                </div>
-            }
-
-            <form method="post" action="/Account/SignIn" id="loginForm" @onsubmit="HandleSubmit" @onsubmit:preventDefault="true">
-                <div class="login-field">
-                    <label class="login-label" for="user-name">User name</label>
-                    <input type="text" class="form-control" id="user-name" name="UserName"
-                           autocomplete="username" @bind="_credential.UserName" placeholder="e-mail" />
-                </div>
-
-                <div class="login-field">
-                    <label class="login-label" for="password">Password</label>
-                    <input type="password" class="form-control" id="password" name="Password"
-                           autocomplete="current-password" @bind="_credential.Password" placeholder="Password" />
-                </div>
-
-                <button type="submit" id="login" name="login" class="btn btn-primary login-submit">Sign in</button>
-            </form>
-
-            <div class="login-links">
-                <a href="/forgot-password">Forgot your password?</a>
-            </div>
-        </div>
-    </main>
+<div class="login-links">
+    <a href="/forgot-password">Forgot your password?</a>
 </div>
