@@ -1,4 +1,5 @@
 @inject NavigationManager NavigationManager
+@inject LocalizationService L
 
 <div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
@@ -6,7 +7,7 @@
             <img class="brand-mark" src="images/aeromech-mark.png" alt="" aria-hidden="true" width="28" height="28" />
             <span class="brand-name">AeroMech</span>
         </a>
-        <button title="Navigation menu" class="navbar-toggler" @onclick="ToggleNavMenu">
+        <button title="@L["Navigation menu"]" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
     </div>
@@ -22,7 +23,7 @@
         <div class="nav-item px-3">
             <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
                 <i class="bi bi-house-door nav-icon" aria-hidden="true"></i>
-                <span class="nav-text">Home</span>
+                <span class="nav-text">@L["Home"]</span>
             </NavLink>
         </div>
 
@@ -31,84 +32,84 @@
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="clients">
                         <i class="bi bi-buildings nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Clients</span>
+                        <span class="nav-text">@L["Clients"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="employees">
                         <i class="bi bi-people nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Employees</span>
+                        <span class="nav-text">@L["Employees"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="vehicles">
                         <i class="bi bi-truck nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Vehicles</span>
+                        <span class="nav-text">@L["Vehicles"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="parts">
                         <i class="bi bi-box-seam nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Parts</span>
+                        <span class="nav-text">@L["Parts"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="receive-stock">
                         <i class="bi bi-box-arrow-in-down nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Receive Stock</span>
+                        <span class="nav-text">@L["Receive Stock"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="stock-receipts">
                         <i class="bi bi-clipboard-check nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Stock Receipts</span>
+                        <span class="nav-text">@L["Stock Receipts"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="stock-takes">
                         <i class="bi bi-clipboard-data nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Stock Takes</span>
+                        <span class="nav-text">@L["Stock Takes"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="quotes">
                         <i class="bi bi-file-earmark-text nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Quotes</span>
+                        <span class="nav-text">@L["Quotes"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="service-reports">
                         <i class="bi bi-wrench-adjustable nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Service Reports</span>
+                        <span class="nav-text">@L["Service Reports"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="timesheets">
                         <i class="bi bi-clock-history nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Time Sheet Data</span>
+                        <span class="nav-text">@L["Time Sheet Data"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="reports">
                         <i class="bi bi-bar-chart-line nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Reports</span>
+                        <span class="nav-text">@L["Reports"]</span>
                     </NavLink>
                 </div>
 
                 <div class="nav-item px-3">
                     <NavLink class="nav-link" href="users">
                         <i class="bi bi-person-gear nav-icon" aria-hidden="true"></i>
-                        <span class="nav-text">Users</span>
+                        <span class="nav-text">@L["Users"]</span>
                     </NavLink>
                 </div>
             </Authorized>
@@ -119,10 +120,10 @@
         <Authorized>
             <div class="nav-actions">
                 <button class="nav-action nav-action-primary" @onclick="NavigateToAddQuote">
-                    <i class="bi bi-plus-lg" aria-hidden="true"></i> New quote
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> @L["New quote"]
                 </button>
                 <button class="nav-action nav-action-secondary" @onclick="NavigateToAddServiceReport">
-                    <i class="bi bi-plus-lg" aria-hidden="true"></i> New service report
+                    <i class="bi bi-plus-lg" aria-hidden="true"></i> @L["New service report"]
                 </button>
             </div>
         </Authorized>

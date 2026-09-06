@@ -1,11 +1,12 @@
 @page "/receive-stock"
+@inject LocalizationService L
 
 @using AeroMech.Models.Models
 @using AeroMech.UI.Web.Pages.ListTemplate
 @using System.Globalization
 @using BlazorBootstrap
 
-<PageTitle>Receive Stock</PageTitle>
+<PageTitle>@L["Receive Stock"]</PageTitle>
 
 <EditForm Model="_receipt" OnValidSubmit="OnPostReceiptClick">
     <DataAnnotationsValidator />
@@ -13,20 +14,20 @@
     <div class="container-fluid rs-invoice">
         <div class="row">
             <div class="col-12">
-                <h4 class="rs-invoice-heading">Supplier Invoice</h4>
+                <h4 class="rs-invoice-heading">@L["Supplier Invoice"]</h4>
             </div>
         </div>
 
         <div class="row mt-2">
             <div class="col-12 col-lg-4">
                 <div class="form-group">
-                    <label for="select-supplier">Supplier:</label>
+                    <label for="select-supplier">@L["Supplier"]:</label>
                     <InputSelect class="form-select"
                                  id="select-supplier"
                                  ValueExpression="@(() => _receipt.SupplierCode)"
                                  Value="@_receipt.SupplierCode"
                                  ValueChanged="@((string value) => OnSupplierChanged(value))">
-                        <option selected value="">Select supplier</option>
+                        <option selected value="">@L["Select supplier"]</option>
                         @foreach (var supplier in _suppliers)
                         {
                             <option value="@supplier.SupplierCode">@supplier.SupplierCode (@supplier.PartCount)</option>
@@ -37,14 +38,14 @@
             </div>
             <div class="col-12 col-lg-4">
                 <div class="form-group">
-                    <label for="invoice-number">Invoice Number:</label>
+                    <label for="invoice-number">@L["Invoice Number"]:</label>
                     <InputText @bind-Value="_receipt.InvoiceNumber" class="form-control" id="invoice-number" />
                     <ValidationMessage For="() => _receipt.InvoiceNumber" />
                 </div>
             </div>
             <div class="col-12 col-lg-4">
                 <div class="form-group">
-                    <label for="invoice-date">Invoice Date:</label>
+                    <label for="invoice-date">@L["Invoice Date"]:</label>
                     <InputDate @bind-Value="_receipt.InvoiceDate" class="form-control" id="invoice-date" />
                     <ValidationMessage For="() => _receipt.InvoiceDate" />
                 </div>
@@ -54,28 +55,28 @@
         <div class="row mt-2">
             <div class="col-12 col-lg-3">
                 <div class="form-group">
-                    <label for="invoice-sub-total">Invoice Sub Total:</label>
+                    <label for="invoice-sub-total">@L["Invoice Sub Total"]:</label>
                     <NumberInput TValue="double" @bind-Value="_receipt.InvoiceSubTotal" class="form-control" id="invoice-sub-total" Step=".01" />
                     <ValidationMessage For="() => _receipt.InvoiceSubTotal" />
                 </div>
             </div>
             <div class="col-12 col-lg-3">
                 <div class="form-group">
-                    <label for="invoice-vat">VAT:</label>
+                    <label for="invoice-vat">@L["VAT"]:</label>
                     <NumberInput TValue="double" @bind-Value="_receipt.InvoiceVat" class="form-control" id="invoice-vat" Step=".01" />
                     <ValidationMessage For="() => _receipt.InvoiceVat" />
                 </div>
             </div>
             <div class="col-12 col-lg-3">
                 <div class="form-group">
-                    <label for="invoice-total">Invoice Total:</label>
+                    <label for="invoice-total">@L["Invoice Total"]:</label>
                     <NumberInput TValue="double" @bind-Value="_receipt.InvoiceTotal" class="form-control" id="invoice-total" Step=".01" />
                     <ValidationMessage For="() => _receipt.InvoiceTotal" />
                 </div>
             </div>
             <div class="col-12 col-lg-3">
                 <div class="form-group">
-                    <label for="invoice-notes">Notes:</label>
+                    <label for="invoice-notes">@L["Notes"]:</label>
                     <InputText @bind-Value="_receipt.Notes" class="form-control" id="invoice-notes" />
                 </div>
             </div>
@@ -86,9 +87,7 @@
             <div class="row mt-2">
                 <div class="col-12">
                     <div class="rs-totals-warning">
-                        Sub total plus VAT comes to
-                        @((_receipt.InvoiceSubTotal + _receipt.InvoiceVat).ToString("C", CultureInfo.CurrentCulture)),
-                        which is not the invoice total you entered.
+                        @L.Format("Sub total plus VAT comes to {0}, which is not the invoice total you entered.", (_receipt.InvoiceSubTotal + _receipt.InvoiceVat).ToString("C", CultureInfo.CurrentCulture))
                     </div>
                 </div>
             </div>
@@ -99,7 +98,7 @@
                 <div class="form-check">
                     <InputCheckbox @bind-Value="_receipt.UpdateCostPrices" class="form-check-input" id="update-cost-prices" />
                     <label class="form-check-label" for="update-cost-prices">
-                        Update part cost prices from this invoice
+                        @L["Update part cost prices from this invoice"]
                     </label>
                 </div>
             </div>
@@ -109,29 +108,29 @@
             <div class="col-12">
                 <div class="rs-summary">
                     <span class="rs-summary-item">
-                        <span class="rs-summary-label">Lines</span>
+                        <span class="rs-summary-label">@L["Lines"]</span>
                         <span class="rs-summary-value">@_receipt.LineCount</span>
                     </span>
                     <span class="rs-summary-item">
-                        <span class="rs-summary-label">Qty received</span>
+                        <span class="rs-summary-label">@L["Qty received"]</span>
                         <span class="rs-summary-value">@_receipt.TotalQtyReceived</span>
                     </span>
                     <span class="rs-summary-item">
-                        <span class="rs-summary-label">Captured lines</span>
+                        <span class="rs-summary-label">@L["Captured lines"]</span>
                         <span class="rs-summary-value">@_receipt.CapturedLineTotal.ToString("C", CultureInfo.CurrentCulture)</span>
                     </span>
                     <span class="rs-summary-item">
-                        <span class="rs-summary-label">Invoice sub total</span>
+                        <span class="rs-summary-label">@L["Invoice sub total"]</span>
                         <span class="rs-summary-value">@_receipt.InvoiceSubTotal.ToString("C", CultureInfo.CurrentCulture)</span>
                     </span>
                     <span class="rs-summary-item rs-variance @(_receipt.IsReconciled ? "reconciled" : "unreconciled")">
-                        <span class="rs-summary-label">Variance</span>
+                        <span class="rs-summary-label">@L["Variance"]</span>
                         <span class="rs-summary-value">@_receipt.SubTotalVariance.ToString("C", CultureInfo.CurrentCulture)</span>
                     </span>
 
                     <span class="rs-summary-actions">
-                        <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="OnClearClick">Clear</Button>
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" Disabled="@(_receipt.LineCount == 0)">Post Receipt</Button>
+                        <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="OnClearClick">@L["Clear"]</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" Disabled="@(_receipt.LineCount == 0)">@L["Post Receipt"]</Button>
                     </span>
                 </div>
             </div>
@@ -141,7 +140,7 @@
     @if (string.IsNullOrWhiteSpace(_receipt.SupplierCode))
     {
         <div class="container-fluid">
-            <div class="rs-empty">Select a supplier to see the parts it supplies.</div>
+            <div class="rs-empty">@L["Select a supplier to see the parts it supplies."]</div>
         </div>
     }
     else
@@ -160,7 +159,7 @@
                             class="rs-line-chip @(_onlyInvoiceLines ? "active" : null)"
                             aria-pressed="@(_onlyInvoiceLines ? "true" : "false")"
                             @onclick="ToggleOnlyInvoiceLines">
-                        Only lines being received
+                        @L["Only lines being received"]
                         <span class="rs-line-count">@_receipt.LineCount</span>
                     </button>
                 </div>
@@ -173,8 +172,8 @@
                     <SortHeader Title="Bin" SortBy="l => l.Bin" />
                     <SortHeader Title="Warehouse" SortBy="l => l.WarehouseCode" />
                     <SortHeader Title="On Hand" SortBy="l => l.QtyOnHand" />
-                    <th class="rs-input-col">Receiving</th>
-                    <th class="rs-input-col">Unit Cost</th>
+                    <th class="rs-input-col">@L["Receiving"]</th>
+                    <th class="rs-input-col">@L["Unit Cost"]</th>
                     <SortHeader Title="Line Total" SortBy="l => l.LineTotal" />
                     <SortHeader Title="New On Hand" SortBy="l => l.NewQtyOnHand" />
                 </tr>
@@ -199,8 +198,8 @@
                         @if (line.IsOnInvoice && line.CostPriceDiffers)
                         {
                             <span class="rs-cost-changed"
-                                  title="@($"Cost price was {line.CurrentCostPrice.ToString("C", CultureInfo.CurrentCulture)}")">
-                                was @line.CurrentCostPrice.ToString("C", CultureInfo.CurrentCulture)
+                                  title="@L.Format("Cost price was {0}", line.CurrentCostPrice.ToString("C", CultureInfo.CurrentCulture))">
+                                @L.Format("was {0}", line.CurrentCostPrice.ToString("C", CultureInfo.CurrentCulture))
                             </span>
                         }
                     </td>

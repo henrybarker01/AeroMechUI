@@ -1,9 +1,10 @@
 @page "/timesheets"
 @page "/timesheets/{SelectedDate}"
+@inject LocalizationService L
 @using AeroMech.Models.Models
 @using AeroMech.Data.Enums
 
-<PageTitle>Time Sheet Data</PageTitle>
+<PageTitle>@L["Time Sheet Data"]</PageTitle>
 
 <Modal @ref="_modal" Title="@_title">
     <BodyTemplate>
@@ -18,7 +19,7 @@
             </div>
 
             <div class="ts-field">
-                <label class="ts-field-label" for="description">Reason</label>
+                <label class="ts-field-label" for="description">@L["Reason"]</label>
                 <InputSelect @bind-Value="_timesheetEmployeeDetail.Description" class="form-select" id="description">
                     @foreach (var gapType in Enum.GetValues<TimesheetGapTypes>())
                     {
@@ -29,14 +30,14 @@
             </div>
 
             <div class="ts-field">
-                <label class="ts-field-label" for="hours">Hours</label>
+                <label class="ts-field-label" for="hours">@L["Hours"]</label>
                 <div class="ts-hours-field">
                     @* A number input rather than a text one: on a phone it opens the numeric
                        keypad, and the presets below cover the values that get typed most. *@
                     <InputNumber @bind-Value="_timesheetEmployeeDetail.Hours"
                                  class="form-control ts-hours-input"
                                  id="hours" step="0.25" min="0" inputmode="decimal" />
-                    <span class="ts-hours-unit">hours</span>
+                    <span class="ts-hours-unit">@L["hours"]</span>
                 </div>
                 <div class="ts-presets">
                     @foreach (var preset in HourPresets)
@@ -52,8 +53,8 @@
             </div>
 
             <div class="ts-modal-actions">
-                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Cancel</Button>
-                <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save</Button>
+                <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@L["Cancel"]</Button>
+                <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">@L["Save"]</Button>
             </div>
         </EditForm>
     </BodyTemplate>
@@ -66,12 +67,12 @@
 
     <header class="page-header">
         <div class="page-header-text">
-            <p class="page-eyebrow">Workshop</p>
-            <h1 class="page-title">Time sheet data</h1>
+            <p class="page-eyebrow">@L["Workshop"]</p>
+            <h1 class="page-title">@L["Time sheet data"]</h1>
         </div>
 
         <div class="ts-range">
-            <label class="ts-range-label" for="from-date">Showing days from</label>
+            <label class="ts-range-label" for="from-date">@L["Showing days from"]</label>
             <InputDate TValue="DateOnly"
                        @bind-Value="_startDate"
                        @bind-Value:after="LoadTimesheetsAsync"
@@ -89,8 +90,8 @@
         <section class="ts-panel ts-panel-days">
             <div class="ts-panel-head">
                 <div class="ts-panel-headings">
-                    <p class="ts-panel-eyebrow">Step 1</p>
-                    <h2 class="ts-panel-title">Pick a day</h2>
+                    <p class="ts-panel-eyebrow">@L["Step 1"]</p>
+                    <h2 class="ts-panel-title">@L["Pick a day"]</h2>
                 </div>
             </div>
 
@@ -117,21 +118,21 @@
                        in was a 20px target on a 40px row. *@
                     <tr class="ts-row @(timesheet.Date == _selectedTimesheetDate ? "ts-row-selected" : null)"
                         @onclick="async () => await ViewDayAsync(timesheet)">
-                        <td class="ts-date" data-label="Date">
+                        <td class="ts-date" data-label="@L["Date"]">
                             <span class="ts-date-value">@timesheet.Date.ToString("dd MMM yyyy")</span>
                             <span class="ts-date-day">@timesheet.DayOfWeek</span>
                         </td>
-                        <td class="num ts-cell-hours @(timesheet.TotalWorked == 0 ? "ts-zero" : null)" data-label="Hours">
+                        <td class="num ts-cell-hours @(timesheet.TotalWorked == 0 ? "ts-zero" : null)" data-label="@L["Hours"]">
                             @FormatHours(timesheet.TotalWorked)
                         </td>
                         <td class="ts-action-cell">
                             <RowActions>
-                                <RowAction Icon="@Icons.Print" Label="Print this day"
+                                <RowAction Icon="@Icons.Print" Label="@L["Print this day"]"
                                            OnClick="() => PrintDay(timesheet)" />
-                                <button type="button" class="ts-icon-btn ts-chevron" title="Open this day"
+                                <button type="button" class="ts-icon-btn ts-chevron" title="@L["Open this day"]"
                                         @onclick="async () => await ViewDayAsync(timesheet)" @onclick:stopPropagation="true">
                                     <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                                    <span class="visually-hidden">Open @timesheet.Date.ToString("dd MMM yyyy")</span>
+                                    <span class="visually-hidden">@L.Format("Open {0}", timesheet.Date.ToString("dd MMM yyyy"))</span>
                                 </button>
                             </RowActions>
                         </td>
@@ -149,11 +150,11 @@
                 <div class="ts-panel-head">
                     <button type="button" class="ts-back" @onclick="BackToDays">
                         <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                        <span>Days</span>
+                        <span>@L["Days"]</span>
                     </button>
 
                     <div class="ts-panel-headings">
-                        <p class="ts-panel-eyebrow">Step 2 &middot; Who worked</p>
+                        <p class="ts-panel-eyebrow">@L["Step 2"] &middot; @L["Who worked"]</p>
                         <h2 class="ts-panel-title">@SelectedDayLabel</h2>
                     </div>
 
@@ -162,7 +163,7 @@
                         <button type="button" class="btn btn-sm btn-outline-secondary ts-panel-action"
                                 @onclick="() => PrintDay(_timesheetDateModel)">
                             <i class="bi bi-printer" aria-hidden="true"></i>
-                            <span>Print day</span>
+                            <span>@L["Print day"]</span>
                         </button>
                     }
                 </div>
@@ -171,7 +172,7 @@
                 {
                     <div class="ts-placeholder">
                         <i class="bi bi-calendar3" aria-hidden="true"></i>
-                        <p>Pick a day to see who worked it and how their hours were made up.</p>
+                        <p>@L["Pick a day to see who worked it and how their hours were made up."]</p>
                     </div>
                 }
                 else
@@ -180,17 +181,17 @@
                        for yet. The figures were there before, but only one row at a time. *@
                     <div class="ts-summary">
                         <div class="ts-summary-item">
-                            <span class="ts-summary-label">Hours logged</span>
-                            <span class="ts-summary-value">@FormatHours(DayTotalHours) h</span>
+                            <span class="ts-summary-label">@L["Hours logged"]</span>
+                            <span class="ts-summary-value">@FormatHours(DayTotalHours) @L["h"]</span>
                         </div>
                         <div class="ts-summary-item">
-                            <span class="ts-summary-label">Employees with hours</span>
+                            <span class="ts-summary-label">@L["Employees with hours"]</span>
                             <span class="ts-summary-value">
-                                @EmployeesWithHours<span class="ts-summary-of"> of @_timesheetEmployeeHours.Count</span>
+                                @EmployeesWithHours<span class="ts-summary-of"> @L.Format("of {0}", _timesheetEmployeeHours.Count)</span>
                             </span>
                         </div>
                         <div class="ts-summary-item @(EmployeesWithoutHours > 0 ? "ts-summary-warn" : null)">
-                            <span class="ts-summary-label">Nothing logged</span>
+                            <span class="ts-summary-label">@L["Nothing logged"]</span>
                             <span class="ts-summary-value">@EmployeesWithoutHours</span>
                         </div>
                     </div>
@@ -214,28 +215,28 @@
                         <RowTemplate Context="timesheetEmployee">
                             <tr class="ts-row @(timesheetEmployee.EmployeeId == _selectedEmployeeId ? "ts-row-selected" : null)"
                                 @onclick="async () => await ViewEmplyeeTimesheetDetail(timesheetEmployee.EmployeeId)">
-                                <td class="ts-employee" data-label="Employee">
+                                <td class="ts-employee" data-label="@L["Employee"]">
                                     <span class="ts-employee-name">@timesheetEmployee.EmployeeName</span>
                                     <span class="ts-employee-number">@timesheetEmployee.EmployeeNumber</span>
                                 </td>
-                                <td class="num ts-cell-sr @(timesheetEmployee.ServiceReportHours == 0 ? "ts-zero" : null)" data-label="Service reports">
+                                <td class="num ts-cell-sr @(timesheetEmployee.ServiceReportHours == 0 ? "ts-zero" : null)" data-label="@L["Service reports"]">
                                     @FormatHours(timesheetEmployee.ServiceReportHours)
                                 </td>
-                                <td class="num ts-cell-other @(timesheetEmployee.TimesheetHours == 0 ? "ts-zero" : null)" data-label="Other">
+                                <td class="num ts-cell-other @(timesheetEmployee.TimesheetHours == 0 ? "ts-zero" : null)" data-label="@L["Other"]">
                                     @FormatHours(timesheetEmployee.TimesheetHours)
                                 </td>
-                                <td class="num ts-cell-total @(timesheetEmployee.ServiceReportHours + timesheetEmployee.TimesheetHours == 0 ? "ts-zero" : null)" data-label="Total">
+                                <td class="num ts-cell-total @(timesheetEmployee.ServiceReportHours + timesheetEmployee.TimesheetHours == 0 ? "ts-zero" : null)" data-label="@L["Total"]">
                                     @FormatHours(timesheetEmployee.ServiceReportHours + timesheetEmployee.TimesheetHours)
                                 </td>
                                 <td class="ts-action-cell">
                                     <RowActions>
-                                        <RowAction Icon="@Icons.Add" Label="Add hours for this employee"
+                                        <RowAction Icon="@Icons.Add" Label="@L["Add hours for this employee"]"
                                                    OnClick="async () => await AddToEmployeeTimesheetAsync(timesheetEmployee)" />
-                                        <button type="button" class="ts-icon-btn ts-chevron" title="See this employee's lines"
+                                        <button type="button" class="ts-icon-btn ts-chevron" title="@L["See this employee's lines"]"
                                                 @onclick="async () => await ViewEmplyeeTimesheetDetail(timesheetEmployee.EmployeeId)"
                                                 @onclick:stopPropagation="true">
                                             <i class="bi bi-chevron-right" aria-hidden="true"></i>
-                                            <span class="visually-hidden">Open @timesheetEmployee.EmployeeName</span>
+                                            <span class="visually-hidden">@L.Format("Open {0}", timesheetEmployee.EmployeeName)</span>
                                         </button>
                                     </RowActions>
                                 </td>
@@ -252,11 +253,11 @@
                 <div class="ts-panel-head">
                     <button type="button" class="ts-back" @onclick="BackToEmployees">
                         <i class="bi bi-arrow-left" aria-hidden="true"></i>
-                        <span>Employees</span>
+                        <span>@L["Employees"]</span>
                     </button>
 
                     <div class="ts-panel-headings">
-                        <p class="ts-panel-eyebrow">Step 3 &middot; The day in detail</p>
+                        <p class="ts-panel-eyebrow">@L["Step 3"] &middot; @L["The day in detail"]</p>
                         <h2 class="ts-panel-title">@SelectedEmployeeName</h2>
                     </div>
 
@@ -265,7 +266,7 @@
                         <button type="button" class="btn btn-primary btn-sm ts-panel-action"
                                 @onclick="async () => await AddToEmployeeTimesheetAsync()">
                             <i class="bi bi-plus-lg" aria-hidden="true"></i>
-                            <span>Add hours</span>
+                            <span>@L["Add hours"]</span>
                         </button>
                     }
                 </div>
@@ -276,8 +277,8 @@
                         <i class="bi bi-person-lines-fill" aria-hidden="true"></i>
                         <p>
                             @(_selectedTimesheetDate is null
-                                ? "Pick a day, then an employee, to see and fill in their hours."
-                                : "Pick an employee to see their service report lines and add anything missing.")
+                                ? L["Pick a day, then an employee, to see and fill in their hours."]
+                                : L["Pick an employee to see their service report lines and add anything missing."])
                         </p>
                     </div>
                 }
@@ -299,27 +300,27 @@
                         </HeaderTemplate>
                         <RowTemplate Context="timesheetLine">
                             <tr>
-                                <td class="ts-line-description" data-label="Description">@LineDescription(timesheetLine)</td>
-                                <td class="ts-cell-source" data-label="Source">
+                                <td class="ts-line-description" data-label="@L["Description"]">@LineDescription(timesheetLine)</td>
+                                <td class="ts-cell-source" data-label="@L["Source"]">
                                     @* A badge rather than a sentence: the two sources need telling
                                        apart at a glance, because only one of them can be edited. *@
                                     <span class="ts-source @(timesheetLine.IsServiceReport ? "ts-source-report" : "ts-source-manual")">
-                                        @(timesheetLine.IsServiceReport ? "Service report" : "Added here")
+                                        @(timesheetLine.IsServiceReport ? L["Service report"] : L["Added here"])
                                     </span>
                                 </td>
-                                <td class="num ts-cell-hours" data-label="Hours">@FormatHours(timesheetLine.Hours)</td>
+                                <td class="num ts-cell-hours" data-label="@L["Hours"]">@FormatHours(timesheetLine.Hours)</td>
                                 <td class="ts-action-cell">
                                     <RowActions>
                                         @if (timesheetLine.IsServiceReport)
                                         {
-                                            <RowAction Icon="@Icons.Open" Label="Open the service report"
+                                            <RowAction Icon="@Icons.Open" Label="@L["Open the service report"]"
                                                        OnClick="() => ViewServiceReport(timesheetLine.ServiceReportId!.Value)" />
                                         }
                                         else
                                         {
-                                            <RowAction Icon="@Icons.Edit" Label="Edit this line"
+                                            <RowAction Icon="@Icons.Edit" Label="@L["Edit this line"]"
                                                        OnClick="async () => await EditEmployeeTimesheetAsync(timesheetLine)" />
-                                            <RowAction Icon="@Icons.Delete" Label="Delete this line" Danger="true"
+                                            <RowAction Icon="@Icons.Delete" Label="@L["Delete this line"]" Danger="true"
                                                        OnClick="async () => await DeleteEmployeeTimesheetDetailAsync(timesheetLine)" />
                                         }
                                     </RowActions>

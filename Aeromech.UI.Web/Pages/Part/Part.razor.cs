@@ -38,7 +38,7 @@ namespace AeroMech.UI.Web.Pages.Part
 
         private async Task OnAddPartClick()
         {
-            _title = "Add Part";
+            _title = L["Add Part"];
             _part = new PartModel();
             _part.Warehouse = new WarehouseModel()
             {
@@ -50,7 +50,7 @@ namespace AeroMech.UI.Web.Pages.Part
 
         private async Task OnEditPartClick(PartModel prt)
         {
-            _title = "Edit Part";
+            _title = L["Edit Part"];
             _part = prt;
             await _modal.ShowAsync();
         }
@@ -83,7 +83,7 @@ namespace AeroMech.UI.Web.Pages.Part
 
         private async Task DeletePart(PartModel prt)
         {
-            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            bool confirmed = await _confirmationService.ConfirmAsync(L["Are you sure?"]);
             if (confirmed)
             {
                 _loaderService.ShowLoader();

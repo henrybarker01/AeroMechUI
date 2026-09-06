@@ -10,6 +10,7 @@ namespace AeroMech.UI.Web.Shared
         [Inject] private AuthenticationStateProvider _authenticationStateProvider { get; set; } = default!;
         [Inject] private UserService _userService { get; set; } = default!;
         [Inject] private NavigationManager _navigationManager { get; set; } = default!;
+        [Inject] private LocalizationService _localization { get; set; } = default!;
 
         /// <summary>
         /// Whether the signed-in account still has to choose its own password. Read once per
@@ -42,6 +43,18 @@ namespace AeroMech.UI.Web.Shared
         /// The layout outlives every internal navigation, so this is where an account that must
         /// still choose its own password is turned back from wherever else it was headed.
         /// </summary>
+        /// <summary>
+        /// Reconciles the cookie-delivered language with localStorage (readable only over
+        /// JS interop, so only after the first render). Reloads once if they disagree.
+        /// </summary>
+        protected override async Task OnAfterRenderAsync(bool firstRender)
+        {
+            if (firstRender)
+            {
+                await _localization.InitializeAsync();
+            }
+        }
+
         private void OnLocationChanged(object? sender, LocationChangedEventArgs e)
         {
             if (_mustChangePassword)

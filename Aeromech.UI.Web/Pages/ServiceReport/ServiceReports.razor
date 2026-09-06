@@ -1,11 +1,12 @@
 ﻿@page "/service-reports"
+@inject LocalizationService L
 
 @using AeroMech.UI.Web.Pages.ListTemplate;
 @using System.Globalization;
 @using AeroMech.Models;
 @using BlazorBootstrap
 
-<PageTitle>Service Reports</PageTitle>
+<PageTitle>@L["Service Reports"]</PageTitle>
 
 <ListTemplate TItem="ServiceReportModel"
               Title="Service Reports"
@@ -22,17 +23,17 @@
             {
                 <button type="button"
                         class="sr-status-chip @status.Css @(IsStatusActive(status) ? "active" : null)"
-                        title="@status.Description"
+                        title="@L[status.Description]"
                         aria-pressed="@(IsStatusActive(status) ? "true" : "false")"
                         @onclick="() => ToggleStatus(status)">
                     <span class="sr-status-dot"></span>
-                    @status.Label
+                    @L[status.Label]
                     <span class="sr-status-count">@CountFor(status)</span>
                 </button>
             }
             @if (_activeStatuses.Count > 0)
             {
-                <button type="button" class="sr-status-clear" @onclick="ClearStatusFilter">Clear</button>
+                <button type="button" class="sr-status-clear" @onclick="ClearStatusFilter">@L["Clear"]</button>
             }
         </div>
     </FilterTemplate>
@@ -49,7 +50,7 @@
             <SortHeader Title="Service Type" SortBy="sr => sr.ServiceType.ToString()" />
             <SortHeader Title="Total" SortBy="sr => CalculateTotal(sr)" />
             <SortHeader Title="Status" SortBy="sr => RowStatus(sr).Rank" />
-            <th class="row-actions-col">Actions</th>
+            <th class="row-actions-col">@L["Actions"]</th>
         </tr>
     </HeaderTemplate>
 
@@ -58,7 +59,7 @@
             var status = RowStatus(sr);
         }
         <tr class="sr-row @status.Css">
-            <td class="sr-status-cell" title="@status.Description">@($"AEM {sr.ServiceReportNumber}")</td>
+            <td class="sr-status-cell" title="@L[status.Description]">@($"AEM {sr.ServiceReportNumber}")</td>
             <td>@($"AEM {sr.QuoteNumber}")</td>
             <td>@sr.ReportDate.ToString("dd/MM/yyyy")</td>
             <td>@sr.SalesOrderNumber</td>
@@ -67,11 +68,11 @@
             <td class="sr-client" title="@sr.Client?.Name">@sr.Client?.Name</td>
             <td>@sr.ServiceType</td>
             <td>@CalculateTotal(sr).ToString("C", CultureInfo.CurrentCulture)</td>
-            <td>@status.Label</td>
+            <td>@L[status.Label]</td>
             <td class="row-actions-col">
                 <RowActions>
-                    <RowAction Icon="@Icons.Edit" Label="Edit this service report" OnClick="() => Edit(sr.Id)" />
-                    <RowAction Icon="@Icons.Print" Label="Print this service report" OnClick="() => Print(sr.Id)" />
+                    <RowAction Icon="@Icons.Edit" Label="@L["Edit this service report"]" OnClick="() => Edit(sr.Id)" />
+                    <RowAction Icon="@Icons.Print" Label="@L["Print this service report"]" OnClick="() => Print(sr.Id)" />
                 </RowActions>
             </td>
         </tr>

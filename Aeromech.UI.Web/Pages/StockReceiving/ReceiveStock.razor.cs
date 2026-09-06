@@ -88,7 +88,7 @@ namespace AeroMech.UI.Web.Pages.StockReceiving
             if (_receipt.LineCount > 0)
             {
                 var discard = await _confirmationService.ConfirmAsync(
-                    "Changing supplier will clear the quantities you have captured. Continue?");
+                    L["Changing supplier will clear the quantities you have captured. Continue?"]);
 
                 if (!discard) return;
             }
@@ -151,7 +151,7 @@ namespace AeroMech.UI.Web.Pages.StockReceiving
             if (_receipt.LineCount == 0 && string.IsNullOrWhiteSpace(_receipt.InvoiceNumber))
                 return;
 
-            var confirmed = await _confirmationService.ConfirmAsync("Clear this invoice and start again?");
+            var confirmed = await _confirmationService.ConfirmAsync(L["Clear this invoice and start again?"]);
             if (!confirmed) return;
 
             var supplierCode = _receipt.SupplierCode;
@@ -165,7 +165,7 @@ namespace AeroMech.UI.Web.Pages.StockReceiving
         {
             if (_receipt.LineCount == 0)
             {
-                ToastService.Notify(new(ToastType.Danger, "Enter a received quantity against at least one part."));
+                ToastService.Notify(new(ToastType.Danger, L["Enter a received quantity against at least one part."]));
                 return;
             }
 
@@ -174,8 +174,8 @@ namespace AeroMech.UI.Web.Pages.StockReceiving
             if (await _stockReceivingService.InvoiceAlreadyReceived(_receipt.SupplierCode, _receipt.InvoiceNumber))
             {
                 var postAnyway = await _confirmationService.ConfirmAsync(
-                    $"Invoice {_receipt.InvoiceNumber} has already been received from {_receipt.SupplierCode}. " +
-                    "Posting it again will add the stock a second time. Continue?");
+                    L.Format("Invoice {0} has already been received from {1}. Posting it again will add the stock a second time. Continue?",
+                        _receipt.InvoiceNumber, _receipt.SupplierCode));
 
                 if (!postAnyway) return;
             }
@@ -184,7 +184,7 @@ namespace AeroMech.UI.Web.Pages.StockReceiving
             {
                 var variance = _receipt.SubTotalVariance.ToString("C", CultureInfo.CurrentCulture);
                 var postAnyway = await _confirmationService.ConfirmAsync(
-                    $"The lines you captured differ from the invoice sub total by {variance}. Post anyway?");
+                    L.Format("The lines you captured differ from the invoice sub total by {0}. Post anyway?", variance));
 
                 if (!postAnyway) return;
             }
@@ -201,7 +201,7 @@ namespace AeroMech.UI.Web.Pages.StockReceiving
                 await _stockReceivingService.PostReceipt(_receipt);
 
                 ToastService.Notify(new(ToastType.Success,
-                    $"Invoice {invoiceNumber} received: {qtyReceived} units across {lineCount} parts."));
+                    L.Format("Invoice {0} received: {1} units across {2} parts.", invoiceNumber, qtyReceived, lineCount)));
 
                 // Reload from the database so the grid shows the levels that were actually written,
                 // including anything else that moved while the invoice was being captured.
@@ -217,7 +217,7 @@ namespace AeroMech.UI.Web.Pages.StockReceiving
             }
             catch (Exception)
             {
-                ToastService.Notify(new(ToastType.Danger, "The receipt could not be posted. No stock was changed."));
+                ToastService.Notify(new(ToastType.Danger, L["The receipt could not be posted. No stock was changed."]));
             }
             finally
             {

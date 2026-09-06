@@ -1,4 +1,7 @@
 ﻿@using AeroMech.UI.Web.Shared
+@using AeroMech.UI.Web.Services
+@inject LocalizationService L
+
 <CascadingAuthenticationState>
     <Router AppAssembly="@typeof(App).Assembly">
         <Found Context="routeData">
@@ -13,3 +16,13 @@
         </NotFound>
     </Router>
 </CascadingAuthenticationState>
+
+@code {
+    /// <summary>
+    /// The language _Host read from the cookie. Applied before the router renders
+    /// anything, so the entire first paint is already in the right language.
+    /// </summary>
+    [Parameter] public string? InitialLanguage { get; set; }
+
+    protected override void OnInitialized() => L.SetInitialLanguage(InitialLanguage);
+}

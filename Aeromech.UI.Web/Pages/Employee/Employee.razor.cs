@@ -38,14 +38,14 @@ namespace AeroMech.UI.Web.Pages.Employee
 
         private async Task OnShowModalClick()
         {
-            title = "Add Employee";
+            title = L["Add Employee"];
             _employee = new EmployeeModel();
             await modal.ShowAsync();
         }
 
         private async Task OnEditEmployeeClick(EmployeeModel emp)
         {
-            title = "Edit Employee";
+            title = L["Edit Employee"];
             _employee = emp;
             await modal.ShowAsync();
         }
@@ -79,7 +79,7 @@ namespace AeroMech.UI.Web.Pages.Employee
 
         private async Task DeleteEmployee(EmployeeModel emp)
         {
-            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            bool confirmed = await _confirmationService.ConfirmAsync(L["Are you sure?"]);
             if (confirmed)
             {
                 _loaderService.ShowLoader();

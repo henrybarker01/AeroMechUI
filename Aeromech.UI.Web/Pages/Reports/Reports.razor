@@ -1,14 +1,15 @@
 ﻿@page "/reports"
+@inject LocalizationService L
 
 @inject NavigationManager Navigation
 
-<PageTitle>Reports</PageTitle>
+<PageTitle>@L["Reports"]</PageTitle>
 
 <div class="container-fluid">
     <div class="row mb-3">
         <div class="col">
-            <h1 class="mb-0">Reports</h1>
-            <small class="text-muted">Generate and download PDF reports.</small>
+            <h1 class="mb-0">@L["Reports"]</h1>
+            <small class="text-muted">@L["Generate and download PDF reports."]</small>
         </div>
     </div>
 
@@ -19,15 +20,15 @@
                 <div class="card h-100 shadow-sm">
                     <div class="card-body d-flex flex-column">
                         <div class="mb-2">
-                            <div class="fw-semibold">@report.Name</div>
+                            <div class="fw-semibold">@L[report.Name]</div>
                             @if (!string.IsNullOrWhiteSpace(report.Description))
                             {
-                                <div class="text-muted small">@report.Description</div>
+                                <div class="text-muted small">@L[report.Description]</div>
                             }
                         </div>
 
                         <div class="mt-auto d-flex justify-content-end">
-                            <button class="btn btn-primary btn-sm" @onclick="() => Navigation.NavigateTo(report.Route)">Run</button>
+                            <button class="btn btn-primary btn-sm" @onclick="() => Navigation.NavigateTo(report.Route)">@L["Run"]</button>
                         </div>
                     </div>
                 </div>

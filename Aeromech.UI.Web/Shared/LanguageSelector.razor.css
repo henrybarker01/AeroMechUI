@@ -1,0 +1,63 @@
+/* Mirrors the user chip next to it so the top row reads as one family. */
+.lang-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.5rem;
+    border: 0;
+    border-radius: var(--am-radius);
+    background: none;
+    color: var(--am-ink-2);
+    font: inherit;
+    font-weight: 500;
+}
+
+    .lang-chip:hover,
+    .lang-chip[aria-expanded="true"] {
+        background-color: var(--am-blue-light);
+    }
+
+    .lang-chip .bi-globe2 {
+        color: var(--am-steel);
+        font-size: 0.95rem;
+    }
+
+.lang-code {
+    font-size: var(--am-fs-sm);
+    font-weight: 600;
+    letter-spacing: 0.04em;
+}
+
+.lang-caret {
+    font-size: 0.7rem;
+    color: var(--am-steel);
+}
+
+.lang-menu {
+    min-width: 9rem;
+    border: 1px solid var(--am-rule);
+    border-radius: var(--am-radius-lg);
+    box-shadow: var(--am-shadow-2);
+    font-size: var(--am-fs-body);
+}
+
+    .lang-menu .dropdown-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.5rem;
+        padding: 0.4rem 1rem;
+        color: var(--am-ink-2);
+        font-weight: 500;
+    }
+
+        .lang-menu .dropdown-item:hover,
+        .lang-menu .dropdown-item:focus {
+            background-color: var(--am-blue-light);
+            color: var(--am-blue-text-hover);
+        }
+
+    .lang-menu .dropdown-item i {
+        color: var(--am-blue);
+        font-size: 0.85rem;
+    }

@@ -32,19 +32,19 @@ namespace AeroMech.UI.Web.Pages.Account
 
             if (string.IsNullOrWhiteSpace(_currentPassword) || string.IsNullOrWhiteSpace(_newPassword))
             {
-                _errorMessage = "Both the current and the new password are required.";
+                _errorMessage = L["Both the current and the new password are required."];
                 return;
             }
 
             if (!string.Equals(_newPassword, _confirmNewPassword, StringComparison.Ordinal))
             {
-                _errorMessage = "The new passwords do not match.";
+                _errorMessage = L["The new passwords do not match."];
                 return;
             }
 
             if (string.Equals(_newPassword, _currentPassword, StringComparison.Ordinal))
             {
-                _errorMessage = "The new password is the same as the current one.";
+                _errorMessage = L["The new password is the same as the current one."];
                 return;
             }
 
@@ -66,12 +66,12 @@ namespace AeroMech.UI.Web.Pages.Account
                 }
 
                 _errorMessage = string.IsNullOrWhiteSpace(result?.Message)
-                    ? "The password could not be changed."
+                    ? L["The password could not be changed."]
                     : result!.Message!;
             }
             catch (Exception)
             {
-                _errorMessage = "An error occurred while changing the password.";
+                _errorMessage = L["An error occurred while changing the password."];
             }
             finally
             {

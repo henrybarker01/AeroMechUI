@@ -212,7 +212,7 @@ namespace AeroMech.UI.Web.Pages.Quote
             var savedId = await SaveQuote();
 
             if (savedId != 0)
-                ToastService.Notify(new(ToastType.Success, $"Quote AEM {_quote.QuoteNumber} saved successfully."));
+                ToastService.Notify(new(ToastType.Success, L.Format("Quote AEM {0} saved successfully.", _quote.QuoteNumber)));
         }
 
         private async Task SaveAndPrint()
@@ -229,7 +229,7 @@ namespace AeroMech.UI.Web.Pages.Quote
 
             if (savedId == 0) return;
 
-            ToastService.Notify(new(ToastType.Success, $"Quote AEM {_quote.QuoteNumber} saved successfully."));
+            ToastService.Notify(new(ToastType.Success, L.Format("Quote AEM {0} saved successfully.", _quote.QuoteNumber)));
 
             _quote = new QuoteModel();
             editContext = new(_quote);
@@ -257,7 +257,7 @@ namespace AeroMech.UI.Web.Pages.Quote
         {
             if (!editContext.Validate())
             {
-                ToastService.Notify(new(ToastType.Danger, "Please correct the highlighted fields before saving."));
+                ToastService.Notify(new(ToastType.Danger, L["Please correct the highlighted fields before saving."]));
                 return 0;
             }
 
@@ -277,7 +277,7 @@ namespace AeroMech.UI.Web.Pages.Quote
             }
             catch (Exception ex)
             {
-                ToastService.Notify(new(ToastType.Danger, $"Quote could not be saved. {ex.Message}"));
+                ToastService.Notify(new(ToastType.Danger, L.Format("Quote could not be saved. {0}", ex.Message)));
                 return 0;
             }
             finally

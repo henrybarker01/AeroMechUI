@@ -1,13 +1,20 @@
 @typeparam TItem
+@inject LocalizationService L
 
+@* The English Title stays the stored sort key; only what the user sees is
+   translated, so a saved sort order survives a language switch. *@
 @if (IsSortable)
 {
-    <th class="sortable @Class" @onclick="ToggleAsync" aria-sort="@AriaSort" title="Sort by @Title">
-        @Title
+    <th class="sortable @Class" @onclick="ToggleAsync" aria-sort="@AriaSort" title="@L.Format("Sort by {0}", DisplayTitle)">
+        @DisplayTitle
         <i class="bi @IndicatorIcon sort-indicator @(IsActive ? null : "idle")"></i>
     </th>
 }
 else
 {
-    <th class="@Class">@Title</th>
+    <th class="@Class">@DisplayTitle</th>
+}
+
+@code {
+    private string DisplayTitle => string.IsNullOrWhiteSpace(Title) ? string.Empty : L[Title];
 }

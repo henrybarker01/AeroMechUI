@@ -1,22 +1,23 @@
 @page "/stock-take/{Id:int}"
+@inject LocalizationService L
 
 @using AeroMech.Data.Enums
 @using AeroMech.Models.Models
 @using System.Globalization
 @using BlazorBootstrap
 
-<PageTitle>@(_stockTake is null ? "Stock Take" : $"{_stockTake.Reference} - Stock Take")</PageTitle>
+<PageTitle>@(_stockTake is null ? L["Stock Take"] : L.Format("{0} - Stock Take", _stockTake.Reference))</PageTitle>
 
 @if (_notFound)
 {
     <div class="st-empty">
-        <p>That stock take could not be found.</p>
-        <button type="button" class="btn btn-primary" @onclick="BackToList">Back to stock takes</button>
+        <p>@L["That stock take could not be found."]</p>
+        <button type="button" class="btn btn-primary" @onclick="BackToList">@L["Back to stock takes"]</button>
     </div>
 }
 else if (_stockTake is null)
 {
-    <div class="st-empty">Loading stock take&hellip;</div>
+    <div class="st-empty">@L["Loading stock take"]&hellip;</div>
 }
 else
 {
@@ -28,7 +29,7 @@ else
            ------------------------------------------------------------------ *@
         <header class="st-header">
             <div class="st-header-main">
-                <p class="page-eyebrow">Stock Take</p>
+                <p class="page-eyebrow">@L["Stock Take"]</p>
                 <h1 class="page-title">
                     @_stockTake.Reference
                     <span class="st-status st-status-@_stockTake.Status.ToString().ToLowerInvariant()">@_stockTake.StatusLabel</span>
@@ -36,12 +37,12 @@ else
                 <p class="st-header-desc">@_stockTake.StockTakeDescription</p>
 
                 <div class="st-header-meta">
-                    <span><strong>Date</strong> @_stockTake.StockTakeDate.ToString("yyyy-MM-dd")</span>
-                    <span><strong>Suppliers</strong> @_stockTake.SupplierLabel</span>
-                    <span><strong>Raised by</strong> @(string.IsNullOrWhiteSpace(_stockTake.StockTakeBy) ? "-" : _stockTake.StockTakeBy)</span>
+                    <span><strong>@L["Date"]</strong> @_stockTake.StockTakeDate.ToString("yyyy-MM-dd")</span>
+                    <span><strong>@L["Suppliers"]</strong> @_stockTake.SupplierLabel</span>
+                    <span><strong>@L["Raised by"]</strong> @(string.IsNullOrWhiteSpace(_stockTake.StockTakeBy) ? "-" : _stockTake.StockTakeBy)</span>
                     @if (_stockTake.BlindCount)
                     {
-                        <span class="st-blind-badge" title="The expected quantity is hidden from the counter">Blind count</span>
+                        <span class="st-blind-badge" title="@L["The expected quantity is hidden from the counter"]">@L["Blind count"]</span>
                     }
                 </div>
             </div>
@@ -49,7 +50,7 @@ else
             <div class="st-header-side">
                 <div class="st-progress">
                     <div class="st-progress-top">
-                        <span class="st-progress-count">@_stockTake.CountedCount <span class="st-progress-of">of @_stockTake.LineCount counted</span></span>
+                        <span class="st-progress-count">@_stockTake.CountedCount <span class="st-progress-of">@L.Format("of {0} counted", _stockTake.LineCount)</span></span>
                         <span class="st-progress-pct">@_stockTake.ProgressPercent%</span>
                     </div>
                     <span class="st-progress-track">
@@ -62,17 +63,17 @@ else
                 </div>
 
                 <div class="st-header-actions">
-                    <select class="form-select form-select-sm st-order-select" @onchange="OnOrderChanged" aria-label="Sheet order">
-                        <option value="@((int)StockTakeSheetOrder.SupplierThenPart)" selected="@(_order == StockTakeSheetOrder.SupplierThenPart)">Supplier, then part</option>
-                        <option value="@((int)StockTakeSheetOrder.BinThenPart)" selected="@(_order == StockTakeSheetOrder.BinThenPart)">Bin, then part</option>
+                    <select class="form-select form-select-sm st-order-select" @onchange="OnOrderChanged" aria-label="@L["Sheet order"]">
+                        <option value="@((int)StockTakeSheetOrder.SupplierThenPart)" selected="@(_order == StockTakeSheetOrder.SupplierThenPart)">@L["Supplier, then part"]</option>
+                        <option value="@((int)StockTakeSheetOrder.BinThenPart)" selected="@(_order == StockTakeSheetOrder.BinThenPart)">@L["Bin, then part"]</option>
                     </select>
 
                     <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="DownloadCountSheet">
-                        <i class="bi bi-printer" aria-hidden="true"></i> <span>Print sheet</span>
+                        <i class="bi bi-printer" aria-hidden="true"></i> <span>@L["Print sheet"]</span>
                     </button>
 
                     <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="BackToList">
-                        <i class="bi bi-arrow-left" aria-hidden="true"></i> <span>All sheets</span>
+                        <i class="bi bi-arrow-left" aria-hidden="true"></i> <span>@L["All sheets"]</span>
                     </button>
                 </div>
             </div>
@@ -81,13 +82,13 @@ else
         @if (_stockTake.Status == StockTakeStatus.Completed)
         {
             <div class="st-banner st-banner-good">
-                @PostedLabel Stock levels were corrected by the differences this count found.
+                @PostedLabel @L["Stock levels were corrected by the differences this count found."]
             </div>
         }
         else if (_stockTake.Status == StockTakeStatus.Cancelled)
         {
             <div class="st-banner st-banner-muted">
-                This stock take was cancelled. Nothing was posted and no stock was changed.
+                @L["This stock take was cancelled. Nothing was posted and no stock was changed."]
             </div>
         }
 
@@ -99,7 +100,7 @@ else
         <div class="st-tabs" role="tablist">
             <button type="button" role="tab" class="st-tab @(_mode == ScreenMode.Count ? "active" : null)"
                     aria-selected="@(_mode == ScreenMode.Count)" @onclick="() => SetMode(ScreenMode.Count)">
-                Count
+                @L["Count"]
                 @if (_stockTake.NotCountedCount > 0)
                 {
                     <span class="st-tab-badge">@_stockTake.NotCountedCount</span>
@@ -107,7 +108,7 @@ else
             </button>
             <button type="button" role="tab" class="st-tab @(_mode == ScreenMode.Review ? "active" : null)"
                     aria-selected="@(_mode == ScreenMode.Review)" @onclick="() => SetMode(ScreenMode.Review)">
-                Differences
+                @L["Differences"]
                 @if (_stockTake.VarianceCount > 0)
                 {
                     <span class="st-tab-badge @(_stockTake.NeedsDecisionCount > 0 ? "urgent" : null)">@_stockTake.VarianceCount</span>
@@ -120,49 +121,49 @@ else
             <div class="st-toolbar">
                 <div class="list-search st-search">
                     <i class="bi bi-search list-search-icon" aria-hidden="true"></i>
-                    <input type="search" class="form-control" placeholder="Search part, description or bin"
-                           aria-label="Search parts" @bind-value="SearchTerm" @bind-value:event="oninput" />
+                    <input type="search" class="form-control" placeholder="@L["Search part, description or bin"]"
+                           aria-label="@L["Search parts"]" @bind-value="SearchTerm" @bind-value:event="oninput" />
                 </div>
 
                 <div class="st-chips">
                     <button type="button" class="st-chip @(_filter == LineFilter.ToCount ? "active" : null)"
                             @onclick="() => SetFilter(LineFilter.ToCount)">
-                        To count <span class="st-chip-count">@_stockTake.NotCountedCount</span>
+                        @L["To count"] <span class="st-chip-count">@_stockTake.NotCountedCount</span>
                     </button>
                     <button type="button" class="st-chip @(_filter == LineFilter.Counted ? "active" : null)"
                             @onclick="() => SetFilter(LineFilter.Counted)">
-                        Counted <span class="st-chip-count">@_stockTake.CountedCount</span>
+                        @L["Counted"] <span class="st-chip-count">@_stockTake.CountedCount</span>
                     </button>
                     @if (_stockTake.RecountCount > 0)
                     {
                         <button type="button" class="st-chip st-chip-warn @(_filter == LineFilter.Recount ? "active" : null)"
                                 @onclick="() => SetFilter(LineFilter.Recount)">
-                            Recount <span class="st-chip-count">@_stockTake.RecountCount</span>
+                            @L["Recount"] <span class="st-chip-count">@_stockTake.RecountCount</span>
                         </button>
                     }
                     <button type="button" class="st-chip @(_filter == LineFilter.All ? "active" : null)"
                             @onclick="() => SetFilter(LineFilter.All)">
-                        All <span class="st-chip-count">@_stockTake.LineCount</span>
+                        @L["All"] <span class="st-chip-count">@_stockTake.LineCount</span>
                     </button>
                 </div>
             </div>
 
             <div class="st-list st-list-count @(ShowExpected ? null : "blind")">
                 <div class="st-list-head" aria-hidden="true">
-                    <span>Part</span>
-                    <span>Description</span>
-                    <span>Bin</span>
-                    <span>Supplier</span>
+                    <span>@L["Part"]</span>
+                    <span>@L["Description"]</span>
+                    <span>@L["Bin"]</span>
+                    <span>@L["Supplier"]</span>
                     @if (ShowExpected)
                     {
-                        <span class="st-right">On hand</span>
+                        <span class="st-right">@L["On hand"]</span>
                     }
-                    <span class="st-center">Counted</span>
+                    <span class="st-center">@L["Counted"]</span>
                 </div>
 
                 @if (!PagedLines.Any())
                 {
-                    <div class="st-list-empty">Nothing to show here.</div>
+                    <div class="st-list-empty">@L["Nothing to show here."]</div>
                 }
 
                 @foreach (var line in PagedLines)
@@ -183,37 +184,37 @@ else
                         <div class="st-qty">
                             @if (line.Status == StockTakeLineStatus.RecountRequested)
                             {
-                                <span class="st-recount-note" title="This line was sent back to be counted again">
-                                    recount @(line.PreviousQuantity.HasValue ? $"(was {line.PreviousQuantity})" : "")
+                                <span class="st-recount-note" title="@L["This line was sent back to be counted again"]">
+                                    @L["recount"] @(line.PreviousQuantity.HasValue ? L.Format("(was {0})", line.PreviousQuantity) : "")
                                 </span>
                             }
                             else if (line.Status == StockTakeLineStatus.Accepted)
                             {
                                 <span class="st-recount-note st-locked-note"
-                                      title="This difference was accepted in review. Send it back for a recount to change it.">
-                                    accepted
+                                      title="@L["This difference was accepted in review. Send it back for a recount to change it."]">
+                                    @L["accepted"]
                                 </span>
                             }
 
                             <div class="st-stepper">
-                                <button type="button" class="st-step" aria-label="Decrease count for @line.PartCode"
+                                <button type="button" class="st-step" aria-label="@L.Format("Decrease count for {0}", line.PartCode)"
                                         disabled="@IsLineLocked(line)" @onclick="() => StepQty(line, -1)">&minus;</button>
 
                                 <input type="number" inputmode="numeric" min="0" step="1"
                                        class="form-control st-qty-input"
-                                       aria-label="Counted quantity for @line.PartCode"
+                                       aria-label="@L.Format("Counted quantity for {0}", line.PartCode)"
                                        disabled="@IsLineLocked(line)"
                                        value="@(line.Quantity?.ToString(CultureInfo.InvariantCulture) ?? string.Empty)"
                                        @onchange="e => OnQtyChanged(line, e.Value?.ToString())" />
 
-                                <button type="button" class="st-step" aria-label="Increase count for @line.PartCode"
+                                <button type="button" class="st-step" aria-label="@L.Format("Increase count for {0}", line.PartCode)"
                                         disabled="@IsLineLocked(line)" @onclick="() => StepQty(line, 1)">+</button>
                             </div>
 
                             @if (line.IsCounted && !IsLineLocked(line))
                             {
-                                <button type="button" class="st-clear" title="Clear this count"
-                                        aria-label="Clear count for @line.PartCode" @onclick="() => ClearQty(line)">
+                                <button type="button" class="st-clear" title="@L["Clear this count"]"
+                                        aria-label="@L.Format("Clear count for {0}", line.PartCode)" @onclick="() => ClearQty(line)">
                                     <i class="bi bi-x-lg" aria-hidden="true"></i>
                                 </button>
                             }
@@ -228,10 +229,10 @@ else
                     <span class="list-count">@RangeLabel</span>
                     <div class="list-pager-controls">
                         <button type="button" class="btn btn-sm btn-outline-secondary"
-                                disabled="@(_page <= 1)" @onclick="PreviousPage">Previous</button>
-                        <span class="list-page-number">Page @_page of @TotalPages</span>
+                                disabled="@(_page <= 1)" @onclick="PreviousPage">@L["Previous"]</button>
+                        <span class="list-page-number">@L.Format("Page {0} of {1}", _page, TotalPages)</span>
                         <button type="button" class="btn btn-sm btn-outline-secondary"
-                                disabled="@(_page >= TotalPages)" @onclick="NextPage">Next</button>
+                                disabled="@(_page >= TotalPages)" @onclick="NextPage">@L["Next"]</button>
                     </div>
                 </div>
             }
@@ -241,11 +242,11 @@ else
                 <div class="st-footer-actions">
                     @if (_stockTake.NotCountedCount > 0)
                     {
-                        <span class="st-footer-note">@_stockTake.NotCountedCount part(s) still to count.</span>
+                        <span class="st-footer-note">@L.Format("{0} part(s) still to count.", _stockTake.NotCountedCount)</span>
                     }
                     <button type="button" class="btn btn-primary" disabled="@(_stockTake.CountedCount == 0)"
                             @onclick="FinishCounting">
-                        Finish counting &amp; review differences
+                        @L["Finish counting & review differences"]
                     </button>
                 </div>
             }
@@ -258,23 +259,23 @@ else
                ------------------------------------------------------------------ *@
             <div class="st-summary">
                 <span class="st-summary-item">
-                    <span class="st-summary-label">Counted</span>
+                    <span class="st-summary-label">@L["Counted"]</span>
                     <span class="st-summary-value">@_stockTake.CountedCount / @_stockTake.LineCount</span>
                 </span>
                 <span class="st-summary-item">
-                    <span class="st-summary-label">Differences</span>
+                    <span class="st-summary-label">@L["Differences"]</span>
                     <span class="st-summary-value">@_stockTake.VarianceCount</span>
                 </span>
                 <span class="st-summary-item">
-                    <span class="st-summary-label">To settle</span>
+                    <span class="st-summary-label">@L["To settle"]</span>
                     <span class="st-summary-value @(_stockTake.NeedsDecisionCount > 0 ? "st-value-down" : null)">@_stockTake.NeedsDecisionCount</span>
                 </span>
                 <span class="st-summary-item">
-                    <span class="st-summary-label">Net difference</span>
-                    <span class="st-summary-value">@(_stockTake.NetUnitVariance > 0 ? "+" : "")@_stockTake.NetUnitVariance units</span>
+                    <span class="st-summary-label">@L["Net difference"]</span>
+                    <span class="st-summary-value">@L.Format("{0} units", (_stockTake.NetUnitVariance > 0 ? "+" : "") + _stockTake.NetUnitVariance)</span>
                 </span>
                 <span class="st-summary-item">
-                    <span class="st-summary-label">Value impact</span>
+                    <span class="st-summary-label">@L["Value impact"]</span>
                     <span class="st-summary-value @(_stockTake.TotalVarianceValue < 0 ? "st-value-down" : _stockTake.TotalVarianceValue > 0 ? "st-value-up" : null)">
                         @_stockTake.TotalVarianceValue.ToString("C", CultureInfo.CurrentCulture)
                     </span>
@@ -286,16 +287,16 @@ else
                         @if (_stockTake.Status == StockTakeStatus.Review)
                         {
                             <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="ReopenCounting">
-                                Back to counting
+                                @L["Back to counting"]
                             </button>
                         }
                         <button type="button" class="btn btn-sm btn-outline-secondary"
                                 disabled="@(_stockTake.NeedsDecisionCount == 0)" @onclick="AcceptAll">
-                            Accept all (@_stockTake.NeedsDecisionCount)
+                            @L.Format("Accept all ({0})", _stockTake.NeedsDecisionCount)
                         </button>
                         <button type="button" class="btn btn-primary btn-sm"
                                 disabled="@(!_stockTake.IsReadyToPost)" @onclick="PostStockTake">
-                            Post stock take
+                            @L["Post stock take"]
                         </button>
                     </span>
                 }
@@ -304,60 +305,58 @@ else
             @if (!IsReadOnly && _stockTake.NotCountedCount > 0)
             {
                 <div class="st-banner st-banner-warn">
-                    @_stockTake.NotCountedCount part(s) on this sheet were never counted. Posting leaves their stock
-                    exactly as it is &mdash; they are not treated as zero.
+                    @L.Format("{0} part(s) on this sheet were never counted. Posting leaves their stock exactly as it is — they are not treated as zero.", _stockTake.NotCountedCount)
                 </div>
             }
 
             @if (MovedDuringCountCount > 0)
             {
                 <div class="st-banner st-banner-warn">
-                    @MovedDuringCountCount part(s) moved after this sheet was raised. The count still corrects what it
-                    measured and the movement is kept, but those figures may already be out of date.
+                    @L.Format("{0} part(s) moved after this sheet was raised. The count still corrects what it measured and the movement is kept, but those figures may already be out of date.", MovedDuringCountCount)
                 </div>
             }
 
             <div class="st-toolbar">
                 <div class="list-search st-search">
                     <i class="bi bi-search list-search-icon" aria-hidden="true"></i>
-                    <input type="search" class="form-control" placeholder="Search part, description or bin"
-                           aria-label="Search parts" @bind-value="SearchTerm" @bind-value:event="oninput" />
+                    <input type="search" class="form-control" placeholder="@L["Search part, description or bin"]"
+                           aria-label="@L["Search parts"]" @bind-value="SearchTerm" @bind-value:event="oninput" />
                 </div>
 
                 <div class="st-chips">
                     <button type="button" class="st-chip @(_reviewFilter == ReviewFilter.Differences ? "active" : null)"
                             @onclick="() => SetReviewFilter(ReviewFilter.Differences)">
-                        Differences <span class="st-chip-count">@_stockTake.VarianceCount</span>
+                        @L["Differences"] <span class="st-chip-count">@_stockTake.VarianceCount</span>
                     </button>
                     <button type="button" class="st-chip @(_reviewFilter == ReviewFilter.Unsettled ? "active" : null)"
                             @onclick="() => SetReviewFilter(ReviewFilter.Unsettled)">
-                        To settle <span class="st-chip-count">@_stockTake.NeedsDecisionCount</span>
+                        @L["To settle"] <span class="st-chip-count">@_stockTake.NeedsDecisionCount</span>
                     </button>
                     <button type="button" class="st-chip @(_reviewFilter == ReviewFilter.Accepted ? "active" : null)"
                             @onclick="() => SetReviewFilter(ReviewFilter.Accepted)">
-                        Accepted <span class="st-chip-count">@_stockTake.AcceptedCount</span>
+                        @L["Accepted"] <span class="st-chip-count">@_stockTake.AcceptedCount</span>
                     </button>
                     <button type="button" class="st-chip @(_reviewFilter == ReviewFilter.AllLines ? "active" : null)"
                             @onclick="() => SetReviewFilter(ReviewFilter.AllLines)">
-                        All <span class="st-chip-count">@_stockTake.LineCount</span>
+                        @L["All"] <span class="st-chip-count">@_stockTake.LineCount</span>
                     </button>
                 </div>
             </div>
 
             <div class="st-list st-list-review">
                 <div class="st-list-head" aria-hidden="true">
-                    <span>Part</span>
-                    <span>Description</span>
-                    <span class="st-right">On hand</span>
-                    <span class="st-right">Counted</span>
-                    <span class="st-right">Difference</span>
-                    <span class="st-right">Value</span>
-                    <span class="st-center">@(IsReadOnly ? "Result" : "Decision")</span>
+                    <span>@L["Part"]</span>
+                    <span>@L["Description"]</span>
+                    <span class="st-right">@L["On hand"]</span>
+                    <span class="st-right">@L["Counted"]</span>
+                    <span class="st-right">@L["Difference"]</span>
+                    <span class="st-right">@L["Value"]</span>
+                    <span class="st-center">@(IsReadOnly ? L["Result"] : L["Decision"])</span>
                 </div>
 
                 @if (!PagedLines.Any())
                 {
-                    <div class="st-list-empty">Nothing to show here.</div>
+                    <div class="st-list-empty">@L["Nothing to show here."]</div>
                 }
 
                 @foreach (var line in PagedLines)
@@ -367,15 +366,15 @@ else
                             @line.PartCode
                             @if (line.RecountCount > 0)
                             {
-                                <span class="st-recount-badge" title="Counted again @line.RecountCount time(s)">R@(line.RecountCount)</span>
+                                <span class="st-recount-badge" title="@L.Format("Counted again {0} time(s)", line.RecountCount)">R@(line.RecountCount)</span>
                             }
                         </div>
                         <div class="st-desc" title="@line.PartDescription">
                             @line.PartDescription
                             @if (line.HasMovedSinceSnapshot && !IsReadOnly)
                             {
-                                <span class="st-moved" title="This part moved after the sheet was raised. It is now at @line.CurrentQtyOnHand.">
-                                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> moved since raised
+                                <span class="st-moved" title="@L.Format("This part moved after the sheet was raised. It is now at {0}.", line.CurrentQtyOnHand)">
+                                    <i class="bi bi-exclamation-triangle" aria-hidden="true"></i> @L["moved since raised"]
                                 </span>
                             }
                         </div>
@@ -385,7 +384,7 @@ else
                             @(line.Quantity?.ToString() ?? "-")
                             @if (line.PreviousQuantity.HasValue)
                             {
-                                <span class="st-prev" title="Previous count before the recount">was @line.PreviousQuantity</span>
+                                <span class="st-prev" title="@L["Previous count before the recount"]">@L.Format("was {0}", line.PreviousQuantity)</span>
                             }
                         </div>
                         <div class="st-variance st-right @VarianceClass(line)" data-label="Difference">
@@ -401,40 +400,40 @@ else
                                 @if (line.AppliedDelta != 0)
                                 {
                                     <span class="st-applied @(line.AppliedDelta < 0 ? "st-value-down" : "st-value-up")">
-                                        @(line.AppliedDelta > 0 ? "+" : "")@line.AppliedDelta applied
+                                        @L.Format("{0} applied", (line.AppliedDelta > 0 ? "+" : "") + line.AppliedDelta)
                                     </span>
                                 }
                                 else if (line.IsCounted)
                                 {
-                                    <span class="st-applied st-muted">no change</span>
+                                    <span class="st-applied st-muted">@L["no change"]</span>
                                 }
                                 else
                                 {
-                                    <span class="st-applied st-muted">not counted</span>
+                                    <span class="st-applied st-muted">@L["not counted"]</span>
                                 }
                             }
                             else if (line.Status == StockTakeLineStatus.Accepted)
                             {
-                                <span class="st-accepted"><i class="bi bi-check-lg" aria-hidden="true"></i> accepted</span>
+                                <span class="st-accepted"><i class="bi bi-check-lg" aria-hidden="true"></i> @L["accepted"]</span>
                                 <button type="button" class="btn btn-sm btn-outline-secondary"
-                                        @onclick="() => RecountLine(line)">Recount</button>
+                                        @onclick="() => RecountLine(line)">@L["Recount"]</button>
                             }
                             else if (line.Status == StockTakeLineStatus.RecountRequested)
                             {
-                                <span class="st-awaiting">awaiting recount</span>
+                                <span class="st-awaiting">@L["awaiting recount"]</span>
                             }
                             else if (line.NeedsDecision)
                             {
-                                <button type="button" class="btn btn-sm btn-primary" @onclick="() => AcceptLine(line)">Accept</button>
-                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => RecountLine(line)">Recount</button>
+                                <button type="button" class="btn btn-sm btn-primary" @onclick="() => AcceptLine(line)">@L["Accept"]</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="() => RecountLine(line)">@L["Recount"]</button>
                             }
                             else if (line.IsCounted)
                             {
-                                <span class="st-agrees"><i class="bi bi-check-lg" aria-hidden="true"></i> agrees</span>
+                                <span class="st-agrees"><i class="bi bi-check-lg" aria-hidden="true"></i> @L["agrees"]</span>
                             }
                             else
                             {
-                                <span class="st-awaiting">not counted</span>
+                                <span class="st-awaiting">@L["not counted"]</span>
                             }
                         </div>
                     </div>
@@ -447,10 +446,10 @@ else
                     <span class="list-count">@RangeLabel</span>
                     <div class="list-pager-controls">
                         <button type="button" class="btn btn-sm btn-outline-secondary"
-                                disabled="@(_page <= 1)" @onclick="PreviousPage">Previous</button>
-                        <span class="list-page-number">Page @_page of @TotalPages</span>
+                                disabled="@(_page <= 1)" @onclick="PreviousPage">@L["Previous"]</button>
+                        <span class="list-page-number">@L.Format("Page {0} of {1}", _page, TotalPages)</span>
                         <button type="button" class="btn btn-sm btn-outline-secondary"
-                                disabled="@(_page >= TotalPages)" @onclick="NextPage">Next</button>
+                                disabled="@(_page >= TotalPages)" @onclick="NextPage">@L["Next"]</button>
                     </div>
                 </div>
             }

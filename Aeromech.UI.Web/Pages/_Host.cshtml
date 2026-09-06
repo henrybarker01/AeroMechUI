@@ -3,9 +3,18 @@
 @using Microsoft.AspNetCore.Components.Web
 @namespace Aeromech.UI.Web.Pages
 @addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@{
+    // The language cookie is read here, on the initial request, so the circuit renders in
+    // the right language from its very first paint. Afrikaans is the site default.
+    var language = Request.Cookies["aeromech-language"];
+    if (language != "en" && language != "af")
+    {
+        language = "af";
+    }
+}
 
 <!DOCTYPE html>
-<html lang="en">
+<html lang="@language">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -18,7 +27,7 @@
     <component type="typeof(HeadOutlet)" render-mode="Server" />
 </head>
 <body>
-    <component type="typeof(App)" render-mode="Server" />
+    <component type="typeof(App)" render-mode="Server" param-InitialLanguage="@language" />
 
     <div id="blazor-error-ui">
         <environment include="Staging,Production">
@@ -59,6 +68,17 @@
 
         // Small local storage wrapper for remembering per-page UI preferences such as grid sort
         // order. Storage can be unavailable (private browsing, quota) so every call is guarded.
+        // Persists a language choice in both stores and reloads: localStorage is the
+        // remembered preference, the cookie is what the server reads on the next request,
+        // and the reload is what actually re-renders the whole app in the new language.
+        window.aeroMechLanguage = {
+            apply: function (lang) {
+                try { localStorage.setItem('aeromech-language', lang); } catch (e) { }
+                document.cookie = 'aeromech-language=' + lang + '; path=/; max-age=31536000; SameSite=Lax';
+                location.reload();
+            }
+        };
+
         window.aeroMechStore = {
             get: function (key) {
                 try { return localStorage.getItem(key); } catch (e) { return null; }

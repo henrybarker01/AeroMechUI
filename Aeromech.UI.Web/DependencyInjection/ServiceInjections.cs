@@ -11,6 +11,9 @@ namespace AeroMech.UI.Web.DependencyInjection
             // only reachable through the HTTP context.
             services.AddHttpContextAccessor();
 
+            // One per circuit: holds the visitor's language and re-renders the UI on change.
+            services.AddScoped<LocalizationService, LocalizationService>();
+
             services.AddScoped<CurrentUserService, CurrentUserService>();
             services.AddScoped<AuditService, AuditService>();
             services.AddScoped<AuditReportService, AuditReportService>();

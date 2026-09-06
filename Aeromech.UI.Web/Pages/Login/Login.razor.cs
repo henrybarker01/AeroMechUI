@@ -49,12 +49,12 @@ namespace AeroMech.UI.Web.Pages.Login
                 }
 
                 _errorMessage = string.IsNullOrWhiteSpace(result?.Message)
-                    ? "Invalid username or password."
+                    ? L["Invalid username or password."]
                     : result!.Message;
             }
             catch (Exception ex)
             {
-                _errorMessage = "An error occurred during login.";
+                _errorMessage = L["An error occurred during login."];
             }
             finally
             {

@@ -1,6 +1,7 @@
 ﻿@page "/clients"
+@inject LocalizationService L
 
-<PageTitle>Clients</PageTitle>
+<PageTitle>@L["Clients"]</PageTitle>
 
 <Modal @ref="_modal" Title="@_title">
     <BodyTemplate>
@@ -9,84 +10,84 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
-                        <label for="Name">Name</label>
+                        <label for="Name">@L["Name"]</label>
                         <InputText @bind-Value=_client.Name class="form-control" id="Name" />
                         <ValidationMessage For="() => _client.Name" />
                     </div>
                 </div>
                 <div class="row mt-5">
                     <div class="form-group">
-                        <label for="contact-person-name">Contact Person Name:</label>
+                        <label for="contact-person-name">@L["Contact Person Name"]:</label>
                         <InputText @bind-Value="_client.ContactPersonName" type="text" class="form-control" id="contact-person-name"></InputText>
                         <ValidationMessage For="() => _client.ContactPersonName" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="contact-person-number">Contact Person Number:</label>
+                        <label for="contact-person-number">@L["Contact Person Number"]:</label>
                         <InputText @bind-Value="_client.ContactPersonNumber" type="phone" class="form-control" id="contact-person-nunmer"></InputText>
                         <ValidationMessage For="() => _client.ContactPersonNumber" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="contact-person-email">Contact Person email:</label>
+                        <label for="contact-person-email">@L["Contact Person Email"]:</label>
                         <InputText @bind-Value="_client.ContactPersonEmail" type="email" class="form-control" id="contact-person-email"></InputText>
                         <ValidationMessage For="() => _client.ContactPersonEmail" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="contact-person-birthdate">Contact Person birth date:</label>
+                        <label for="contact-person-birthdate">@L["Contact Person Birth Date"]:</label>
                         <DateInput TValue="DateOnly?" @bind-Value="@_client.ContactPersonBirthDate" id="contact-person-birthdate" />
                         <ValidationMessage For="() => _client.ContactPersonBirthDate" />
                     </div>
                 </div>
                 <div class="row mt-5">
                     <div class="form-group">
-                        <label for="addressLine1">Address Line 1:</label>
+                        <label for="addressLine1">@L["Address Line 1"]:</label>
                         <InputText @bind-Value="_client.AddressLine1" type="text" class="form-control" id="addressLine1"></InputText>
                         <ValidationMessage For="() => _client.AddressLine1" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="addressLine2">Address Line 2:</label>
+                        <label for="addressLine2">@L["Address Line 2"]:</label>
                         <InputText @bind-Value="_client.AddressLine2" type="text" class="form-control" id="addressLine2"></InputText>
                         <ValidationMessage For="() => _client.AddressLine2" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="city">City:</label>
+                        <label for="city">@L["City"]:</label>
                         <InputText @bind-Value="_client.City" type="text" class="form-control" id="city"></InputText>
                         <ValidationMessage For="() => _client.City" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="postalCode">Post Code:</label>
+                        <label for="postalCode">@L["Post Code"]:</label>
                         <InputText @bind-Value="_client.PostalCode" type="text" class="form-control" id="postalCode"></InputText>
                         <ValidationMessage For="() => _client.PostalCode" />
                     </div>
                 </div>
 
                 <div class="row mt-5">
-                    <b>Rates:</b>
+                    <b>@L["Rates"]:</b>
                     <table class="rate-table">
                         <thead>
                             <tr>
                                 <td>
-                                    Weekdays
+                                    @L["Weekdays"]
                                 </td>
                                 <td>
-                                    Weekdays Overtime
+                                    @L["Weekdays Overtime"]
                                 </td>
                                 <td>
-                                    Sundays & Public Holidays
+                                    @L["Sundays & Public Holidays"]
                                 </td>
                                 <td>
-                                    Overtime
+                                    @L["Overtime"]
                                 </td>
                             </tr>
                         </thead>
@@ -113,10 +114,10 @@
             <div class="row">
                 <div class="footer-buttons">
                     <div class="close">
-                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@L["Close"]</Button>
                     </div>
                     <div>
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">@L["Save changes"]</Button>
                     </div>
                 </div>
 
@@ -145,7 +146,7 @@
             <SortHeader Title="Weekdays Overtime" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.WeekdaysOvertime)?.Rate ?? 0" />
             <SortHeader Title="Overtime" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime)?.Rate ?? 0" />
             <SortHeader Title="Sundays & Public Holidays" Class="rate" SortBy="c => c.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays)?.Rate ?? 0" />
-            <th class="row-actions-col">Actions</th>
+            <th class="row-actions-col">@L["Actions"]</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="client">
@@ -161,8 +162,8 @@
             <td class="rate">@((client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.SundaysAndPublicHolidays)?.Rate ?? 0).ToString("C", CultureInfo.CurrentCulture))</td>
             <td class="row-actions-col">
                 <RowActions>
-                    <RowAction Icon="@Icons.Edit" Label="Edit this client" OnClick="() => OnEditClientClick(client)" />
-                    <RowAction Icon="@Icons.Delete" Label="Delete this client" Danger="true" OnClick="() => DeleteClient(client)" />
+                    <RowAction Icon="@Icons.Edit" Label="@L["Edit this client"]" OnClick="() => OnEditClientClick(client)" />
+                    <RowAction Icon="@Icons.Delete" Label="@L["Delete this client"]" Danger="true" OnClick="() => DeleteClient(client)" />
                 </RowActions>
             </td>
         </tr>

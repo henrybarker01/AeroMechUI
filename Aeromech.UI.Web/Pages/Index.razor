@@ -1,7 +1,8 @@
 ﻿@page "/"
+@inject LocalizationService L
 @using AeroMech.UI.Web.Pages.Dashboard
 
-<PageTitle>Home</PageTitle>
+<PageTitle>@L["Home"]</PageTitle>
 
 @* The route is shared by two different screens, so this page is only the shell that picks
    between them and fetches what the dashboard needs. The dashboard itself is DashboardView. *@
@@ -9,7 +10,7 @@
 	<Authorized>
 		@if (_model is null)
 		{
-			<p class="dash-loading">Reading the workshop&hellip;</p>
+			<p class="dash-loading">@L["Reading the workshop"]&hellip;</p>
 		}
 		else
 		{

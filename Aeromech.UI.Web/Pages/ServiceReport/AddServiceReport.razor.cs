@@ -122,7 +122,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
 
                 return string.Join(", ", off.Select(line =>
                     $"{line.RateType.GetDisplayName()} {Math.Abs(line.Variance):0.##} h " +
-                    $"{(line.Variance > 0 ? "over" : "under")}"));
+                    $"{(line.Variance > 0 ? L["over"] : L["under"])}"));
             }
         }
 
@@ -335,8 +335,8 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             var problems = editContext.GetValidationMessages().Distinct().Take(3).ToList();
 
             ToastService.Notify(new(ToastType.Danger, problems.Count > 0
-                ? $"Cannot print yet: {string.Join(" ", problems)}"
-                : "Cannot print yet: the report is not complete."));
+                ? L.Format("Cannot print yet: {0}", string.Join(" ", problems))
+                : L["Cannot print yet: the report is not complete."]));
 
             return false;
         }
@@ -347,7 +347,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             if (serviceReportId == 0) return;
 
             _serviceReport.Id = serviceReportId;
-            ToastService.Notify(new(ToastType.Success, "Service report saved successfully."));
+            ToastService.Notify(new(ToastType.Success, L["Service report saved successfully."]));
         }
 
         private async Task SaveAndNew()
@@ -363,7 +363,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             _labourVarianceAccepted = false;
             InitServiceReport();
 
-            ToastService.Notify(new(ToastType.Success, "Service report saved successfully."));
+            ToastService.Notify(new(ToastType.Success, L["Service report saved successfully."]));
         }
 
         private async Task SaveAndGenerateServiceReport()
@@ -376,7 +376,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             if (serviceReportId == 0) return;
 
             _serviceReport.Id = serviceReportId;
-            ToastService.Notify(new(ToastType.Success, "Service report saved successfully."));
+            ToastService.Notify(new(ToastType.Success, L["Service report saved successfully."]));
             NavigationManager.NavigateTo($"/ShowPDF/{serviceReportId}");
         }
 
@@ -394,7 +394,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             var savedId = await SaveServiceReport(_serviceReport);
             if (savedId == 0) return;
 
-            ToastService.Notify(new(ToastType.Success, "Service report saved successfully."));
+            ToastService.Notify(new(ToastType.Success, L["Service report saved successfully."]));
             NavigationManager.NavigateTo($"/ShowQuote/from-service-report/{savedId}");
         }
 
@@ -410,7 +410,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             // save is refused until at least one person has hours against them.
             if (IsConversion && !serviceReport.Employees.Any(x => !x.IsDeleted && x.Hours > 0))
             {
-                ToastService.Notify(new(ToastType.Danger, "Enter the labour that was actually worked before converting this quote."));
+                ToastService.Notify(new(ToastType.Danger, L["Enter the labour that was actually worked before converting this quote."]));
                 return 0;
             }
 
@@ -420,8 +420,7 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             if (IsConversion && CapturedHours > 0 && !LabourMatchesQuote && !_labourVarianceAccepted)
             {
                 ToastService.Notify(new(ToastType.Warning,
-                    $"Captured labour does not tie back to the quote: {LabourVarianceSummary}. " +
-                    "Tick the confirmation below to convert with the difference."));
+                    L.Format("Captured labour does not tie back to the quote: {0}. Tick the confirmation below to convert with the difference.", LabourVarianceSummary)));
                 return 0;
             }
 
@@ -445,13 +444,13 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             }
             catch (Exception ex)
             {
-                ToastService.Notify(new(ToastType.Danger, $"Service report could not be saved. {ex.Message}"));
+                ToastService.Notify(new(ToastType.Danger, L.Format("Service report could not be saved. {0}", ex.Message)));
                 return 0;
             }
 
             if (savedId == 0)
             {
-                ToastService.Notify(new(ToastType.Danger, "Service report could not be saved."));
+                ToastService.Notify(new(ToastType.Danger, L["Service report could not be saved."]));
             }
             else
             {

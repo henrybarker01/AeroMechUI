@@ -1,7 +1,8 @@
 ﻿@page "/quotes"
+@inject LocalizationService L
 @using AeroMech.Models.Models
 
-<PageTitle>Quotes</PageTitle>
+<PageTitle>@L["Quotes"]</PageTitle>
 
 <ListTemplate TItem="QuoteModel"
           Title="Quotes"
@@ -22,7 +23,7 @@
             <SortHeader Title="Service Type" SortBy="q => q.ServiceType.ToString()" />
             <SortHeader Title="Total" SortBy="q => CalculateTotal(q)" />
             <SortHeader Title="Status" SortBy="q => q.IsConverted" />
-            <th class="row-actions-col">Actions</th>
+            <th class="row-actions-col">@L["Actions"]</th>
         </tr>
     </HeaderTemplate>
 
@@ -38,20 +39,20 @@
             <td>
                 @if (q.IsConverted)
                 {
-                    <span title="Converted to a service report">Converted to AEM @q.ServiceReportNumber</span>
+                    <span title="@L["Converted to a service report"]">@L.Format("Converted to AEM {0}", q.ServiceReportNumber)</span>
                 }
                 else
                 {
-                    <span>Open</span>
+                    <span>@L["Open"]</span>
                 }
             </td>
             <td class="row-actions-col">
                 <RowActions>
-                    <RowAction Icon="@Icons.Edit" Label="Edit this quote" OnClick="() => EditQuote(q.Id)" />
-                    <RowAction Icon="@Icons.Print" Label="Print this quote" OnClick="() => PrintQuote(q.Id)" />
+                    <RowAction Icon="@Icons.Edit" Label="@L["Edit this quote"]" OnClick="() => EditQuote(q.Id)" />
+                    <RowAction Icon="@Icons.Print" Label="@L["Print this quote"]" OnClick="() => PrintQuote(q.Id)" />
                     @if (!q.IsConverted)
                     {
-                        <RowAction Icon="@Icons.Convert" Label="Convert to a service report" OnClick="() => ConvertQuote(q.Id)" />
+                        <RowAction Icon="@Icons.Convert" Label="@L["Convert to a service report"]" OnClick="() => ConvertQuote(q.Id)" />
                     }
                 </RowActions>
             </td>

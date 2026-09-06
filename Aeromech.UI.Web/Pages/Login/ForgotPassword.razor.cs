@@ -25,7 +25,7 @@ namespace AeroMech.UI.Web.Pages.Login
 
             if (string.IsNullOrWhiteSpace(_email))
             {
-                _errorMessage = "Enter the email address your account is registered with.";
+                _errorMessage = L["Enter the email address your account is registered with."];
                 return;
             }
 
@@ -45,7 +45,7 @@ namespace AeroMech.UI.Web.Pages.Login
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Could not send a password reset link.");
-                _errorMessage = "The reset link could not be sent. Try again, or contact your administrator.";
+                _errorMessage = L["The reset link could not be sent. Try again, or contact your administrator."];
             }
             finally
             {

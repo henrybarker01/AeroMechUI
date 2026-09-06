@@ -175,10 +175,19 @@
 /* --- Right: the page's card ----------------------------------------------- */
 
 .login-main {
+    /* Anchors the language chip to the panel's top-right corner. */
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: var(--am-space-8) var(--am-space-6);
+}
+
+/* The language chip sits quietly in the corner, clear of the card at every width. */
+.login-lang {
+    position: absolute;
+    top: var(--am-space-4);
+    right: var(--am-space-4);
 }
 
 .login-card {

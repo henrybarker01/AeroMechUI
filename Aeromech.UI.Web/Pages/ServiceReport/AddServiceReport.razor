@@ -6,21 +6,20 @@
 @page "/add-service-report"
 @page "/add-service-report/{serviceReportId:int}"
 @page "/add-service-report/from-quote/{quoteId:int}"
+@inject LocalizationService L
 
-<PageTitle>Field Service Report</PageTitle>
+<PageTitle>@L["Field Service Report"]</PageTitle>
 
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-11"><h1>Field Service Report</h1></div>
+        <div class="col-11"><h1>@L["Field Service Report"]</h1></div>
     </div>
 
     @if (IsConversion && _sourceQuote != null)
     {
         <div class="alert alert-info mt-2" role="alert">
-            Converting quote AEM @_serviceReport.QuoteNumber. The quoted parts have been carried
-            over. Labour was quoted per rate type, so enter the hours each person actually worked
-            before saving.
+            @L.Format("Converting quote AEM {0}. The quoted parts have been carried over. Labour was quoted per rate type, so enter the hours each person actually worked before saving.", _serviceReport.QuoteNumber)
         </div>
 
         @* Quoted against captured, per rate type. Equal totals can still hide weekday hours
@@ -28,18 +27,18 @@
            the captured hours are what counts - so this reconciles, it does not gate. *@
         <div class="data-card">
             <div class="data-card-header">
-                <h2 class="data-card-title">Labour reconciliation &mdash; quote AEM @_sourceQuote.QuoteNumber</h2>
-                <span class="data-card-note">Quoted per rate type, captured per person</span>
+                <h2 class="data-card-title">@L.Format("Labour reconciliation — quote AEM {0}", _sourceQuote.QuoteNumber)</h2>
+                <span class="data-card-note">@L["Quoted per rate type, captured per person"]</span>
             </div>
 
             <table class="table">
                 <thead>
                     <tr>
-                        <th>Rate Type</th>
-                        <th class="text-end">Rate</th>
-                        <th class="text-end">Quoted</th>
-                        <th class="text-end">Captured</th>
-                        <th class="text-end">Variance</th>
+                        <th>@L["Rate Type"]</th>
+                        <th class="text-end">@L["Rate"]</th>
+                        <th class="text-end">@L["Quoted"]</th>
+                        <th class="text-end">@L["Captured"]</th>
+                        <th class="text-end">@L["Variance"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -65,13 +64,13 @@
                     @if (!LabourReconciliation.Any())
                     {
                         <tr>
-                            <td colspan="5" class="text-muted">No labour was quoted on this quote.</td>
+                            <td colspan="5" class="text-muted">@L["No labour was quoted on this quote."]</td>
                         </tr>
                     }
                 </tbody>
                 <tfoot>
                     <tr class="fw-semibold">
-                        <td>Total</td>
+                        <td>@L["Total"]</td>
                         <td class="text-end">&nbsp;</td>
                         <td class="text-end">@QuotedHours.ToString("0.##") h</td>
                         <td class="text-end">@CapturedHours.ToString("0.##") h</td>
@@ -87,7 +86,7 @@
                         </td>
                     </tr>
                     <tr>
-                        <td class="text-muted">Value</td>
+                        <td class="text-muted">@L["Value"]</td>
                         <td class="text-end">&nbsp;</td>
                         <td class="text-end text-muted">@QuotedLabourValue.ToString("F", CultureInfo.InvariantCulture)</td>
                         <td class="text-end text-muted">@CapturedLabourValue.ToString("F", CultureInfo.InvariantCulture)</td>
@@ -100,11 +99,11 @@
             {
                 @* Nothing captured yet is not a variance to be waved through - the save is
                    blocked until labour is entered, so no override is offered here. *@
-                <div class="text-muted small pb-2">Add the people who did the work below to reconcile against the quote.</div>
+                <div class="text-muted small pb-2">@L["Add the people who did the work below to reconcile against the quote."]</div>
             }
             else if (LabourMatchesQuote)
             {
-                <div class="recon-ok small pb-2">Captured labour ties back to the quote on every rate type.</div>
+                <div class="recon-ok small pb-2">@L["Captured labour ties back to the quote on every rate type."]</div>
             }
             else
             {
@@ -113,8 +112,8 @@
                            checked="@_labourVarianceAccepted"
                            @onchange="@(e => _labourVarianceAccepted = (bool)(e.Value ?? false))" />
                     <label class="form-check-label" for="accept-labour-variance">
-                        Captured labour does not tie back &mdash; <strong>@LabourVarianceSummary</strong>.
-                        Convert with the actual hours anyway.
+                        @L["Captured labour does not tie back"] &mdash; <strong>@LabourVarianceSummary</strong>.
+                        @L["Convert with the actual hours anyway."]
                     </label>
                 </div>
             }
@@ -128,14 +127,14 @@
         <div class="row mt-3">
             <div class="col-6">
                 <div class="form-group">
-                    <label for="sales-order-number">Sales Order Number:</label>
+                    <label for="sales-order-number">@L["Sales Order Number"]:</label>
                     <InputText @bind-Value="_serviceReport.SalesOrderNumber" type="text" class="form-control" id="sales-order-number"></InputText>
                     <ValidationMessage For="() => _serviceReport.SalesOrderNumber" />
                 </div>
             </div>
             <div class="col-6">
                 <div class="form-group">
-                    <label for="report-date">Date:</label>
+                    <label for="report-date">@L["Date"]:</label>
                     <InputDate @bind-Value="_serviceReport.ReportDate" class="form-control" id="report-date"></InputDate>
                     <ValidationMessage For="() => _serviceReport.ReportDate" />
                 </div>
@@ -144,13 +143,13 @@
         <div class="row mt-2">
             <div class="col-6">
                 <div class="form-group">
-                    <label for="select-client">Client:</label>
+                    <label for="select-client">@L["Client"]:</label>
                     <InputSelect class="form-select"
                                  id="select-client"
                                  ValueExpression="@(()=>_serviceReport.ClientId)"
                                  Value="@_serviceReport.ClientId"
                                  ValueChanged="@((int value) => HandleOnChangeClient(value))">
-                        <option selected value="0">Select client</option>
+                        <option selected value="0">@L["Select client"]</option>
                         @foreach (var client in clients)
                         {
                             <option value="@client.Id">@client.Name</option>
@@ -161,12 +160,12 @@
             </div>
             <div class="col-6">
                 <div class="form-group">
-                    <label for="select-vehicle">Vehicle:</label>
+                    <label for="select-vehicle">@L["Vehicle"]:</label>
                     <InputSelect class="form-select" id="select-vehicle"
                                  ValueExpression="@(()=>_serviceReport.VehicleId)"
                                  Value="@_serviceReport.VehicleId"
                                  ValueChanged="@((int value) => HandleOnChangeVehicle(value))">
-                        <option selected value="0">Select vehicle</option>
+                        <option selected value="0">@L["Select vehicle"]</option>
                         @foreach (var vehicle in vehicles)
                         {
                             <option value="@vehicle.Id">@vehicle.MachineType @vehicle.SerialNumber</option>
@@ -179,12 +178,12 @@
         <div class="row mt-2">
             <div class="col-6">
                 <div class="form-group">
-                    <label for="service-type">Service Type:</label>
+                    <label for="service-type">@L["Service Type"]:</label>
                     <InputSelect class="form-select" id="service-type"
                                  ValueExpression="@(()=>_serviceReport.ServiceType)"
                                  Value="@_serviceReport.ServiceType"
                                  ValueChanged="@((ServiceType serviceType) => HandleOnServiceTypeChange(serviceType))">
-                        <option selected value="0">Select vehicle</option>
+                        <option selected value="0">@L["Select vehicle"]</option>
                         @foreach (var serviceType in Enum.GetValues(typeof(ServiceType)))
                         {
                             <option value="@serviceType">@serviceType</option>
@@ -195,7 +194,7 @@
             </div>
             <div class="col-6">
                 <div class="form-group">
-                    <label for="vehicle-hours">Vehicle hours:</label>
+                    <label for="vehicle-hours">@L["Vehicle hours"]:</label>
                     <NumberInput @bind-Value="_serviceReport.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
                     <ValidationMessage For="() => _serviceReport.VehicleHours" />
                 </div>
@@ -212,15 +211,15 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Name</th>
-                        <th>Surname</th>
-                        <th>Date</th>
-                        <th>Rate Type</th>
-                        <th>Rate</th>
-                        <th>Hours</th>
+                        <th>@L["Name"]</th>
+                        <th>@L["Surname"]</th>
+                        <th>@L["Date"]</th>
+                        <th>@L["Rate Type"]</th>
+                        <th>@L["Rate"]</th>
+                        <th>@L["Hours"]</th>
                        @*  <th>Actual</th> *@
-                        <th>Total</th>
-                        <th>Actions</th>
+                        <th>@L["Total"]</th>
+                        <th>@L["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -251,7 +250,7 @@
                                     @getRate(employee).ToString("F", CultureInfo.InvariantCulture)
                                 </td>
                                 <td>
-                                    <NumberInput TValue="double?" @bind-Value="@employee.Hours" Placeholder="Enter hours" Step=".01" />
+                                    <NumberInput TValue="double?" @bind-Value="@employee.Hours" Placeholder="@L["Enter hours"]" Step=".01" />
                                 </td>
                                @*  <td>
                                     @(getRate(employee).ToString("F", CultureInfo.InvariantCulture))
@@ -263,7 +262,7 @@
                                 </td>
                                 <td class="row-actions-col">
                                     <RowActions>
-                                        <RowAction Icon="@Icons.Remove" Label="Remove this labour line" Danger="true"
+                                        <RowAction Icon="@Icons.Remove" Label="@L["Remove this labour line"]" Danger="true"
                                                    OnClick="() => RemoveLabour(employee.Id)" />
                                     </RowActions>
                                 </td>
@@ -277,7 +276,7 @@
                                          ValueExpression="@(()=>selectedEmployee.Id)"
                                          Value="@selectedEmployee.Id"
                                          ValueChanged="@((int value) => HandleOnChangeUnbound(value))">
-                                <option selected value="">Select employee</option>
+                                <option selected value="">@L["Select employee"]</option>
                                 @foreach (var emp in employees)
                                 {
                                     <option value="@emp.Id">@emp.FirstName @emp.LastName</option>
@@ -314,14 +313,14 @@
             <table class="table table-hover">
                 <thead>
                     <tr>
-                        <th>Part Number</th>
-                        <th>Description</th>
-                        <th>C.P.U.</th>
-                        <th>Qty</th>
-                        <th>Actual</th>
+                        <th>@L["Part Number"]</th>
+                        <th>@L["Description"]</th>
+                        <th>@L["C.P.U."]</th>
+                        <th>@L["Qty"]</th>
+                        <th>@L["Actual"]</th>
                         @* <th>Discount</th> *@
-                        <th>Total</th>
-                        <th>Actions</th>
+                        <th>@L["Total"]</th>
+                        <th>@L["Actions"]</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -353,7 +352,7 @@
                                     }
                                 </td>
                                 <td>
-                                    <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="Enter Cost Price" Step="0.01" />
+                                    <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="@L["Enter Cost Price"]" Step="0.01" />
                                     @* 	@if (part.IsAdHockPart)
 									{
 										 <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="Enter Cost Price" /> 										
@@ -365,7 +364,7 @@
 
                                 </td>
                                 <td>
-                                    <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="Enter hours" />
+                                    <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="@L["Enter hours"]" />
                                 </td>
                                 <td>
                                     @((part.CostPrice * part.QTY).ToString("F", CultureInfo.InvariantCulture))
@@ -379,7 +378,7 @@
                                 </td>
                                 <td class="row-actions-col">
                                     <RowActions>
-                                        <RowAction Icon="@Icons.Remove" Label="Remove this part" Danger="true"
+                                        <RowAction Icon="@Icons.Remove" Label="@L["Remove this part"]" Danger="true"
                                                    OnClick="() => RemovePart(part.Id)" />
                                     </RowActions>
                                 </td>
@@ -407,14 +406,14 @@
 
                                 <div class="dropdown">
                                     <button class="btn btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                                        @(selectedPart?.PartCode ?? "Select Part")
+                                        @(selectedPart?.PartCode ?? L["Select Part"])
                                     </button>
                                     <div class="dropdown-menu p-3 dropdown-scroll">
-                                        <input type="text" class="form-control mb-2" placeholder="Search part..."
+                                        <input type="text" class="form-control mb-2" placeholder="@L["Search part..."]"
                                                @oninput="(e) => SearchTerm = e.Value.ToString()" />
                                         <ul class="list-unstyled">
-                                            <li @onclick="() => HandleOnChangePart(0)" class="dropdown-item">Select part</li>
-                                            <li @onclick="() => HandleOnChangePart(999999)" class="dropdown-item">Non Stock</li>
+                                            <li @onclick="() => HandleOnChangePart(0)" class="dropdown-item">@L["Select part"]</li>
+                                            <li @onclick="() => HandleOnChangePart(999999)" class="dropdown-item">@L["Non Stock"]</li>
                                             @foreach (var prt in FilteredParts)
                                             {
                                                 <li @onclick="() => HandleOnChangePart(prt.Id)" class="dropdown-item">
@@ -449,13 +448,13 @@
         <div class="row mt-3">
             <div class="col-6">
                 <div class="form-group">
-                    <label for="instruction">Instruction:</label>
+                    <label for="instruction">@L["Instruction"]:</label>
                     <InputText @bind-Value="_serviceReport.Instruction" type="text" class="form-control" id="instruction"></InputText>
                 </div>
             </div>
             <div class="col-6">
                 <div class="form-group">
-                    <label for="detailed-service-report">Detailed Service Report:</label>
+                    <label for="detailed-service-report">@L["Detailed Service Report"]:</label>
                     <InputTextArea @bind-Value="_serviceReport.DetailedServiceReport" type="text" class="form-control" id="detailed-service-report"></InputTextArea>
                 </div>
             </div>
@@ -463,10 +462,10 @@
         <div class="container-fluid page-footer">
             <div class="row">
                 <div class="footer-buttons">
-                    <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="Save" Style="margin-right 20px">Save</Button>
-                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndPrintQuote" Style="margin-right 20px">Save &amp; Print Quote</Button>
-                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndGenerateServiceReport" Style="margin-right 20px">Save & Print FSR</Button>
-                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndNew">Save & New</Button>
+                    <Button class="fsr-button" Color="ButtonColor.Primary" @onclick="Save" Style="margin-right 20px">@L["Save"]</Button>
+                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndPrintQuote" Style="margin-right 20px">@L["Save & Print Quote"]</Button>
+                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndGenerateServiceReport" Style="margin-right 20px">@L["Save & Print FSR"]</Button>
+                    <Button class="fsr-button" Color="ButtonColor.Secondary" @onclick="SaveAndNew">@L["Save & New"]</Button>
                 </div>
             </div>
         </div>
@@ -474,14 +473,14 @@
 </div>
 
 
-<Modal @ref="salesOrderNumberModal" Title="Enter sales order number.">
+<Modal @ref="salesOrderNumberModal" Title="@L["Enter sales order number."]">
     <BodyTemplate>
         <EditForm Model="_serviceReport" OnValidSubmit="SaveAndGenerateServiceReport">
             <DataAnnotationsValidator />
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
-                        <label for="son">Sales order number:</label>
+                        <label for="son">@L["Sales order number"]:</label>
                         <InputText @bind-Value=_serviceReport.SalesOrderNumber class="form-control" id="son" />
                         <ValidationMessage For="() => _serviceReport.SalesOrderNumber" />
                     </div>
@@ -490,10 +489,10 @@
             <div class="row">
                 <div class="footer-buttons">
                     <div class="close">
-                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@L["Close"]</Button>
                     </div>
                     <div>
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" @onclick="SaveAndGenerateServiceReport">Save</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit" @onclick="SaveAndGenerateServiceReport">@L["Save"]</Button>
                     </div>
                 </div>
             </div>

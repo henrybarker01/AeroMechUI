@@ -1,0 +1,36 @@
+@using AeroMech.UI.Web.Services
+@inject LocalizationService L
+
+@* Same pattern as the account chip beside it: Bootstrap's dropdown data API
+   drives open/close, so the component only carries the language switch itself.
+   Picking a language stores it and reloads the page - the language is fixed per
+   page load, so a reload is what actually applies it everywhere. *@
+<div class="dropdown">
+    <button type="button" class="lang-chip" data-bs-toggle="dropdown" aria-expanded="false" aria-label="@L["Language"]">
+        <i class="bi bi-globe2" aria-hidden="true"></i>
+        <span class="lang-code">@L.CurrentLanguage.ToUpperInvariant()</span>
+        <i class="bi bi-chevron-down lang-caret" aria-hidden="true"></i>
+    </button>
+
+    <ul class="dropdown-menu dropdown-menu-end lang-menu">
+        @* Each language is named in itself, so it stays findable whatever is active. *@
+        <li>
+            <button type="button" class="dropdown-item" @onclick='() => L.SetLanguageAsync(LocalizationService.Afrikaans)'>
+                <span>Afrikaans</span>
+                @if (L.CurrentLanguage == LocalizationService.Afrikaans)
+                {
+                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                }
+            </button>
+        </li>
+        <li>
+            <button type="button" class="dropdown-item" @onclick='() => L.SetLanguageAsync(LocalizationService.English)'>
+                <span>English</span>
+                @if (L.CurrentLanguage == LocalizationService.English)
+                {
+                    <i class="bi bi-check-lg" aria-hidden="true"></i>
+                }
+            </button>
+        </li>
+    </ul>
+</div>

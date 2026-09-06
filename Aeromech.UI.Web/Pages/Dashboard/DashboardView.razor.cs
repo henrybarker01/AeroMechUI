@@ -78,7 +78,11 @@ namespace AeroMech.UI.Web.Pages.Dashboard
 		private static string Pct(double part, double whole)
 			=> whole <= 0 ? "0" : (part / whole * 100).ToString("0.##", CultureInfo.InvariantCulture);
 
-		private static string Plural(int count, string word) => count == 1 ? word : word + "s";
+		/// <summary>
+		/// The singular and plural forms are separate localization keys ("report"/"reports"), so
+		/// the dictionary can pluralize however the language needs to.
+		/// </summary>
+		private string Plural(int count, string word) => count == 1 ? L[word] : L[word + "s"];
 
 		private static string Describe(DashboardOpenReportModel report)
 			=> string.IsNullOrWhiteSpace(report.Machine)

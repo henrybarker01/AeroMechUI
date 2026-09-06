@@ -1,6 +1,7 @@
 ﻿@page "/users"
+@inject LocalizationService L
 
-<PageTitle>Users</PageTitle>
+<PageTitle>@L["Users"]</PageTitle>
 
 <Modal @ref="_modal" Title="@_title">
     <BodyTemplate>
@@ -19,34 +20,34 @@
                 }
                 <div class="row">
                     <div class="form-group">
-                        <label for="email">Email:</label>
+                        <label for="email">@L["Email"]:</label>
                         <InputText @bind-Value=_user.Email class="form-control" id="email" />
                         <ValidationMessage For="() => _user.Email" />
                     </div>
                 </div>
                 <div class="row mt-5">
                     <div class="form-group">
-                        <label for="user-name">User Name:</label>
+                        <label for="user-name">@L["User Name"]:</label>
                         <InputText @bind-Value="_user.UserName" type="text" class="form-control" id="user-name"></InputText>
                         <ValidationMessage For="() => _user.UserName" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="phone-number">Phone Number:</label>
+                        <label for="phone-number">@L["Phone Number"]:</label>
                         <InputText @bind-Value="_user.PhoneNumber" type="phone" class="form-control" id="phone-nunmer"></InputText>
                         <ValidationMessage For="() => _user.PhoneNumber" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="password">@(_isEdit ? "New Password (leave blank to keep the current one):" : "Password:")</label>
+                        <label for="password">@(_isEdit ? L["New Password (leave blank to keep the current one)"] : L["Password"]):</label>
                         <InputText @bind-Value="_password" type="password" class="form-control" id="password"></InputText>
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="confirm-password">Confirm Password:</label>
+                        <label for="confirm-password">@L["Confirm Password"]:</label>
                         <InputText @bind-Value="_confirmPassword" type="password" class="form-control" id="confirm-password"></InputText>
                     </div>
                 </div>
@@ -54,7 +55,7 @@
                     <div class="form-check ms-2">
                         <input class="form-check-input" type="checkbox" id="must-change-password" @bind="_mustChangePassword" />
                         <label class="form-check-label" for="must-change-password">
-                            Must change password at next sign-in
+                            @L["Must change password at next sign-in"]
                         </label>
                     </div>
                 </div>
@@ -62,10 +63,10 @@
             <div class="row">
                 <div class="footer-buttons">
                     <div class="close">
-                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@L["Close"]</Button>
                     </div>
                     <div>
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">@L["Save changes"]</Button>
                     </div>
                 </div>
             </div>
@@ -87,7 +88,7 @@
             <SortHeader Title="User Name" SortBy="u => u.UserName" />
             <SortHeader Title="Email" SortBy="u => u.Email" />
             <SortHeader Title="Phone Number" SortBy="u => u.PhoneNumber" />
-            <th class="row-actions-col">Actions</th>
+            <th class="row-actions-col">@L["Actions"]</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="user">
@@ -97,8 +98,8 @@
             <td>@user.PhoneNumber</td>
             <td class="row-actions-col">
                 <RowActions>
-                    <RowAction Icon="@Icons.Edit" Label="Edit this user" OnClick="() => EditUser(user)" />
-                    <RowAction Icon="@Icons.Delete" Label="Delete this user" Danger="true" OnClick="() => DeleteUser(user)" />
+                    <RowAction Icon="@Icons.Edit" Label="@L["Edit this user"]" OnClick="() => EditUser(user)" />
+                    <RowAction Icon="@Icons.Delete" Label="@L["Delete this user"]" Danger="true" OnClick="() => DeleteUser(user)" />
                 </RowActions>
             </td>
         </tr>

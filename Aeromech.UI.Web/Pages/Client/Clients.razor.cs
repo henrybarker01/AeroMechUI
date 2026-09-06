@@ -55,14 +55,14 @@ namespace AeroMech.UI.Web.Pages.Client
 
         private async Task OnShowModalClick()
         {
-            _title = "Add Client";
+            _title = L["Add Client"];
             _client = new ClientModel();
             await _modal.ShowAsync();
         }
 
         private async Task OnEditClientClick(ClientModel clientModel)
         {
-            _title = "Edit Client";
+            _title = L["Edit Client"];
             _client = clientModel;
 
             clientRatesOvertime = _client.Rates?.FirstOrDefault(x => x.RateType == Models.Enums.RateType.Overtime) ?? new ClientRateModel() { RateType = Models.Enums.RateType.Overtime };
@@ -140,7 +140,7 @@ namespace AeroMech.UI.Web.Pages.Client
 
         private async Task DeleteClient(AeroMech.Models.ClientModel client)
         {
-            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            bool confirmed = await _confirmationService.ConfirmAsync(L["Are you sure?"]);
             if (confirmed)
             {
                 _loaderService.ShowLoader();

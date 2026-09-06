@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase;
+@inherits LayoutComponentBase;
+@inject LocalizationService L
 
 @* The split landing shell shared by the sign-in, forgot-password and
    reset-password pages: a brand panel on the left for presence, and the page's
@@ -25,16 +26,15 @@
                 </span>
             </div>
 
-            <h2 class="login-hero-headline">Ground support equipment, managed end to end.</h2>
+            <h2 class="login-hero-headline">@L["Ground support equipment, managed end to end."]</h2>
             <p class="login-hero-lead">
-                Parts, quotes, servicing and workshop records &mdash; one place to keep
-                the fleet moving.
+                @L["Parts, quotes, servicing and workshop records — one place to keep the fleet moving."]
             </p>
 
             <ul class="login-hero-list">
-                <li><i class="bi bi-box-seam"></i><span>Inventory &amp; stock control</span></li>
-                <li><i class="bi bi-file-earmark-text"></i><span>Quotes &amp; service reports</span></li>
-                <li><i class="bi bi-truck"></i><span>Fleet &amp; client records</span></li>
+                <li><i class="bi bi-box-seam"></i><span>@L["Inventory & stock control"]</span></li>
+                <li><i class="bi bi-file-earmark-text"></i><span>@L["Quotes & service reports"]</span></li>
+                <li><i class="bi bi-truck"></i><span>@L["Fleet & client records"]</span></li>
             </ul>
         </div>
 
@@ -43,9 +43,27 @@
 
     @* Right: the page's card. On small screens this is the whole page. *@
     <main class="login-main">
+        @* Visitors must be able to pick their language before they can sign in. *@
+        <div class="login-lang">
+            <LanguageSelector />
+        </div>
+
         <div class="login-card">
             <img class="login-logo" src="./images/AreoMechSmall.png" alt="AeroMech" />
             @Body
         </div>
     </main>
 </div>
+
+@code {
+    // This layout lives outside MainLayout, so it reconciles the stored language itself:
+    // if localStorage remembers a different choice than the cookie delivered, the service
+    // re-applies it and reloads once.
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await L.InitializeAsync();
+        }
+    }
+}

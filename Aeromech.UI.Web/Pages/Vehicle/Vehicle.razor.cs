@@ -59,7 +59,7 @@ namespace AeroMech.UI.Web.Pages.Vehicle
         {
             if (selectedClientId != 0)
             {
-                title = "Add Vehicle";
+                title = L["Add Vehicle"];
                 vehicle = new VehicleModel();
                 vehicle.ClientId = selectedClientId;
                 await modal.ShowAsync();
@@ -73,7 +73,7 @@ namespace AeroMech.UI.Web.Pages.Vehicle
 
         private async Task OnEditVehicleClick(VehicleModel vehicle)
         {
-            title = "Edit Vehicle";
+            title = L["Edit Vehicle"];
             this.vehicle = vehicle;
             await modal.ShowAsync();
         }
@@ -118,7 +118,7 @@ namespace AeroMech.UI.Web.Pages.Vehicle
 
         private async Task DeleteVehicle(VehicleModel vehicle)
         {
-            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            bool confirmed = await _confirmationService.ConfirmAsync(L["Are you sure?"]);
             if (confirmed)
             {
                 _loaderService.ShowLoader();

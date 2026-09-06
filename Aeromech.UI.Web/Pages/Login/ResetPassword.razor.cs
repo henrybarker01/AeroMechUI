@@ -38,13 +38,13 @@ namespace AeroMech.UI.Web.Pages.Login
 
             if (string.IsNullOrWhiteSpace(_newPassword))
             {
-                _errorMessage = "Enter a new password.";
+                _errorMessage = L["Enter a new password."];
                 return;
             }
 
             if (!string.Equals(_newPassword, _confirmPassword, StringComparison.Ordinal))
             {
-                _errorMessage = "The passwords do not match.";
+                _errorMessage = L["The passwords do not match."];
                 return;
             }
 
@@ -73,7 +73,7 @@ namespace AeroMech.UI.Web.Pages.Login
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Could not reset a password.");
-                _errorMessage = "The password could not be reset. Try again, or request a new link.";
+                _errorMessage = L["The password could not be reset. Try again, or request a new link."];
             }
             finally
             {

@@ -192,12 +192,12 @@ namespace AeroMech.UI.Web.Pages.StockTake
             get
             {
                 var total = MatchCount;
-                if (total == 0) return "No parts";
+                if (total == 0) return L["No parts"];
 
                 var first = ((Math.Min(_page, TotalPages) - 1) * PageSize) + 1;
                 var last = Math.Min(first + PageSize - 1, total);
 
-                return $"{first}–{last} of {total}";
+                return L.Format("{0}–{1} of {2}", first, last, total);
             }
         }
 
@@ -298,7 +298,7 @@ namespace AeroMech.UI.Web.Pages.StockTake
             {
                 if (!int.TryParse(raw, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) || parsed < 0)
                 {
-                    ToastService.Notify(new(ToastType.Danger, $"{line.PartCode}: enter a whole number of zero or more."));
+                    ToastService.Notify(new(ToastType.Danger, L.Format("{0}: enter a whole number of zero or more.", line.PartCode)));
                     return;
                 }
 
@@ -356,19 +356,19 @@ namespace AeroMech.UI.Web.Pages.StockTake
                     _stockTake.Status = StockTakeStatus.Counting;
 
                 _saveFailed = false;
-                _saveState = $"Saved {DateTime.Now:HH:mm:ss}";
+                _saveState = L.Format("Saved {0}", DateTime.Now.ToString("HH:mm:ss"));
             }
             catch (InvalidOperationException ex)
             {
                 _saveFailed = true;
-                _saveState = "Not saved";
+                _saveState = L["Not saved"];
                 ToastService.Notify(new(ToastType.Danger, ex.Message));
             }
             catch (Exception)
             {
                 _saveFailed = true;
-                _saveState = "Not saved";
-                ToastService.Notify(new(ToastType.Danger, $"{line.PartCode} could not be saved. Check your connection and try again."));
+                _saveState = L["Not saved"];
+                ToastService.Notify(new(ToastType.Danger, L.Format("{0} could not be saved. Check your connection and try again.", line.PartCode)));
             }
         }
 
@@ -383,8 +383,8 @@ namespace AeroMech.UI.Web.Pages.StockTake
             if (_stockTake.NotCountedCount > 0)
             {
                 var proceed = await _confirmationService.ConfirmAsync(
-                    $"{_stockTake.NotCountedCount} part(s) have not been counted. They will be left exactly as they are, " +
-                    "not treated as zero. Move on to the differences?");
+                    L.Format("{0} part(s) have not been counted. They will be left exactly as they are, not treated as zero. Move on to the differences?",
+                        _stockTake.NotCountedCount));
 
                 if (!proceed) return;
             }
@@ -450,7 +450,7 @@ namespace AeroMech.UI.Web.Pages.StockTake
             var value = pending.Sum(x => x.VarianceValue).ToString("C", CultureInfo.CurrentCulture);
 
             var confirmed = await _confirmationService.ConfirmAsync(
-                $"Accept all {pending.Count} remaining difference(s)? That is a value impact of {value}.");
+                L.Format("Accept all {0} remaining difference(s)? That is a value impact of {1}.", pending.Count, value));
 
             if (!confirmed) return;
 
@@ -505,12 +505,14 @@ namespace AeroMech.UI.Web.Pages.StockTake
             var value = _stockTake.TotalVarianceValue.ToString("C", CultureInfo.CurrentCulture);
             var net = _stockTake.NetUnitAdjustment;
 
-            var message = $"Post {_stockTake.Reference}? Stock will be corrected on "
-                        + $"{_stockTake.Lines.Count(x => x.PendingDelta != 0)} part(s), a net of "
-                        + $"{(net > 0 ? "+" : "")}{net} units and a value impact of {value}.";
+            var message = L.Format("Post {0}? Stock will be corrected on {1} part(s), a net of {2} units and a value impact of {3}.",
+                _stockTake.Reference,
+                _stockTake.Lines.Count(x => x.PendingDelta != 0),
+                $"{(net > 0 ? "+" : "")}{net}",
+                value);
 
             if (_stockTake.NotCountedCount > 0)
-                message += $" {_stockTake.NotCountedCount} uncounted part(s) will be left unchanged.";
+                message += " " + L.Format("{0} uncounted part(s) will be left unchanged.", _stockTake.NotCountedCount);
 
             var confirmed = await _confirmationService.ConfirmAsync(message);
             if (!confirmed) return;
@@ -521,15 +523,15 @@ namespace AeroMech.UI.Web.Pages.StockTake
                 var result = await _stockTakeService.PostStockTake(_stockTake.Id, _currentUser);
 
                 ToastService.Notify(new(ToastType.Success,
-                    $"{result.Reference} posted: {result.LinesAdjusted} part(s) corrected, "
-                    + $"+{result.UnitsAdded} / -{result.UnitsRemoved} units, "
-                    + $"{result.ValueAdjustment.ToString("C", CultureInfo.CurrentCulture)}."));
+                    L.Format("{0} posted: {1} part(s) corrected, +{2} / -{3} units, {4}.",
+                        result.Reference, result.LinesAdjusted, result.UnitsAdded, result.UnitsRemoved,
+                        result.ValueAdjustment.ToString("C", CultureInfo.CurrentCulture))));
 
                 if (result.LinesMovedDuringCount > 0)
                 {
                     ToastService.Notify(new(ToastType.Warning,
-                        $"{result.LinesMovedDuringCount} part(s) had moved since the sheet was raised. "
-                        + "Their corrections were applied as differences, so those movements were kept."));
+                        L.Format("{0} part(s) had moved since the sheet was raised. Their corrections were applied as differences, so those movements were kept.",
+                            result.LinesMovedDuringCount)));
                 }
 
                 await LoadStockTake();
@@ -540,7 +542,7 @@ namespace AeroMech.UI.Web.Pages.StockTake
             }
             catch (Exception)
             {
-                ToastService.Notify(new(ToastType.Danger, "The stock take could not be posted. No stock was changed."));
+                ToastService.Notify(new(ToastType.Danger, L["The stock take could not be posted. No stock was changed."]));
             }
             finally
             {
@@ -561,13 +563,13 @@ namespace AeroMech.UI.Web.Pages.StockTake
         {
             get
             {
-                if (_stockTake?.CompletedDate is null) return "Posted.";
+                if (_stockTake?.CompletedDate is null) return L["Posted."];
 
                 var when = _stockTake.CompletedDate.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm");
 
                 return string.IsNullOrWhiteSpace(_stockTake.CompletedBy)
-                    ? $"Posted {when}."
-                    : $"Posted {when} by {_stockTake.CompletedBy}.";
+                    ? L.Format("Posted {0}.", when)
+                    : L.Format("Posted {0} by {1}.", when, _stockTake.CompletedBy);
             }
         }
 
@@ -607,7 +609,7 @@ namespace AeroMech.UI.Web.Pages.StockTake
             }
             catch (Exception)
             {
-                ToastService.Notify(new(ToastType.Danger, "The count sheet could not be generated."));
+                ToastService.Notify(new(ToastType.Danger, L["The count sheet could not be generated."]));
             }
             finally
             {

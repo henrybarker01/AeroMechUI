@@ -29,9 +29,9 @@ namespace AeroMech.UI.Web.Pages.StockTake
 
         private string SelectedSuppliersLabel => _selectedSuppliers.Count switch
         {
-            0 => "All suppliers",
+            0 => L["All suppliers"],
             1 => _selectedSuppliers.First(),
-            _ => $"{_selectedSuppliers.Count} suppliers selected"
+            _ => L.Format("{0} suppliers selected", _selectedSuppliers.Count)
         };
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -118,7 +118,7 @@ namespace AeroMech.UI.Web.Pages.StockTake
             }
             catch (Exception)
             {
-                ToastService.Notify(new(ToastType.Danger, "The stock take could not be created."));
+                ToastService.Notify(new(ToastType.Danger, L["The stock take could not be created."]));
             }
             finally
             {
@@ -138,7 +138,7 @@ namespace AeroMech.UI.Web.Pages.StockTake
             }
             catch (Exception)
             {
-                ToastService.Notify(new(ToastType.Danger, "The count sheet could not be generated."));
+                ToastService.Notify(new(ToastType.Danger, L["The count sheet could not be generated."]));
             }
             finally
             {
@@ -149,14 +149,14 @@ namespace AeroMech.UI.Web.Pages.StockTake
         private async Task CancelStockTake(StockTakeModel take)
         {
             var confirmed = await _confirmationService.ConfirmAsync(
-                $"Cancel {take.Reference}? No stock will be changed, and the counts already captured are kept.");
+                L.Format("Cancel {0}? No stock will be changed, and the counts already captured are kept.", take.Reference));
 
             if (!confirmed) return;
 
             try
             {
                 await _stockTakeService.CancelStockTake(take.Id, _currentUser);
-                ToastService.Notify(new(ToastType.Success, $"{take.Reference} cancelled."));
+                ToastService.Notify(new(ToastType.Success, L.Format("{0} cancelled.", take.Reference)));
                 await LoadStockTakes();
             }
             catch (InvalidOperationException ex)

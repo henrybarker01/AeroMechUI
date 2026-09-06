@@ -1,8 +1,9 @@
 ﻿@page "/vehicles"
+@inject LocalizationService L
 @using BlazorBootstrap
 @using System.Globalization
 
-<PageTitle>Vehicle</PageTitle>
+<PageTitle>@L["Vehicle"]</PageTitle>
 
 <Modal @ref="modal" Title="@title">
     <BodyTemplate>
@@ -11,63 +12,63 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
-                        <label for="serial-number">Serial Number:</label>
+                        <label for="serial-number">@L["Serial Number"]:</label>
                         <InputText @bind-Value="vehicle.SerialNumber" type="text" class="form-control" id="serial-number"></InputText>
                         <ValidationMessage For="() => vehicle.SerialNumber" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="machine-type">Machine Type:</label>
+                        <label for="machine-type">@L["Machine Type"]:</label>
                         <InputText @bind-Value="vehicle.MachineType" type="text" class="form-control" id="machine-type"></InputText>
                         <ValidationMessage For="() => vehicle.MachineType" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="description">Description:</label>
+                        <label for="description">@L["Description"]:</label>
                         <InputText @bind-Value="vehicle.Description" type="text" class="form-control" id="description"></InputText>
                         <ValidationMessage For="() => vehicle.Description" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="manufacture-date">Manufacture Date:</label>
+                        <label for="manufacture-date">@L["Manufacture Date"]:</label>
                         <DateInput TValue="DateOnly" @bind-Value="vehicle.ManufactureDate" id="manufacture-date" />
                         <ValidationMessage For="() => vehicle.ManufactureDate" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="date-in-service">Date In Service:</label>
+                        <label for="date-in-service">@L["Date In Service"]:</label>
                         <DateInput TValue="DateOnly?" @bind-Value="vehicle.DateInService" id="date-in-service" />
                         <ValidationMessage For="() => vehicle.DateInService" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="engine-hours">Engine Hours:</label>
+                        <label for="engine-hours">@L["Engine Hours"]:</label>
                         <NumberInput @bind-Value="vehicle.EngineHours" type="text" class="form-control" id="engine-hours" Step=".01"></NumberInput>
                         <ValidationMessage For="() => vehicle.EngineHours" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="purchase-price">Purchase Price:</label>
+                        <label for="purchase-price">@L["Purchase Price"]:</label>
                         <NumberInput @bind-Value="vehicle.PurchasePrice" class="form-control" id="purchase-price" Step=".01"></NumberInput>
                         <ValidationMessage For="() => vehicle.PurchasePrice" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <label for="job-number">Job Number:</label>
+                        <label for="job-number">@L["Job Number"]:</label>
                         <InputText @bind-Value="vehicle.JobNumber" type="text" class="form-control" id="job-number"></InputText>
                         <ValidationMessage For="() => vehicle.JobNumber" />
                     </div>
                 </div>
                 <div class="row">
                     <div class="form-group">
-                        <label for="chassis-number">Chassis Number:</label>
+                        <label for="chassis-number">@L["Chassis Number"]:</label>
                         <InputText @bind-Value="vehicle.ChassisNumber" type="text" class="form-control" id="chassis-number"></InputText>
                         <ValidationMessage For="() => vehicle.ChassisNumber" />
                     </div>
@@ -76,10 +77,10 @@
             <div class="row">
                 <div class="footer-buttons">
                     <div class="close">
-                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                        <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@L["Close"]</Button>
                     </div>
                     <div class="save">
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">@L["Save changes"]</Button>
                     </div>
                 </div>
             </div>
@@ -90,27 +91,27 @@
 <div class="container-fluid vehicle-page">
     <header class="page-header">
         <div class="page-header-text">
-            <p class="page-eyebrow">Fleet</p>
-            <h1 class="page-title">Vehicles</h1>
+            <p class="page-eyebrow">@L["Fleet"]</p>
+            <h1 class="page-title">@L["Vehicles"]</h1>
         </div>
         <button type="button" class="btn btn-primary page-action" @onclick="OnAddVehicleClick">
             <i class="bi bi-plus-lg" aria-hidden="true"></i>
-            <span>New vehicle</span>
+            <span>@L["New vehicle"]</span>
         </button>
     </header>
     <div class="row">
         <div class="col-6">
             @if (pleaseSelectClient && selectedClientId == 0)
             {
-                <div class="field-error">Please select a client.</div>
+                <div class="field-error">@L["Please select a client."]</div>
                 <br />
             }
 
             <div class="row">
                 <div class="form-group">
-                    <label for="select-client">Client:</label>
-                    <select class="form-select" aria-label="Default select example" @onchange="HandleOnChangeClient" id="select-client">
-                        <option selected>Select client</option>
+                    <label for="select-client">@L["Client"]:</label>
+                    <select class="form-select" aria-label="@L["Select client"]" @onchange="HandleOnChangeClient" id="select-client">
+                        <option selected>@L["Select client"]</option>
                         @foreach (var client in clients)
                         {
                             <option value="@client.Id">@client.Name </option>
@@ -144,7 +145,7 @@
             <SortHeader Title="EngineHours" SortBy="v => v.EngineHours" />
             <SortHeader Title="Job Number" SortBy="v => v.JobNumber" />
             <SortHeader Title="Chassis Number" SortBy="v => v.ChassisNumber" />
-            <th class="row-actions-col">Actions</th>
+            <th class="row-actions-col">@L["Actions"]</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="vehicle">
@@ -160,8 +161,8 @@
             <td>@vehicle.ChassisNumber</td>
             <td class="row-actions-col">
                 <RowActions>
-                    <RowAction Icon="@Icons.Edit" Label="Edit this vehicle" OnClick="() => OnEditVehicleClick(vehicle)" />
-                    <RowAction Icon="@Icons.Delete" Label="Delete this vehicle" Danger="true" OnClick="() => DeleteVehicle(vehicle)" />
+                    <RowAction Icon="@Icons.Edit" Label="@L["Edit this vehicle"]" OnClick="() => OnEditVehicleClick(vehicle)" />
+                    <RowAction Icon="@Icons.Delete" Label="@L["Delete this vehicle"]" Danger="true" OnClick="() => DeleteVehicle(vehicle)" />
                 </RowActions>
             </td>
         </tr>

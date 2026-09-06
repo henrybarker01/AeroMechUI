@@ -49,13 +49,16 @@ namespace AeroMech.UI.Web.Pages.ListTemplate
 
         private bool HasTitle => !string.IsNullOrWhiteSpace(Title);
 
+        // The singular is derived from the English title and then translated as its own
+        // key ("client" -> "kliënt"), because Afrikaans plurals don't trim back to a
+        // singular the way English ones do.
         private string AddButtonLabel => string.IsNullOrWhiteSpace(AddButtonText)
-            ? $"New {Singular(Title)}"
+            ? L.Format("New {0}", L[Singular(Title)])
             : AddButtonText;
 
         private string SearchPlaceholder => HasTitle
-            ? $"Search {Title.ToLowerInvariant()}"
-            : "Search";
+            ? L.Format("Search {0}", L[Title].ToLowerInvariant())
+            : L["Search"];
 
         // Grid titles are plain English plurals, so trimming a trailing "s" covers all of them.
         // Anything irregular is handled by passing AddButtonText instead.
@@ -105,12 +108,12 @@ namespace AeroMech.UI.Web.Pages.ListTemplate
             get
             {
                 var total = MatchCount;
-                if (total == 0) return "No records";
+                if (total == 0) return L["No records"];
 
                 var first = ((CurrentPage - 1) * PageSize) + 1;
                 var last = Math.Min(first + PageSize - 1, total);
 
-                return $"{first}–{last} of {total}";
+                return L.Format("{0}–{1} of {2}", first, last, total);
             }
         }
 

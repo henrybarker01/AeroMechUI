@@ -1,4 +1,5 @@
 @page "/stock-takes"
+@inject LocalizationService L
 
 @using AeroMech.Data.Enums
 @using AeroMech.Models.Models
@@ -6,9 +7,9 @@
 @using System.Globalization
 @using BlazorBootstrap
 
-<PageTitle>Stock Takes</PageTitle>
+<PageTitle>@L["Stock Takes"]</PageTitle>
 
-<Modal @ref="_newModal" Title="New Stock Take">
+<Modal @ref="_newModal" Title="@L["New Stock Take"]">
     <BodyTemplate>
         <EditForm Model="_request" OnValidSubmit="CreateStockTake">
             <DataAnnotationsValidator />
@@ -17,15 +18,15 @@
                 <div class="row">
                     <div class="col-12 col-md-7">
                         <div class="form-group">
-                            <label for="st-description">Description:</label>
+                            <label for="st-description">@L["Description"]:</label>
                             <InputText @bind-Value="_request.StockTakeDescription" class="form-control" id="st-description"
-                                       placeholder="e.g. Month end count - August" />
+                                       placeholder="@L["e.g. Month end count - August"]" />
                             <ValidationMessage For="() => _request.StockTakeDescription" />
                         </div>
                     </div>
                     <div class="col-12 col-md-5 mt-3 mt-md-0">
                         <div class="form-group">
-                            <label for="st-date">Date:</label>
+                            <label for="st-date">@L["Date"]:</label>
                             <InputDate @bind-Value="_request.StockTakeDate" class="form-control" id="st-date" />
                         </div>
                     </div>
@@ -33,7 +34,7 @@
 
                 <div class="row mt-3">
                     <div class="col-12">
-                        <label class="form-label">Suppliers</label>
+                        <label class="form-label">@L["Suppliers"]</label>
                         <div class="dropdown">
                             <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start text-truncate"
                                     type="button"
@@ -47,7 +48,7 @@
                                 <div class="panel-scroll">
                                     @if (_suppliers.Count == 0)
                                     {
-                                        <div class="text-muted small px-1">No suppliers available</div>
+                                        <div class="text-muted small px-1">@L["No suppliers available"]</div>
                                     }
                                     else
                                     {
@@ -68,11 +69,11 @@
                                 </div>
                                 <div class="dropdown-divider"></div>
                                 <button type="button" class="btn btn-sm btn-link p-0" @onclick="ClearSupplierSelection">
-                                    Clear selection (count everything)
+                                    @L["Clear selection (count everything)"]
                                 </button>
                             </div>
                         </div>
-                        <div class="form-text">Leave empty to count every part, including those with no supplier code.</div>
+                        <div class="form-text">@L["Leave empty to count every part, including those with no supplier code."]</div>
                     </div>
                 </div>
 
@@ -81,11 +82,11 @@
                         <div class="form-check">
                             <InputCheckbox @bind-Value="_request.BlindCount" class="form-check-input" id="st-blind" />
                             <label class="form-check-label" for="st-blind">
-                                Blind count &mdash; hide the expected quantity from the counter
+                                @L["Blind count — hide the expected quantity from the counter"]
                             </label>
                         </div>
                         <div class="form-text">
-                            Recommended. Shown what the system expects, a counter tends to confirm it rather than count.
+                            @L["Recommended. Shown what the system expects, a counter tends to confirm it rather than count."]
                         </div>
                     </div>
                 </div>
@@ -95,11 +96,11 @@
                         <div class="form-check">
                             <InputCheckbox @bind-Value="_request.ExcludeZeroQtyParts" class="form-check-input" id="st-exclude-zero" />
                             <label class="form-check-label" for="st-exclude-zero">
-                                Leave out parts the system already shows as empty
+                                @L["Leave out parts the system already shows as empty"]
                             </label>
                         </div>
                         <div class="form-text">
-                            Shortens the sheet, but a part recorded as zero with stock on the shelf will not be found.
+                            @L["Shortens the sheet, but a part recorded as zero with stock on the shelf will not be found."]
                         </div>
                     </div>
                 </div>
@@ -107,7 +108,7 @@
                 <div class="row mt-3">
                     <div class="col-12">
                         <div class="form-group">
-                            <label for="st-remarks">Remarks:</label>
+                            <label for="st-remarks">@L["Remarks"]:</label>
                             <InputText @bind-Value="_request.Remarks" class="form-control" id="st-remarks" />
                         </div>
                     </div>
@@ -115,8 +116,8 @@
 
                 <div class="row mt-3">
                     <div class="col-12 st-modal-actions">
-                        <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="CloseNewModal">Cancel</Button>
-                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Create sheet</Button>
+                        <Button Color="ButtonColor.Secondary" Type="ButtonType.Button" @onclick="CloseNewModal">@L["Cancel"]</Button>
+                        <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">@L["Create sheet"]</Button>
                     </div>
                 </div>
             </div>
@@ -131,7 +132,7 @@
               PageSize="15"
               SearchPredicate="MatchesSearch"
               ShowAddButton="true"
-              AddButtonText="New stock take"
+              AddButtonText="@L["New stock take"]"
               StorageKey="stock-takes"
               OnAdd="OpenNewModal">
     <HeaderTemplate>
@@ -144,7 +145,7 @@
             <SortHeader Title="Counted" SortBy="t => t.ProgressPercent" />
             <SortHeader Title="Differences" SortBy="t => t.VarianceCount" />
             <SortHeader Title="Value" SortBy="t => t.TotalVarianceValue" />
-            <th class="row-actions-col">Actions</th>
+            <th class="row-actions-col">@L["Actions"]</th>
         </tr>
     </HeaderTemplate>
 
@@ -169,10 +170,10 @@
             </td>
             <td class="row-actions-col" @onclick:stopPropagation="true">
                 <RowActions>
-                    <RowAction Icon="@Icons.Print" Label="Print the count sheet" OnClick="() => DownloadCountSheet(take)" />
+                    <RowAction Icon="@Icons.Print" Label="@L["Print the count sheet"]" OnClick="() => DownloadCountSheet(take)" />
                     @if (take.IsOpen)
                     {
-                        <RowAction Icon="@Icons.Remove" Label="Cancel this stock take" Danger="true" OnClick="() => CancelStockTake(take)" />
+                        <RowAction Icon="@Icons.Remove" Label="@L["Cancel this stock take"]" Danger="true" OnClick="() => CancelStockTake(take)" />
                     }
                 </RowActions>
             </td>

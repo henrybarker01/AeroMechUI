@@ -1,11 +1,12 @@
 ﻿@page "/stock-receipts"
+@inject LocalizationService L
 
 @using AeroMech.Models.Models
 @using AeroMech.UI.Web.Pages.ListTemplate
 @using System.Globalization
 @using BlazorBootstrap
 
-<PageTitle>Stock Receipts</PageTitle>
+<PageTitle>@L["Stock Receipts"]</PageTitle>
 
 <ListTemplate TItem="StockReceiptModel"
               Title="Stock Receipts"
@@ -60,26 +61,26 @@
                 <td colspan="12">
                     @if (!_receiptLines.TryGetValue(receipt.Id, out var lines))
                     {
-                        <div class="rs-detail-empty">Loading lines...</div>
+                        <div class="rs-detail-empty">@L["Loading lines..."]</div>
                     }
                     else if (lines.Count == 0)
                     {
-                        <div class="rs-detail-empty">This receipt has no lines.</div>
+                        <div class="rs-detail-empty">@L["This receipt has no lines."]</div>
                     }
                     else
                     {
                         <table class="table rs-detail-table">
                             <thead>
                                 <tr>
-                                    <th>Part Code</th>
-                                    <th>Description</th>
-                                    <th>Bin</th>
-                                    <th>Warehouse</th>
-                                    <th class="rs-number">Received</th>
-                                    <th class="rs-number">Unit Cost</th>
-                                    <th class="rs-number">Line Total</th>
-                                    <th class="rs-number">Level Before</th>
-                                    <th class="rs-number">Level After</th>
+                                    <th>@L["Part Code"]</th>
+                                    <th>@L["Description"]</th>
+                                    <th>@L["Bin"]</th>
+                                    <th>@L["Warehouse"]</th>
+                                    <th class="rs-number">@L["Received"]</th>
+                                    <th class="rs-number">@L["Unit Cost"]</th>
+                                    <th class="rs-number">@L["Line Total"]</th>
+                                    <th class="rs-number">@L["Level Before"]</th>
+                                    <th class="rs-number">@L["Level After"]</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -101,7 +102,7 @@
                         </table>
                         @if (!string.IsNullOrWhiteSpace(receipt.Notes))
                         {
-                            <div class="rs-detail-notes"><strong>Notes:</strong> @receipt.Notes</div>
+                            <div class="rs-detail-notes"><strong>@L["Notes"]:</strong> @receipt.Notes</div>
                         }
                     }
                 </td>

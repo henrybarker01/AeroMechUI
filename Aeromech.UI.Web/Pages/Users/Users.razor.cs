@@ -49,7 +49,7 @@ namespace AeroMech.UI.Web.Pages.Users
 
         private async Task AddUserClick()
         {
-            _title = "Add User";
+            _title = L["Add User"];
             _isEdit = false;
             _editingUserId = string.Empty;
             _user = new IdentityUser();
@@ -72,13 +72,13 @@ namespace AeroMech.UI.Web.Pages.Users
 
             if (!_isEdit && !passwordProvided)
             {
-                _modalErrorMessage = "Password is required.";
+                _modalErrorMessage = L["Password is required."];
                 return;
             }
 
             if (passwordProvided && !string.Equals(_password, _confirmPassword, StringComparison.Ordinal))
             {
-                _modalErrorMessage = "Passwords do not match.";
+                _modalErrorMessage = L["Passwords do not match."];
                 return;
             }
 
@@ -122,7 +122,7 @@ namespace AeroMech.UI.Web.Pages.Users
 
         private async Task DeleteUser(IdentityUser user)
         {
-            bool confirmed = await _confirmationService.ConfirmAsync("Are you sure?");
+            bool confirmed = await _confirmationService.ConfirmAsync(L["Are you sure?"]);
             if (confirmed)
             {
                 _loaderService.ShowLoader();
@@ -134,7 +134,7 @@ namespace AeroMech.UI.Web.Pages.Users
 
         private async Task EditUser(IdentityUser user)
         {
-            _title = "Edit User";
+            _title = L["Edit User"];
             _isEdit = true;
             _editingUserId = user.Id;
 

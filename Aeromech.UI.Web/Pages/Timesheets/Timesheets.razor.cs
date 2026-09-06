@@ -16,8 +16,8 @@ namespace AeroMech.UI.Web.Pages.Timesheets
 
         [Parameter] public string? SelectedDate { get; set; }
 
-        private const string EditTitle = "Edit timesheet detail";
-        private const string AddTitle = "Add timesheet detail";
+        /// <summary>Whether the modal is editing an existing line rather than adding a new one.</summary>
+        private bool _isEditing;
 
         /// <summary>The lengths that get typed most, offered as taps so a phone need not.</summary>
         private static readonly double[] HourPresets = { 0.5, 1, 2, 4, 8, 9 };
@@ -43,7 +43,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
             : _selectedEmployeeId is null ? "employees" : "lines";
 
         private string SelectedDayLabel => _timesheetDateModel is null
-            ? "No day chosen"
+            ? L["No day chosen"]
             : _timesheetDateModel.Date.ToString("ddd d MMM yyyy");
 
         private string SelectedDayLongLabel => _timesheetDateModel is null
@@ -52,7 +52,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
 
         private string SelectedEmployeeName
             => _timesheetEmployeeHours.FirstOrDefault(x => x.EmployeeId == _selectedEmployeeId)?.EmployeeName
-               ?? "No employee chosen";
+               ?? L["No employee chosen"];
 
         private double DayTotalHours
             => _timesheetEmployeeHours.Sum(x => x.ServiceReportHours + x.TimesheetHours);
@@ -165,7 +165,8 @@ namespace AeroMech.UI.Web.Pages.Timesheets
 
             if (_selectedEmployeeId is null) return;
 
-            _title = AddTitle;
+            _isEditing = false;
+            _title = L["Add timesheet detail"];
 
             // A fresh model every time. Reusing the last one carried the Id of a line that had
             // just been edited into the next add, which is an insert wearing an existing row's
@@ -184,7 +185,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
         private async Task AddLineToEmployeeTimesheetDetailAsync()
         {
             _loaderService.ShowLoader();
-            if (_title == EditTitle)
+            if (_isEditing)
             {
                 await _timesheetService.EditEmployeeTimesheetDetailAsync(_timesheetEmployeeDetail);
             }
@@ -195,6 +196,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
 
             await ViewEmplyeeTimesheetDetail(_timesheetEmployeeDetail.EmployeeId);
             RefreshTotalsFromLoadedLines();
+            _isEditing = false;
             _title = string.Empty;
             await InvokeAsync(StateHasChanged);
             _loaderService.HideLoader();
@@ -208,6 +210,7 @@ namespace AeroMech.UI.Web.Pages.Timesheets
                 EmployeeId = _selectedEmployeeId ?? 0,
                 Date = _timesheetDateModel?.Date ?? default
             };
+            _isEditing = false;
             _title = string.Empty;
             await _modal.HideAsync();
         }
@@ -216,7 +219,8 @@ namespace AeroMech.UI.Web.Pages.Timesheets
         {
             if (_timesheetDateModel is null) return;
 
-            _title = EditTitle;
+            _isEditing = true;
+            _title = L["Edit timesheet detail"];
             _timesheetEmployeeDetail = new()
             {
                 Id = timesheetLine.Id,

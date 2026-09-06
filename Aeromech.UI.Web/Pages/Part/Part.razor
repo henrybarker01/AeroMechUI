@@ -1,6 +1,7 @@
 ﻿@page "/parts"
+@inject LocalizationService L
 
-<PageTitle>Parts</PageTitle>
+<PageTitle>@L["Parts"]</PageTitle>
 
 <Modal @ref="_modal" Title="@_title">
     <BodyTemplate>
@@ -10,63 +11,63 @@
             <div class="container-fluid">
                 <div class="row">
                     <div class="form-group">
-                        <label for="part-number">Part Number:</label>
+                        <label for="part-number">@L["Part Number"]:</label>
                         <InputText @bind-Value="_part.PartCode" type="text" class="form-control" id="part-number"></InputText>
                         <ValidationMessage For="() => _part.PartCode" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="description">Description:</label>
+                        <label for="description">@L["Description"]:</label>
                         <InputText @bind-Value="_part.PartDescription" type="text" class="form-control" id="description"></InputText>
                         <ValidationMessage For="() => _part.PartDescription" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="warehouse">Warehouse:</label>
+                        <label for="warehouse">@L["Warehouse"]:</label>
                         <InputText @bind-Value="_part.Warehouse.WarehouseCode" type="text" class="form-control" id="warehouse"></InputText>
                         <ValidationMessage For="() => _part.Warehouse.WarehouseCode" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="bin">Bin:</label>
+                        <label for="bin">@L["Bin"]:</label>
                         <InputText @bind-Value="_part.Bin" type="text" class="form-control" id="bin"></InputText>
                         <ValidationMessage For="() => _part.Bin" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="supplier-code">Supplier Code:</label>
+                        <label for="supplier-code">@L["Supplier Code"]:</label>
                         <InputText @bind-Value="_part.SupplierCode" type="text" class="form-control" id="supplier-code"></InputText>
                         <ValidationMessage For="() => _part.SupplierCode" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="product-class">Product Class:</label>
+                        <label for="product-class">@L["Product Class"]:</label>
                         <InputText @bind-Value="_part.ProductClass" type="text" class="form-control" id="product-class"></InputText>
                         <ValidationMessage For="() => _part.ProductClass" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="cycle-count">Cycle Count:</label>
+                        <label for="cycle-count">@L["Cycle Count"]:</label>
                         <NumberInput @bind-Value="_part.CycleCount" type="text" class="form-control" id="cycle-count"></NumberInput>
                         <ValidationMessage For="() => _part.CycleCount" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="qty-on-hand">Qty On Hand:</label>
+                        <label for="qty-on-hand">@L["Qty On Hand"]:</label>
                         <NumberInput @bind-Value="_part.QtyOnHand" class="form-control" id="qty-on-hand"></NumberInput>
                         <ValidationMessage For="() => _part.QtyOnHand" />
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="form-group">
-                        <label for="cost-price">Cost Price:</label>
+                        <label for="cost-price">@L["Cost Price"]:</label>
                         <NumberInput TValue="double" @bind-Value="@_part.CostPrice" class="form-control" id="cost-price" Step=".01" />
                         <ValidationMessage For="() => _part.CostPrice" /> 
                     </div>
@@ -74,10 +75,10 @@
                 <div class="row">
                     <div class="footer-buttons">
                         <div class="close">
-                            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">Close</Button>
+                            <Button Color="ButtonColor.Secondary" @onclick="OnHideModalClick">@L["Close"]</Button>
                         </div>
                         <div>
-                            <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">Save changes</Button>
+                            <Button Color="ButtonColor.Primary" Type="ButtonType.Submit">@L["Save changes"]</Button>
                         </div>
                     </div>
 
@@ -108,7 +109,7 @@
             <SortHeader Title="Qty On Hand" SortBy="p => p.QtyOnHand" />
             <SortHeader Title="Cost Price" SortBy="p => p.CostPrice" />
             <SortHeader Title="Total Value" SortBy="p => p.QtyOnHand * p.CostPrice" />
-            <th class="row-actions-col">Actions</th>
+            <th class="row-actions-col">@L["Actions"]</th>
         </tr>
     </HeaderTemplate>
     <RowTemplate Context="part">
@@ -125,8 +126,8 @@
             <td>@((part.QtyOnHand * part.CostPrice).ToString("C", CultureInfo.CurrentCulture))</td>
             <td class="row-actions-col">
                 <RowActions>
-                    <RowAction Icon="@Icons.Edit" Label="Edit this part" OnClick="() => OnEditPartClick(part)" />
-                    <RowAction Icon="@Icons.Delete" Label="Delete this part" Danger="true" OnClick="() => DeletePart(part)" />
+                    <RowAction Icon="@Icons.Edit" Label="@L["Edit this part"]" OnClick="() => OnEditPartClick(part)" />
+                    <RowAction Icon="@Icons.Delete" Label="@L["Delete this part"]" Danger="true" OnClick="() => DeletePart(part)" />
                 </RowActions>
             </td>
         </tr>
