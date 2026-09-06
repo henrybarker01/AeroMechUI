@@ -2,11 +2,13 @@
    Login / landing shell, shared by sign-in, forgot-password and reset-password.
 
    A two-panel layout: a brand panel on the left for presence, the page's card
-   on the right. Everything is drawn from the design tokens in site.css so the
-   pages stay in step with the rest of the app. Below the laptop breakpoint the
-   brand panel is removed and the card centres itself on the viewport, so there
-   is a sensible layout at every width - a tablet or a half-width window is not
-   left with an empty screen.
+   on the right. The dark panel sits inset on the light ground as a large
+   rounded card rather than running edge to edge, so the two tones meet with a
+   frame between them instead of a hard seam. Everything is drawn from the
+   design tokens in site.css so the pages stay in step with the rest of the
+   app. Below the laptop breakpoint the brand panel is removed and the card
+   centres itself on the viewport, so there is a sensible layout at every
+   width - a tablet or a half-width window is not left with an empty screen.
 
    The shell, hero and card frame are rendered by this layout; the card content
    (intro, fields, alerts, links) comes from each page through the layout body,
@@ -16,7 +18,9 @@
 .login-shell {
     display: grid;
     grid-template-columns: 1.05fr 1fr;
+    gap: var(--am-space-4);
     min-height: 100vh;
+    padding: var(--am-space-4);
     background-color: var(--am-ground);
 }
 
@@ -31,6 +35,10 @@
     padding: var(--am-space-12) var(--am-space-12) var(--am-space-8);
     color: #fff;
     background: radial-gradient(120% 120% at 15% 0%, var(--am-slate-light) 0%, var(--am-slate) 55%, #1a2735 100%);
+    /* The panel is a framed poster on the light ground, not an edge-to-edge
+       slab; overflow:hidden above clips the glow and cogs to the corners. */
+    border-radius: 1.5rem;
+    box-shadow: var(--am-shadow-2);
 }
 
 /* A soft brand-blue wash so the panel is not a flat slab. */
@@ -280,8 +288,11 @@
 /* Below the laptop breakpoint the brand panel is more than the width can carry,
    so it steps aside and the card takes the viewport. */
 @media (max-width: 900px) {
+    /* With the brand panel gone there is nothing to frame, so the inset
+       padding goes too - otherwise the full-height card column would scroll. */
     .login-shell {
         grid-template-columns: 1fr;
+        padding: 0;
     }
 
     .login-hero {

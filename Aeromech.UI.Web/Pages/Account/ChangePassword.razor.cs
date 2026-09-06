@@ -19,7 +19,18 @@ namespace AeroMech.UI.Web.Pages.Account
         [SupplyParameterFromQuery(Name = "forced")]
         public int? ForcedFromQuery { get; set; }
 
+        /// <summary>
+        /// Set by whoever redirected here when the change is required but the password was never
+        /// assigned by anybody else - the owner still knows it, so the warning must not claim it
+        /// was handed to them. Carried in the URL rather than read from the store, because the
+        /// redirecting code has already looked the claim up; only the wording rides on it.
+        /// </summary>
+        [SupplyParameterFromQuery(Name = "own")]
+        public int? OwnPasswordFromQuery { get; set; }
+
         protected int Forced => ForcedFromQuery ?? 0;
+
+        private bool _forcedWithOwnPassword => (OwnPasswordFromQuery ?? 0) == 1;
 
         private string _currentPassword = string.Empty;
         private string _newPassword = string.Empty;

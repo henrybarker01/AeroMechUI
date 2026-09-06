@@ -19,6 +19,12 @@ namespace AeroMech.UI.Web.Shared
         /// </summary>
         private bool _mustChangePassword;
 
+        /// <summary>
+        /// Why, when it does: kept alongside the flag so redirects carry the wording the
+        /// change-password screen should use, without asking the store again.
+        /// </summary>
+        private string? _mustChangeReason;
+
         protected override async Task OnInitializedAsync()
         {
             _navigationManager.LocationChanged += OnLocationChanged;
@@ -31,7 +37,8 @@ namespace AeroMech.UI.Web.Shared
                 return;
             }
 
-            _mustChangePassword = await _userService.MustChangePassword(userName!);
+            _mustChangeReason = await _userService.MustChangePasswordReason(userName!);
+            _mustChangePassword = _mustChangeReason is not null;
 
             if (_mustChangePassword)
             {
@@ -69,7 +76,7 @@ namespace AeroMech.UI.Web.Shared
 
             if (!relative.StartsWith("change-password", StringComparison.OrdinalIgnoreCase))
             {
-                _navigationManager.NavigateTo("/change-password?forced=1");
+                _navigationManager.NavigateTo(UserService.ChangePasswordRedirect(_mustChangeReason));
             }
         }
 

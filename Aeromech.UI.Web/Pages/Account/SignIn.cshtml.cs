@@ -128,11 +128,13 @@ namespace AeroMech.UI.Web.Pages.Account
                     user.UserName,
                     $"{user.UserName} signed in from {ClientAddress()}.");
 
-                // An account whose password was assigned for it goes to the change-password screen
-                // and nowhere else until its owner has chosen their own.
-                var redirectUrl = await _userService.MustChangePassword(user)
-                    ? "/change-password?forced=1"
-                    : "/";
+                // An account that must still choose a new password goes to the change-password
+                // screen and nowhere else until it has; the reason rides along so that screen can
+                // word its warning for what actually happened.
+                var mustChangeReason = await _userService.MustChangePasswordReason(user);
+                var redirectUrl = mustChangeReason is null
+                    ? "/"
+                    : UserService.ChangePasswordRedirect(mustChangeReason);
 
                 // Always redirect for proper cookie handling
                 if (Request.ContentType?.Contains("application/json") == true)

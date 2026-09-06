@@ -23,6 +23,47 @@ namespace AeroMech.UI.Web.Pages.Users
         private bool _isEdit;
         private string _editingUserId = string.Empty;
 
+        private bool _resetPasswordChecked;
+
+        /// <summary>
+        /// Whether the edit form is assigning a new password. Unticking clears whatever was typed,
+        /// so a password entered and then abandoned cannot ride along with the save.
+        /// </summary>
+        private bool _resetPassword
+        {
+            get => _resetPasswordChecked;
+            set
+            {
+                _resetPasswordChecked = value;
+                if (!value)
+                {
+                    _password = string.Empty;
+                    _confirmPassword = string.Empty;
+                }
+            }
+        }
+
+        /// <summary>
+        /// One line under the checkboxes saying what the chosen combination will do to the
+        /// account's password, so the four combinations need no guessing.
+        /// </summary>
+        private string PasswordPlanHint
+        {
+            get
+            {
+                var settingPassword = !_isEdit || _resetPassword;
+
+                if (settingPassword && _mustChangePassword)
+                    return L["They will sign in with this password and must then choose their own."];
+                if (settingPassword)
+                    return L["They will sign in with this password from now on."];
+                if (_mustChangePassword)
+                    return L["Their password stays the same; they must choose a new one at next sign-in."];
+
+                return string.Empty;
+            }
+        }
+
         private bool MatchesSearch(IdentityUser user, string term)
         {
             if (string.IsNullOrWhiteSpace(term)) return true;
@@ -56,6 +97,7 @@ namespace AeroMech.UI.Web.Pages.Users
             _password = string.Empty;
             _confirmPassword = string.Empty;
             _modalErrorMessage = string.Empty;
+            _resetPassword = false;
 
             // A password typed by whoever created the account is not the owner's own; the default
             // is to make them choose one the first time they sign in.
@@ -68,11 +110,18 @@ namespace AeroMech.UI.Web.Pages.Users
         {
             _modalErrorMessage = string.Empty;
 
-            var passwordProvided = !string.IsNullOrWhiteSpace(_password);
+            var settingPassword = !_isEdit || _resetPassword;
+            var passwordProvided = settingPassword && !string.IsNullOrWhiteSpace(_password);
 
             if (!_isEdit && !passwordProvided)
             {
                 _modalErrorMessage = L["Password is required."];
+                return;
+            }
+
+            if (_isEdit && _resetPassword && !passwordProvided)
+            {
+                _modalErrorMessage = L["Enter the new password, or turn off the password reset."];
                 return;
             }
 
@@ -151,6 +200,7 @@ namespace AeroMech.UI.Web.Pages.Users
             _password = string.Empty;
             _confirmPassword = string.Empty;
             _modalErrorMessage = string.Empty;
+            _resetPassword = false;
             _mustChangePassword = await _userService.MustChangePassword(user);
 
             await _modal.ShowAsync();

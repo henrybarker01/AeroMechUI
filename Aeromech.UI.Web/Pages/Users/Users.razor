@@ -39,18 +39,32 @@
                         <ValidationMessage For="() => _user.PhoneNumber" />
                     </div>
                 </div>
-                <div class="row mt-3">
-                    <div class="form-group">
-                        <label for="password">@(_isEdit ? L["New Password (leave blank to keep the current one)"] : L["Password"]):</label>
-                        <InputText @bind-Value="_password" type="password" class="form-control" id="password"></InputText>
+                @if (_isEdit)
+                {
+                    <div class="row mt-3">
+                        <div class="form-check ms-2">
+                            <input class="form-check-input" type="checkbox" id="reset-password" @bind="_resetPassword" />
+                            <label class="form-check-label" for="reset-password">
+                                @L["Reset this user's password"]
+                            </label>
+                        </div>
                     </div>
-                </div>
-                <div class="row mt-3">
-                    <div class="form-group">
-                        <label for="confirm-password">@L["Confirm Password"]:</label>
-                        <InputText @bind-Value="_confirmPassword" type="password" class="form-control" id="confirm-password"></InputText>
+                }
+                @if (!_isEdit || _resetPassword)
+                {
+                    <div class="row mt-3">
+                        <div class="form-group">
+                            <label for="password">@(_isEdit ? L["New password"] : L["Password"]):</label>
+                            <InputText @bind-Value="_password" type="password" autocomplete="new-password" class="form-control" id="password"></InputText>
+                        </div>
                     </div>
-                </div>
+                    <div class="row mt-3">
+                        <div class="form-group">
+                            <label for="confirm-password">@(_isEdit ? L["Confirm new password"] : L["Confirm Password"]):</label>
+                            <InputText @bind-Value="_confirmPassword" type="password" autocomplete="new-password" class="form-control" id="confirm-password"></InputText>
+                        </div>
+                    </div>
+                }
                 <div class="row mt-3">
                     <div class="form-check ms-2">
                         <input class="form-check-input" type="checkbox" id="must-change-password" @bind="_mustChangePassword" />
@@ -59,6 +73,14 @@
                         </label>
                     </div>
                 </div>
+                @if (!string.IsNullOrEmpty(PasswordPlanHint))
+                {
+                    <div class="row mt-2">
+                        <div class="col-12">
+                            <small class="text-muted ms-2">@PasswordPlanHint</small>
+                        </div>
+                    </div>
+                }
             </div>
             <div class="row">
                 <div class="footer-buttons">

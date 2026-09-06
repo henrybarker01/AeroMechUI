@@ -15,6 +15,18 @@ namespace AeroMech.UI.Web.Services
         /// </summary>
         public const string MustChangePasswordClaimType = "aeromech:must-change-password";
 
+        /// <summary>
+        /// Claim value: an administrator typed the account's current password, so its owner does
+        /// not yet have one of their own. Older rows carry "true", which meant the same thing.
+        /// </summary>
+        public const string MustChangeReasonAssigned = "assigned";
+
+        /// <summary>
+        /// Claim value: the password was left alone; its owner still knows it, they are just
+        /// required to pick a new one before carrying on.
+        /// </summary>
+        public const string MustChangeReasonForced = "forced";
+
         private readonly UserManager<IdentityUser> _userManager;
         private readonly AuditService _auditService;
         private readonly EmailService _emailService;
@@ -64,7 +76,7 @@ namespace AeroMech.UI.Web.Services
             {
                 if (mustChangePassword)
                 {
-                    await _userManager.AddClaimAsync(user, new Claim(MustChangePasswordClaimType, "true"));
+                    await _userManager.AddClaimAsync(user, new Claim(MustChangePasswordClaimType, MustChangeReasonAssigned));
                 }
 
                 await _auditService.RecordAsync(
@@ -120,25 +132,51 @@ namespace AeroMech.UI.Web.Services
             return claims.Any(c => c.Type == MustChangePasswordClaimType);
         }
 
-        public async Task<bool> MustChangePassword(string userName)
+        /// <summary>
+        /// Why an account must change its password: <see cref="MustChangeReasonAssigned"/>,
+        /// <see cref="MustChangeReasonForced"/>, "true" on rows from before the reasons existed,
+        /// or null when no change is required.
+        /// </summary>
+        public async Task<string?> MustChangePasswordReason(string userName)
         {
             var user = await _userManager.FindByNameAsync(userName);
 
-            return user is not null && await MustChangePassword(user);
+            return user is null ? null : await MustChangePasswordReason(user);
         }
 
-        public async Task SetMustChangePassword(IdentityUser user, bool mustChange)
+        public async Task<string?> MustChangePasswordReason(IdentityUser user)
         {
-            var alreadySet = await MustChangePassword(user);
+            var claims = await _userManager.GetClaimsAsync(user);
 
-            if (mustChange && !alreadySet)
+            return claims.FirstOrDefault(c => c.Type == MustChangePasswordClaimType)?.Value;
+        }
+
+        /// <summary>
+        /// Where an account carrying the must-change flag is sent, worded for why it carries it:
+        /// "own=1" when the password was left alone, absent when one was assigned (or the flag
+        /// predates the reasons, which was only ever written for an assigned password).
+        /// </summary>
+        public static string ChangePasswordRedirect(string? reason)
+            => reason == MustChangeReasonForced
+                ? "/change-password?forced=1&own=1"
+                : "/change-password?forced=1";
+
+        public async Task SetMustChangePassword(IdentityUser user, bool mustChange, string reason = MustChangeReasonAssigned)
+        {
+            var claims = await _userManager.GetClaimsAsync(user);
+            var existing = claims.Where(c => c.Type == MustChangePasswordClaimType).ToList();
+
+            if (mustChange && existing.Count == 0)
             {
-                await _userManager.AddClaimAsync(user, new Claim(MustChangePasswordClaimType, "true"));
+                await _userManager.AddClaimAsync(user, new Claim(MustChangePasswordClaimType, reason));
             }
-            else if (!mustChange && alreadySet)
+            else if (mustChange && existing[0].Value != reason)
             {
-                var claims = await _userManager.GetClaimsAsync(user);
-                await _userManager.RemoveClaimsAsync(user, claims.Where(c => c.Type == MustChangePasswordClaimType));
+                await _userManager.ReplaceClaimAsync(user, existing[0], new Claim(MustChangePasswordClaimType, reason));
+            }
+            else if (!mustChange && existing.Count > 0)
+            {
+                await _userManager.RemoveClaimsAsync(user, existing);
             }
         }
 
@@ -220,7 +258,18 @@ namespace AeroMech.UI.Web.Services
             }
 
             var hadFlag = await MustChangePassword(user);
-            await SetMustChangePassword(user, mustChangePassword);
+
+            if (!mustChangePassword)
+            {
+                await SetMustChangePassword(user, false);
+            }
+            else if (!hadFlag || !string.IsNullOrWhiteSpace(newPassword))
+            {
+                // A flag that was already standing keeps its reason unless a password was assigned
+                // right now; re-saving the form must not turn "assigned" into "forced".
+                await SetMustChangePassword(user, true,
+                    string.IsNullOrWhiteSpace(newPassword) ? MustChangeReasonForced : MustChangeReasonAssigned);
+            }
 
             if (changes.Count > 0 || hadFlag != mustChangePassword)
             {

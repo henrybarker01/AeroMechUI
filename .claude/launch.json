@@ -6,6 +6,12 @@
       "runtimeExecutable": "dotnet",
       "runtimeArgs": ["run", "--project", "Aeromech.UI.Web/AeroMech.UI.Web.csproj", "--launch-profile", "http"],
       "port": 5066
+    },
+    {
+      "name": "aeromech-web-alt",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": ["run", "--project", "Aeromech.UI.Web/AeroMech.UI.Web.csproj", "--launch-profile", "http", "--", "--urls", "http://localhost:5166"],
+      "port": 5166
     }
   ]
 }
