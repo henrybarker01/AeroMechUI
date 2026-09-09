@@ -1,14 +1,14 @@
 ﻿/* -----------------------------------------------------------------------------
    Login / landing shell, shared by sign-in, forgot-password and reset-password.
 
-   A two-panel layout: a brand panel on the left for presence, the page's card
-   on the right. The dark panel sits inset on the light ground as a large
-   rounded card rather than running edge to edge, so the two tones meet with a
-   frame between them instead of a hard seam. Everything is drawn from the
-   design tokens in site.css so the pages stay in step with the rest of the
-   app. Below the laptop breakpoint the brand panel is removed and the card
-   centres itself on the viewport, so there is a sensible layout at every
-   width - a tablet or a half-width window is not left with an empty screen.
+   One continuous dark slate canvas across the whole viewport: brand copy on
+   the left, the white card floating on the right. There is no light section
+   and so no seam - the card is the single bright element on the page.
+   Everything is drawn from the design tokens in site.css so the pages stay in
+   step with the rest of the app. Below the laptop breakpoint the brand copy is
+   removed and the card centres itself on the (still dark) viewport, so there
+   is a sensible layout at every width - a tablet or a half-width window is not
+   left with an empty screen.
 
    The shell, hero and card frame are rendered by this layout; the card content
    (intro, fields, alerts, links) comes from each page through the layout body,
@@ -16,29 +16,29 @@
    ----------------------------------------------------------------------------- */
 
 .login-shell {
+    position: relative;
+    /* Clips the glow and cog texture at the viewport edges. */
+    overflow: hidden;
     display: grid;
-    grid-template-columns: 1.05fr 1fr;
-    gap: var(--am-space-4);
+    /* Capped columns centred as a pair: on a big monitor the canvas stretches
+       but the copy and the card stay in one composition instead of drifting to
+       opposite edges. minmax(0, …) lets the columns shrink below the caps on
+       smaller laptops. */
+    grid-template-columns: minmax(0, 34rem) minmax(0, 30rem);
+    justify-content: center;
     min-height: 100vh;
-    padding: var(--am-space-4);
-    background-color: var(--am-ground);
+    background: radial-gradient(120% 120% at 15% 0%, var(--am-slate-light) 0%, var(--am-slate) 55%, #1a2735 100%);
 }
 
-/* --- Left: brand panel ---------------------------------------------------- */
+/* --- Left: brand copy, straight on the canvas ------------------------------ */
 
 .login-hero {
     position: relative;
-    overflow: hidden;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
     padding: var(--am-space-12) var(--am-space-12) var(--am-space-8);
     color: #fff;
-    background: radial-gradient(120% 120% at 15% 0%, var(--am-slate-light) 0%, var(--am-slate) 55%, #1a2735 100%);
-    /* The panel is a framed poster on the light ground, not an edge-to-edge
-       slab; overflow:hidden above clips the glow and cogs to the corners. */
-    border-radius: 1.5rem;
-    box-shadow: var(--am-shadow-2);
 }
 
 /* A soft brand-blue wash so the panel is not a flat slab. */
@@ -198,14 +198,31 @@
     right: var(--am-space-4);
 }
 
+/* The chip's ink colours are tuned for light surfaces; on the dark canvas it
+   switches to white at the same quiet weights. */
+.login-lang ::deep .lang-chip {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+.login-lang ::deep .lang-chip .bi-globe2,
+.login-lang ::deep .lang-caret {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+.login-lang ::deep .lang-chip:hover,
+.login-lang ::deep .lang-chip[aria-expanded="true"] {
+    background-color: rgba(255, 255, 255, 0.12);
+}
+
 .login-card {
     width: 100%;
     max-width: 24rem;
     padding: var(--am-space-8);
-    border: 1px solid var(--am-rule);
-    border-radius: var(--am-radius-lg);
+    border-radius: 1.25rem;
     background-color: var(--am-surface);
-    box-shadow: var(--am-shadow-2);
+    /* The card is the one bright element on the dark canvas, so it floats on a
+       deep soft shadow rather than a hairline border. */
+    box-shadow: 0 24px 64px rgba(10, 16, 24, 0.45);
 }
 
 .login-logo {
@@ -288,11 +305,8 @@
 /* Below the laptop breakpoint the brand panel is more than the width can carry,
    so it steps aside and the card takes the viewport. */
 @media (max-width: 900px) {
-    /* With the brand panel gone there is nothing to frame, so the inset
-       padding goes too - otherwise the full-height card column would scroll. */
     .login-shell {
         grid-template-columns: 1fr;
-        padding: 0;
     }
 
     .login-hero {

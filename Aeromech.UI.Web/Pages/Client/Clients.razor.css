@@ -27,4 +27,35 @@
     width: 120px;
     text-align: end;
 }
- 
+
+/* On a phone four rate inputs across a modal come to 70px each, too narrow for
+   a rate. They go two by two, each with its own label because the column heads
+   above them are gone. */
+@media (max-width: 575.98px) {
+    .rate-table thead {
+        display: none;
+    }
+
+    .rate-table tbody tr {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.5rem 0.75rem;
+    }
+
+    .rate-table td {
+        display: block;
+        width: auto;
+        padding: 0;
+    }
+
+    .rate-table td::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: 0.15rem;
+        font-size: var(--am-fs-label);
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--am-steel-light);
+    }
+}

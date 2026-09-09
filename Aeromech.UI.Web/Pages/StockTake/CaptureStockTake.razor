@@ -68,11 +68,11 @@ else
                         <option value="@((int)StockTakeSheetOrder.BinThenPart)" selected="@(_order == StockTakeSheetOrder.BinThenPart)">@L["Bin, then part"]</option>
                     </select>
 
-                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="DownloadCountSheet">
+                    <button type="button" class="btn btn-sm btn-outline-secondary st-action-print" @onclick="DownloadCountSheet">
                         <i class="bi bi-printer" aria-hidden="true"></i> <span>@L["Print sheet"]</span>
                     </button>
 
-                    <button type="button" class="btn btn-sm btn-outline-secondary" @onclick="BackToList">
+                    <button type="button" class="btn btn-sm btn-outline-secondary st-action-back" @onclick="BackToList">
                         <i class="bi bi-arrow-left" aria-hidden="true"></i> <span>@L["All sheets"]</span>
                     </button>
                 </div>
@@ -173,11 +173,11 @@ else
                         <div class="st-desc" title="@line.PartDescription">@line.PartDescription</div>
 
                         <div class="st-meta">
-                            <span class="st-bin" data-label="Bin">@(string.IsNullOrWhiteSpace(line.Bin) ? "-" : line.Bin)</span>
-                            <span class="st-sup" data-label="Supplier">@(string.IsNullOrWhiteSpace(line.SupplierCode) ? "-" : line.SupplierCode)</span>
+                            <span class="st-bin" data-label="@L["Bin"]">@(string.IsNullOrWhiteSpace(line.Bin) ? "-" : line.Bin)</span>
+                            <span class="st-sup" data-label="@L["Supplier"]">@(string.IsNullOrWhiteSpace(line.SupplierCode) ? "-" : line.SupplierCode)</span>
                             @if (ShowExpected)
                             {
-                                <span class="st-expected st-right" data-label="On hand">@line.QuantityOnHand</span>
+                                <span class="st-expected st-right" data-label="@L["On hand"]">@line.QuantityOnHand</span>
                             }
                         </div>
 
@@ -379,18 +379,18 @@ else
                             }
                         </div>
 
-                        <div class="st-expected st-right" data-label="On hand">@line.QuantityOnHand</div>
-                        <div class="st-counted st-right" data-label="Counted">
+                        <div class="st-expected st-right" data-label="@L["On hand"]">@line.QuantityOnHand</div>
+                        <div class="st-counted st-right" data-label="@L["Counted"]">
                             @(line.Quantity?.ToString() ?? "-")
                             @if (line.PreviousQuantity.HasValue)
                             {
                                 <span class="st-prev" title="@L["Previous count before the recount"]">@L.Format("was {0}", line.PreviousQuantity)</span>
                             }
                         </div>
-                        <div class="st-variance st-right @VarianceClass(line)" data-label="Difference">
+                        <div class="st-variance st-right @VarianceClass(line)" data-label="@L["Difference"]">
                             @(line.IsCounted ? (line.Variance > 0 ? $"+{line.Variance}" : line.Variance.ToString()) : "-")
                         </div>
-                        <div class="st-varvalue st-right @VarianceClass(line)" data-label="Value">
+                        <div class="st-varvalue st-right @VarianceClass(line)" data-label="@L["Value"]">
                             @(line.IsCounted ? line.VarianceValue.ToString("C", CultureInfo.CurrentCulture) : "-")
                         </div>
 

@@ -2,6 +2,13 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    /* Nothing inside the shell may widen the page. A grid that scrolls sideways
+       inside its own card still reports its full width up the tree to here, and
+       a phone browser answers that by widening its layout viewport to match - so
+       every list page zoomed out to a thousand pixels. clip rather than hidden,
+       so this box does not become a scroller and the sticky sidebar keeps the
+       viewport as its own. */
+    overflow-x: clip;
 }
 
 main {
@@ -56,17 +63,17 @@ main {
 }
 
 @media (max-width: 640.98px) {
-    .top-row:not(.auth) {
+    /* On a phone the language and account chips sit in the dark navbar beside the
+       menu button (see NavMenu), so the light top bar has nothing left to show and
+       gives its height back to the page. */
+    .top-row {
         display: none;
     }
 
-    .top-row.auth {
-        justify-content: space-between;
-    }
-
-    .top-row ::deep a,
-    .top-row ::deep .btn-link {
-        margin-left: 0;
+    /* A rem and a half of gutter each side is a fifth of a 375px screen. */
+    article {
+        padding-left: var(--am-space-4) !important;
+        padding-right: var(--am-space-4) !important;
     }
 }
 

@@ -783,7 +783,8 @@ a:hover, .btn-link:hover {
 }
 
 /* Only the grid scrolls sideways, so the page itself never does. */
-.list-scroll {
+.list-scroll,
+.table-scroll {
     overflow-x: auto;
 }
 
@@ -1695,19 +1696,54 @@ a:hover, .btn-link:hover {
         position: sticky;
         top: 0;
         z-index: 5;
+        gap: .5rem var(--am-space-4);
         padding: .5rem 0;
         margin-bottom: var(--am-space-3);
         background-color: var(--am-surface);
         border-bottom: 1px solid var(--am-rule);
     }
 
+    /* What a counter needs pinned while working down the list is the reference,
+       the progress and the save state. The description, who raised the sheet
+       and the print button are read once, and a pinned header that held them
+       took a third of the screen. */
+    .st-header .page-eyebrow,
+    .st-header-desc,
+    .st-header-meta,
+    .st-action-print {
+        display: none;
+    }
+
+    .st-header .page-title {
+        font-size: var(--am-fs-h2);
+    }
+
     .st-header-side {
-        align-items: stretch;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: .5rem .75rem;
         min-width: 100%;
     }
 
+    .st-progress {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .st-progress-count {
+        font-size: var(--am-fs-body);
+    }
+
     .st-header-actions {
-        justify-content: flex-start;
+        flex: 1 1 100%;
+        flex-wrap: nowrap;
+        justify-content: space-between;
+    }
+
+    .st-order-select {
+        flex: 1 1 auto;
+        min-width: 0;
     }
 
     .st-save-state {
@@ -1720,7 +1756,11 @@ a:hover, .btn-link:hover {
         display: none;
     }
 
-    .st-list-count .st-row {
+    /* The blind variant is named too: its own five-column template above is
+       more specific than this rule and would otherwise win, leaving the
+       description column 0px wide and the stepper drawn over the text. */
+    .st-list-count .st-row,
+    .st-list-count.blind .st-row {
         grid-template-columns: minmax(0, 1fr) auto;
         grid-template-areas:
             "code qty"
@@ -1833,6 +1873,17 @@ a:hover, .btn-link:hover {
 
     .st-footer-actions .btn {
         width: 100%;
+    }
+}
+
+/* Below the tablet width the shell's gutter is 1rem (MainLayout), and the pinned
+   header runs out to the screen edges so the list does not show through beside it. */
+@media (max-width: 640.98px) {
+    .st-header {
+        margin-left: calc(-1 * var(--am-space-4));
+        margin-right: calc(-1 * var(--am-space-4));
+        padding-left: var(--am-space-4);
+        padding-right: var(--am-space-4);
     }
 }
 
@@ -2465,5 +2516,232 @@ a:hover, .btn-link:hover {
 
     .ts-modal-actions .btn {
         flex: 1 1 auto;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Grids on a phone.
+
+   A nine-column grid has no honest single-column form, so the data grids keep
+   their columns and scroll sideways inside their card. The two columns a thumb
+   actually needs stay put while the rest slides between them: the first, which
+   names the row, and the actions at the far end. Row action buttons grow to a
+   size a thumb can hit, and the search box takes the full width and a 16px
+   face, below which iOS zooms the page when it is focused.
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 767.98px) {
+
+    .list-search {
+        flex: 1 1 100%;
+        min-width: 0;
+    }
+
+    .list-search .form-control {
+        font-size: 16px;
+    }
+
+    .list-card .table > thead > tr > th:first-child,
+    .list-card .table > tbody > tr > td:first-child {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        /* Service report rows paint their first cell in the stage colour; every
+           other grid falls back to the card surface. */
+        background-color: var(--sr-status-color, var(--am-surface));
+    }
+
+    .list-card .table > thead > tr > th.row-actions-col,
+    .list-card .table > tbody > tr > td.row-actions-col {
+        position: sticky;
+        right: 0;
+        z-index: 1;
+        background-color: var(--am-surface);
+        box-shadow: -8px 0 8px -8px rgba(16, 24, 40, 0.18);
+    }
+
+    /* The pinned header cells sit above the pinned body cells. */
+    .list-card .table > thead > tr > th:first-child,
+    .list-card .table > thead > tr > th.row-actions-col {
+        z-index: 3;
+    }
+
+    .row-actions {
+        gap: var(--am-space-2);
+    }
+
+    .row-action {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1rem;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Line items on a phone.
+
+   The labour and parts tables on the quote and service report forms are where
+   a job is actually captured, and a table of inputs cannot be captured
+   sideways. Below 768px each line becomes a small card laid out with CSS grid:
+   the thing being described across the top with the remove button beside it,
+   the figures in a row underneath, each carrying its own label because the
+   column headings are gone. Same markup as the desktop table; the classes on
+   the cells are what let the grid place them.
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 767.98px) {
+
+    .li-table,
+    .li-table > tbody {
+        display: block;
+    }
+
+    .li-table > thead {
+        display: none;
+    }
+
+    .li-table > tbody > tr {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: .4rem .75rem;
+        align-items: end;
+        padding: .75rem 0;
+        border-bottom: 1px solid var(--am-rule);
+    }
+
+    .li-table > tbody > tr:last-child {
+        border-bottom: 0;
+    }
+
+    .li-table > tbody > tr > td,
+    .data-card .li-table > tbody > tr > td {
+        display: block;
+        min-width: 0;
+        padding: 0;
+        border: 0;
+        box-shadow: none;
+    }
+
+    /* Without the column heading above them, the cells say what they are. */
+    .li-table td[data-label]::before {
+        content: attr(data-label);
+        display: block;
+        margin-bottom: .15rem;
+        font-size: var(--am-fs-label);
+        font-weight: 700;
+        letter-spacing: .04em;
+        text-transform: uppercase;
+        color: var(--am-steel-light);
+    }
+
+    .li-table td .form-control,
+    .li-table td .form-select {
+        width: 100%;
+        min-width: 0;
+        font-size: 16px; /* Anything smaller and iOS zooms the page on focus. */
+    }
+
+    .li-first  { grid-area: first; }
+    .li-last   { grid-area: last; }
+    .li-date   { grid-area: date; }
+    .li-type   { grid-area: type; }
+    .li-rate   { grid-area: rate; }
+    .li-hours  { grid-area: hours; }
+    .li-code   { grid-area: code; }
+    .li-desc   { grid-area: desc; }
+    .li-cost   { grid-area: cost; }
+    .li-qty    { grid-area: qty; }
+    .li-total  { grid-area: total; }
+
+    .li-remove {
+        grid-area: remove;
+        justify-self: end;
+        align-self: start;
+    }
+
+    .li-quote-labour > tbody > tr {
+        grid-template-areas:
+            "type  type  remove"
+            "rate  hours total";
+    }
+
+    .li-quote-parts > tbody > tr,
+    .li-sr-parts > tbody > tr {
+        grid-template-areas:
+            "code  code  remove"
+            "desc  desc  desc"
+            "cost  qty   total";
+    }
+
+    /* Rate type names run to "Sundays & Public Holidays", so the select has a
+       row to itself rather than a third of one beside the date. */
+    .li-sr-labour > tbody > tr {
+        grid-template-areas:
+            "first last  remove"
+            "date  date  date"
+            "type  type  type"
+            "rate  hours total";
+    }
+
+    /* Discount is not in use, so "actual" and "total" are the same figure. */
+    .li-sr-parts .li-actual {
+        display: none;
+    }
+
+    /* The trailing line that adds a row holds one control in its first cell;
+       the cells that pad it out to the table's width have nothing to pad here. */
+    .li-table > tbody > tr.add-row {
+        display: block;
+        padding-bottom: 0;
+    }
+
+    .li-table > tbody > tr.add-row > td:not(:first-child) {
+        display: none;
+    }
+
+    /* The part picker drops down from a card narrower than its own list. */
+    .dropdown-menu.dropdown-scroll {
+        width: calc(100vw - 2rem);
+        max-width: calc(100vw - 2rem);
+    }
+
+    .dropdown-scroll .dropdown-item {
+        padding: .5rem .75rem;
+        white-space: normal;
+    }
+
+    .dropdown-scroll .form-control {
+        font-size: 16px;
+    }
+
+    .data-card {
+        padding-left: var(--am-space-3);
+        padding-right: var(--am-space-3);
+    }
+
+    .data-card-header {
+        flex-wrap: wrap;
+        gap: .25rem .75rem;
+    }
+}
+
+/* ---------------------------------------------------------------------------
+   Page footers on a phone. Four buttons in a row need more than 375px, and the
+   row was right-aligned, so the first of them - Save - was pushed off the left
+   edge of the screen. They stack, full width, Save first.
+   --------------------------------------------------------------------------- */
+
+@media (max-width: 767.98px) {
+
+    .page-footer .footer-buttons {
+        flex-direction: column;
+        align-items: stretch;
+        gap: var(--am-space-2);
+        padding-right: 0;
+    }
+
+    .page-footer .footer-buttons .btn {
+        width: 100%;
+        margin-left: 0 !important; /* .fsr-button sets its margin with !important */
     }
 }

@@ -680,6 +680,12 @@
         grid-template-columns: 1fr;
     }
 
+    /* Five columns of client figures came to 340px in a 325px card. */
+    .dash-table th,
+    .dash-table td {
+        padding-right: var(--am-space-1);
+    }
+
     .col-client {
         width: auto;
     }

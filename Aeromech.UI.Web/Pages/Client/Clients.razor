@@ -93,17 +93,17 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>
+                                <td data-label="@L["Weekdays"]">
                                     <NumberInput TValue="double" @bind-Value="clientRatesWeekdays.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
                                     <ValidationMessage For="() => clientRatesWeekdays.Rate" />
                                 </td>
-                                <td>
+                                <td data-label="@L["Weekdays Overtime"]">
                                     <NumberInput TValue="double" @bind-Value="clientRatesWeekdaysOvertime.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
                                 </td>
-                                <td>
+                                <td data-label="@L["Sundays & Public Holidays"]">
                                     <NumberInput TValue="double" @bind-Value="clientRatesSundaysAndPublicHolidays.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
                                 </td>
-                                <td>
+                                <td data-label="@L["Overtime"]">
                                     <NumberInput TValue="double" @bind-Value="clientRatesOvertime.Rate" class="form-control" id="clientRatesWeekdays" Step=".01" />
                                 </td>
                             </tr>

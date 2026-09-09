@@ -4,14 +4,46 @@
     {
       "name": "aeromech-web",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--project", "Aeromech.UI.Web/AeroMech.UI.Web.csproj", "--launch-profile", "http"],
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "Aeromech.UI.Web/AeroMech.UI.Web.csproj",
+        "--launch-profile",
+        "http"
+      ],
       "port": 5066
     },
     {
       "name": "aeromech-web-alt",
       "runtimeExecutable": "dotnet",
-      "runtimeArgs": ["run", "--project", "Aeromech.UI.Web/AeroMech.UI.Web.csproj", "--launch-profile", "http", "--property:BaseOutputPath=bin/claude-preview/", "--", "--urls", "http://localhost:5166"],
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "Aeromech.UI.Web/AeroMech.UI.Web.csproj",
+        "--launch-profile",
+        "http",
+        "--property:BaseOutputPath=bin/claude-preview/",
+        "--",
+        "--urls",
+        "http://localhost:5166"
+      ],
       "port": 5166
+    },
+    {
+      "name": "aeromech-web-mobile",
+      "runtimeExecutable": "dotnet",
+      "runtimeArgs": [
+        "run",
+        "--project",
+        "Aeromech.UI.Web/AeroMech.UI.Web.csproj",
+        "--launch-profile",
+        "http",
+        "--property:BaseOutputPath=bin/claude-preview-mobile/",
+        "--",
+        "--urls",
+        "http://localhost:5266"
+      ],
+      "port": 5266
     }
   ]
 }

@@ -29,14 +29,14 @@
         <DataAnnotationsValidator />
         <fieldset disabled="@_quote.IsConverted">
             <div class="row mt-3">
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label for="quote-date">@L["Date"]:</label>
                         <InputDate @bind-Value="_quote.QuoteDate" class="form-control" id="quote-date"></InputDate>
                         <ValidationMessage For="() => _quote.QuoteDate" />
                     </div>
                 </div>
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label for="vehicle-hours">@L["Vehicle hours"]:</label>
                         <NumberInput @bind-Value="_quote.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
@@ -45,7 +45,7 @@
                 </div>
             </div>
             <div class="row mt-2">
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label for="select-client">@L["Client"]:</label>
                         <InputSelect class="form-select"
@@ -62,7 +62,7 @@
                         <ValidationMessage For="() => _quote.ClientId" />
                     </div>
                 </div>
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label for="select-vehicle">@L["Vehicle"]:</label>
                         <InputSelect class="form-select" id="select-vehicle"
@@ -80,7 +80,7 @@
                 </div>
             </div>
             <div class="row mt-2">
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label for="service-type">@L["Service Type"]:</label>
                         <InputSelect class="form-select" id="service-type"
@@ -107,7 +107,7 @@
                         @L.Format("Quoted per rate type at the client's rates — total {0}", _quote.Labour.Where(x => !x.IsDeleted).Sum(LabourTotal).ToString("F", CultureInfo.InvariantCulture))
                     </span>
                 </div>
-                <table class="table table-hover">
+                <table class="table table-hover li-table li-quote-labour">
                     <thead>
                         <tr>
                             <th>@L["Rate Type"]</th>
@@ -121,7 +121,7 @@
                         @foreach (var labour in _quote.Labour.Where(x => !x.IsDeleted))
                         {
                             <tr>
-                                <td>
+                                <td class="li-type" data-label="@L["Rate Type"]">
                                     <InputSelect Value="@labour.RateType"
                                                  ValueExpression="@(() => labour.RateType)"
                                                  ValueChanged="@((RateType rateType) => HandleOnChangeRateType(labour, rateType))"
@@ -135,7 +135,7 @@
                                 @* The rate is the client's, so it is shown rather than offered
                                    for editing. A blank means the rate card has nothing for this
                                    rate type, which is worth saying plainly. *@
-                                <td class="align-middle">
+                                <td class="align-middle li-rate" data-label="@L["Rate"]">
                                     @if (labour.Rate > 0)
                                     {
                                         @labour.Rate.ToString("F", CultureInfo.InvariantCulture)
@@ -149,13 +149,13 @@
                                         <span class="text-danger" title="@L.Format("This client has no rate on file for {0}", labour.RateType.GetDisplayName())">@L["No rate on file"]</span>
                                     }
                                 </td>
-                                <td>
+                                <td class="li-hours" data-label="@L["Hours"]">
                                     <NumberInput TValue="double" @bind-Value="@labour.Hours" Placeholder="@L["Enter hours"]" Step=".01" />
                                 </td>
-                                <td class="align-middle">
+                                <td class="align-middle li-total" data-label="@L["Total"]">
                                     @LabourTotal(labour).ToString("F", CultureInfo.InvariantCulture)
                                 </td>
-                                <td class="row-actions-col">
+                                <td class="row-actions-col li-remove">
                                     <RowActions>
                                         <RowAction Icon="@Icons.Remove" Label="@L["Remove this labour line"]" Danger="true"
                                                    OnClick="() => RemoveLabour(labour)" />
@@ -194,7 +194,7 @@
                         @L.Format("Priced only — stock moves on conversion — total {0}", _quote.Parts.Where(x => !x.IsDeleted).Sum(PartTotal).ToString("F", CultureInfo.InvariantCulture))
                     </span>
                 </div>
-                <table class="table table-hover">
+                <table class="table table-hover li-table li-quote-parts">
                     <thead>
                         <tr>
                             <th>@L["Part Number"]</th>
@@ -209,7 +209,7 @@
                         @foreach (var part in _quote.Parts.Where(x => !x.IsDeleted))
                         {
                             <tr>
-                                <td>
+                                <td class="li-code" data-label="@L["Part Number"]">
                                     @if (part.IsAdHockPart)
                                     {
                                         <InputText @bind-Value="part.PartCode" type="text" class="form-control"></InputText>
@@ -219,7 +219,7 @@
                                         @part.PartCode
                                     }
                                 </td>
-                                <td>
+                                <td class="li-desc" data-label="@L["Description"]">
                                     @if (part.IsAdHockPart)
                                     {
                                         <InputText @bind-Value="part.PartDescription" type="text" class="form-control"></InputText>
@@ -229,16 +229,16 @@
                                         @part.PartDescription
                                     }
                                 </td>
-                                <td>
+                                <td class="li-cost" data-label="@L["C.P.U."]">
                                     <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="@L["Enter Cost Price"]" Step="0.01" />
                                 </td>
-                                <td>
+                                <td class="li-qty" data-label="@L["Qty"]">
                                     <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="@L["Enter qty"]" />
                                 </td>
-                                <td>
+                                <td class="li-total" data-label="@L["Total"]">
                                     @PartTotal(part).ToString("F", CultureInfo.InvariantCulture)
                                 </td>
-                                <td class="row-actions-col">
+                                <td class="row-actions-col li-remove">
                                     <RowActions>
                                         <RowAction Icon="@Icons.Remove" Label="@L["Remove this part"]" Danger="true"
                                                    OnClick="() => RemovePart(part)" />
@@ -278,14 +278,14 @@
             </div>
             <br />
             <div class="row mt-3">
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label for="instruction">@L["Instruction"]:</label>
                         <InputText @bind-Value="_quote.Instruction" type="text" class="form-control" id="instruction"></InputText>
                         <ValidationMessage For="() => _quote.Instruction" />
                     </div>
                 </div>
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label for="detailed-service-report">@L["Detailed Service Report"]:</label>
                         <InputTextArea @bind-Value="_quote.DetailedServiceReport" type="text" class="form-control" id="detailed-service-report"></InputTextArea>

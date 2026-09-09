@@ -7,6 +7,13 @@
             <img class="brand-mark" src="images/aeromech-mark.png" alt="" aria-hidden="true" width="28" height="28" />
             <span class="brand-name">AeroMech</span>
         </a>
+        @* On a phone the light top bar is hidden, so the language and account chips
+           sit here beside the menu button instead. From 641px up the top bar carries
+           them and this block is hidden. *@
+        <div class="navbar-tools">
+            <LanguageSelector />
+            <LoginDisplay />
+        </div>
         <button title="@L["Navigation menu"]" class="navbar-toggler" @onclick="ToggleNavMenu">
             <span class="navbar-toggler-icon"></span>
         </button>

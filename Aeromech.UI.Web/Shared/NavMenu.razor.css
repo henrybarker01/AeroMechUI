@@ -196,3 +196,47 @@
             flex: 1 1 auto;
         }
 }
+
+/* Language and account chips, phones only. The light top bar that carries them
+   from 641px up is hidden on a phone, so they sit here beside the menu button -
+   one bar of chrome rather than two. The chips are drawn for a light surface;
+   here they switch to white ink at the same quiet weights the login screen uses
+   on its dark canvas. */
+.navbar-tools {
+    display: flex;
+    align-items: center;
+    gap: 0.125rem;
+    margin-left: auto;
+    margin-right: 0.5rem;
+    min-width: 0;
+}
+
+.navbar-tools ::deep .lang-chip,
+.navbar-tools ::deep .user-chip {
+    min-height: 2.5rem;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+    .navbar-tools ::deep .lang-chip:hover,
+    .navbar-tools ::deep .user-chip:hover,
+    .navbar-tools ::deep .lang-chip[aria-expanded="true"],
+    .navbar-tools ::deep .user-chip[aria-expanded="true"] {
+        background-color: rgba(255, 255, 255, 0.12);
+    }
+
+.navbar-tools ::deep .lang-chip .bi-globe2,
+.navbar-tools ::deep .lang-caret,
+.navbar-tools ::deep .user-caret {
+    color: rgba(255, 255, 255, 0.65);
+}
+
+/* The desktop bar has room for the name; here the avatar alone says who is in. */
+.navbar-tools ::deep .user-name {
+    display: none;
+}
+
+@media (min-width: 641px) {
+    .navbar-tools {
+        display: none;
+    }
+}

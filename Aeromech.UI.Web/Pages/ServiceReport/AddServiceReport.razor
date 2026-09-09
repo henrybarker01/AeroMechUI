@@ -31,6 +31,7 @@
                 <span class="data-card-note">@L["Quoted per rate type, captured per person"]</span>
             </div>
 
+            <div class="table-scroll">
             <table class="table">
                 <thead>
                     <tr>
@@ -94,6 +95,7 @@
                     </tr>
                 </tfoot>
             </table>
+            </div>
 
             @if (CapturedHours == 0)
             {
@@ -125,14 +127,14 @@
     <EditForm EditContext="editContext">
         <DataAnnotationsValidator />
         <div class="row mt-3">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="sales-order-number">@L["Sales Order Number"]:</label>
                     <InputText @bind-Value="_serviceReport.SalesOrderNumber" type="text" class="form-control" id="sales-order-number"></InputText>
                     <ValidationMessage For="() => _serviceReport.SalesOrderNumber" />
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="report-date">@L["Date"]:</label>
                     <InputDate @bind-Value="_serviceReport.ReportDate" class="form-control" id="report-date"></InputDate>
@@ -141,7 +143,7 @@
             </div>
         </div>
         <div class="row mt-2">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="select-client">@L["Client"]:</label>
                     <InputSelect class="form-select"
@@ -158,7 +160,7 @@
                     <ValidationMessage For="() => _serviceReport.ClientId" />
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="select-vehicle">@L["Vehicle"]:</label>
                     <InputSelect class="form-select" id="select-vehicle"
@@ -176,7 +178,7 @@
             </div>
         </div>
         <div class="row mt-2">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="service-type">@L["Service Type"]:</label>
                     <InputSelect class="form-select" id="service-type"
@@ -192,7 +194,7 @@
                     <ValidationMessage For="() => _serviceReport.ServiceType" />
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="vehicle-hours">@L["Vehicle hours"]:</label>
                     <NumberInput @bind-Value="_serviceReport.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
@@ -208,7 +210,7 @@
 			</div>		 
 		</div> *@
         <div class="row mt-3">
-            <table class="table table-hover">
+            <table class="table table-hover li-table li-sr-labour">
                 <thead>
                     <tr>
                         <th>@L["Name"]</th>
@@ -228,17 +230,17 @@
                         @foreach (var employee in _serviceReport.Employees.Where(x => !x.IsDeleted))
                         {
                             <tr>
-                                <td>
+                                <td class="li-first" data-label="@L["Name"]">
                                     @employee.FirstName
                                 </td>
-                                <td>
+                                <td class="li-last" data-label="@L["Surname"]">
                                     @employee.LastName
                                 </td>
-                                <td>
+                                <td class="li-date" data-label="@L["Date"]">
                                     <InputDate @bind-Value="employee.DutyDate" class="form-control" id="report-date"></InputDate>
                                     @* <NumberInput TValue="double?" @bind-Value="@employee.Discount" Placeholder="Enter discount" Step=".01"/>  *@
                                 </td>
-                                <td>
+                                <td class="li-type" data-label="@L["Rate Type"]">
                                     <InputSelect @bind-Value="employee.RateType" class="form-select">
                                         @foreach (var rate in RateTypes)
                                         {
@@ -246,21 +248,21 @@
                                         }
                                     </InputSelect>
                                 </td>
-                                <td>
+                                <td class="li-rate" data-label="@L["Rate"]">
                                     @getRate(employee).ToString("F", CultureInfo.InvariantCulture)
                                 </td>
-                                <td>
+                                <td class="li-hours" data-label="@L["Hours"]">
                                     <NumberInput TValue="double?" @bind-Value="@employee.Hours" Placeholder="@L["Enter hours"]" Step=".01" />
                                 </td>
                                @*  <td>
                                     @(getRate(employee).ToString("F", CultureInfo.InvariantCulture))
                                 </td> *@
 
-                                <td>
+                                <td class="li-total" data-label="@L["Total"]">
                                     @(getTotal(employee).ToString("F", CultureInfo.InvariantCulture))
 
                                 </td>
-                                <td class="row-actions-col">
+                                <td class="row-actions-col li-remove">
                                     <RowActions>
                                         <RowAction Icon="@Icons.Remove" Label="@L["Remove this labour line"]" Danger="true"
                                                    OnClick="() => RemoveLabour(employee.Id)" />
@@ -269,7 +271,7 @@
                             </tr>
                         }
                     }
-                    <tr>
+                    <tr class="add-row">
                         <td>
                             <InputSelect class="form-select"
                                          id="select-client"
@@ -310,7 +312,7 @@
 			</div> 
 		</div> *@
         <div class="row mt-3">
-            <table class="table table-hover">
+            <table class="table table-hover li-table li-sr-parts">
                 <thead>
                     <tr>
                         <th>@L["Part Number"]</th>
@@ -329,7 +331,7 @@
                         @foreach (var part in _serviceReport.Parts.Where(x => !x.IsDeleted))
                         {
                             <tr>
-                                <td>
+                                <td class="li-code" data-label="@L["Part Number"]">
                                     @if (part.IsAdHockPart)
                                     {
                                         <InputText @bind-Value="part.PartCode" type="text" class="form-control"></InputText>
@@ -340,7 +342,7 @@
                                         @part.PartCode
                                     }
                                 </td>
-                                <td>
+                                <td class="li-desc" data-label="@L["Description"]">
                                     @if (part.IsAdHockPart)
                                     {
                                         <InputText @bind-Value="part.PartDescription" type="text" class="form-control"></InputText>
@@ -351,7 +353,7 @@
                                         @part.PartDescription
                                     }
                                 </td>
-                                <td>
+                                <td class="li-cost" data-label="@L["C.P.U."]">
                                     <NumberInput TValue="double" @bind-Value="@part.CostPrice" Placeholder="@L["Enter Cost Price"]" Step="0.01" />
                                     @* 	@if (part.IsAdHockPart)
 									{
@@ -363,20 +365,20 @@
 									  } *@
 
                                 </td>
-                                <td>
+                                <td class="li-qty" data-label="@L["Qty"]">
                                     <NumberInput TValue="int" @bind-Value="@part.QTY" Placeholder="@L["Enter hours"]" />
                                 </td>
-                                <td>
+                                <td class="li-actual" data-label="@L["Actual"]">
                                     @((part.CostPrice * part.QTY).ToString("F", CultureInfo.InvariantCulture))
                                 </td>
                                 @* <td>
 										<NumberInput TValue="double" @bind-Value="@part.Discount" Placeholder="Enter discount" Step=".01" /> 
 									</td> *@
-                                <td>
+                                <td class="li-total" data-label="@L["Total"]">
                                 @(((Convert.ToDouble(part.CostPrice) * part.QTY) - ((part.Discount / 100) * (Convert.ToDouble(part.CostPrice) * part.QTY))).ToString("F", CultureInfo.InvariantCulture))
 
                                 </td>
-                                <td class="row-actions-col">
+                                <td class="row-actions-col li-remove">
                                     <RowActions>
                                         <RowAction Icon="@Icons.Remove" Label="@L["Remove this part"]" Danger="true"
                                                    OnClick="() => RemovePart(part.Id)" />
@@ -388,7 +390,7 @@
 
                         }
 
-                        <tr>
+                        <tr class="add-row">
                             <td>
 
                                 @* <InputSelect class="form-select" 
@@ -446,13 +448,13 @@
         </div>
         <br />
         <div class="row mt-3">
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="instruction">@L["Instruction"]:</label>
                     <InputText @bind-Value="_serviceReport.Instruction" type="text" class="form-control" id="instruction"></InputText>
                 </div>
             </div>
-            <div class="col-6">
+            <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="detailed-service-report">@L["Detailed Service Report"]:</label>
                     <InputTextArea @bind-Value="_serviceReport.DetailedServiceReport" type="text" class="form-control" id="detailed-service-report"></InputTextArea>
