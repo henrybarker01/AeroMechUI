@@ -59,7 +59,8 @@ namespace AeroMech.Models
 
         /// <summary>
         /// The quote this report is being converted from, when it did not start as a walk-up
-        /// service report.
+        /// service report - or, on a saved walk-up report, the quote raised from it when it was
+        /// printed as one.
         /// </summary>
         public int? QuoteId { get; set; }
 

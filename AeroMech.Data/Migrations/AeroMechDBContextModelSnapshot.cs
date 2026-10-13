@@ -323,6 +323,9 @@ namespace AeroMech.Data.Migrations
                     b.Property<DateTimeOffset?>("ConvertedDate")
                         .HasColumnType("timestamp with time zone");
 
+                    b.Property<bool>("CreatedFromServiceReport")
+                        .HasColumnType("boolean");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 

@@ -18,7 +18,13 @@
         </div>
     </div>
 
-    @if (_quote.IsConverted)
+    @if (_quote.CreatedFromServiceReport)
+    {
+        <div class="alert alert-info mt-2" role="alert">
+            @L.Format("This quote was created from service report AEM {0}. To change it, edit the service report and use Save & Print Quote there.", _quote.ServiceReportNumber)
+        </div>
+    }
+    else if (_quote.IsConverted)
     {
         <div class="alert alert-info mt-2" role="alert">
             @L.Format("This quote was converted to service report AEM {0} on {1}, so it can no longer be changed.", _quote.ServiceReportNumber, _quote.ConvertedDate?.ToString("dd/MM/yyyy"))
@@ -39,8 +45,14 @@
                 <div class="col-12 col-md-6">
                     <div class="form-group">
                         <label for="vehicle-hours">@L["Vehicle hours"]:</label>
-                        <NumberInput @bind-Value="_quote.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
-                        <ValidationMessage For="() => _quote.VehicleHours" />
+                        @* Bound through the quote this render drew, not through _quote. NumberInput
+                           writes the value it first rendered with back through its binding once its
+                           script has loaded. On an existing quote that write lands after the blank
+                           form has been swapped for the saved quote, so through _quote the saved
+                           quote was handed the blank form's 0 and lost its vehicle hours. *@
+                        @{ var quote = _quote; }
+                        <NumberInput @bind-Value="quote.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
+                        <ValidationMessage For="() => quote.VehicleHours" />
                     </div>
                 </div>
             </div>

@@ -37,7 +37,11 @@
             <td>@q.ServiceType</td>
             <td>@CalculateTotal(q).ToString("C", CultureInfo.CurrentCulture)</td>
             <td>
-                @if (q.IsConverted)
+                @if (q.CreatedFromServiceReport)
+                {
+                    <span title="@L["Created from a service report"]">@L.Format("From AEM {0}", q.ServiceReportNumber)</span>
+                }
+                else if (q.IsConverted)
                 {
                     <span title="@L["Converted to a service report"]">@L.Format("Converted to AEM {0}", q.ServiceReportNumber)</span>
                 }

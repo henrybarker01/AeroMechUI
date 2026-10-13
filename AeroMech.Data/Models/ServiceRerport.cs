@@ -43,7 +43,8 @@ namespace AeroMech.Data.Models
 		public int? QuoteNumber { get; set; }
 
 		/// <summary>
-		/// The quote this report was converted from, when it started life as one.
+		/// The quote this report was converted from, when it started life as one - or the quote
+		/// raised from it, when the report came first and was then printed as a quote.
 		/// </summary>
 		public virtual Quote? Quote { get; set; }
 		public int? QuoteId { get; set; }

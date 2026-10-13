@@ -197,8 +197,14 @@
             <div class="col-12 col-md-6">
                 <div class="form-group">
                     <label for="vehicle-hours">@L["Vehicle hours"]:</label>
-                    <NumberInput @bind-Value="_serviceReport.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
-                    <ValidationMessage For="() => _serviceReport.VehicleHours" />
+                    @* Bound through the report this render drew, not through _serviceReport.
+                       NumberInput writes the value it first rendered with back through its binding
+                       once its script has loaded, which can be after the blank form has been
+                       swapped for the saved report - through _serviceReport that write would hand
+                       the saved report the blank form's 0 hours. *@
+                    @{ var report = _serviceReport; }
+                    <NumberInput @bind-Value="report.VehicleHours" type="text" class="form-control" id="vehicle-hours"></NumberInput>
+                    <ValidationMessage For="() => report.VehicleHours" />
                 </div>
             </div>
         </div>

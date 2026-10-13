@@ -381,11 +381,12 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
         }
 
         /// <summary>
-        /// Prints the report on the quote document. Some clients work backwards: the job is
-        /// written up first and only then does the client want the numbers to sign off, so the
-        /// same record is printed as a quote. Nothing is created and nothing changes on the
-        /// report - no quote row and no quote number - so the quotes list keeps showing only work
-        /// that was actually quoted up front.
+        /// Some clients work backwards: the job is written up first and only then do they want the
+        /// numbers to sign off. Printing the report as a quote raises a real quote from it, listed
+        /// with the others under the next quote number, and printing again brings that quote up to
+        /// date with the report. A plain save never creates one. A report converted from a quote
+        /// prints its captured work under that quote's number instead, and the accepted quote is
+        /// left alone.
         /// </summary>
         private async Task SaveAndPrintQuote()
         {
@@ -394,8 +395,24 @@ namespace AeroMech.UI.Web.Pages.ServiceReport
             var savedId = await SaveServiceReport(_serviceReport);
             if (savedId == 0) return;
 
-            ToastService.Notify(new(ToastType.Success, L["Service report saved successfully."]));
-            NavigationManager.NavigateTo($"/ShowQuote/from-service-report/{savedId}");
+            QuoteModel quote;
+
+            try
+            {
+                // The save reloads _serviceReport, so this is the report exactly as it now stands.
+                quote = await QuoteService.QuoteServiceReport(_serviceReport);
+            }
+            catch (Exception ex)
+            {
+                ToastService.Notify(new(ToastType.Danger, L.Format("Service report saved, but its quote could not be created. {0}", ex.Message)));
+                return;
+            }
+
+            ToastService.Notify(new(ToastType.Success, L.Format("Service report saved as quote AEM {0}.", quote.QuoteNumber)));
+
+            NavigationManager.NavigateTo(quote.CreatedFromServiceReport
+                ? $"/ShowQuote/{quote.Id}"
+                : $"/ShowQuote/from-service-report/{savedId}");
         }
 
         private string SearchTerm { get; set; } = string.Empty;

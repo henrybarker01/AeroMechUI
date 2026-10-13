@@ -54,6 +54,12 @@ namespace AeroMech.Models.Models
 
         public DateTimeOffset? ConvertedDate { get; set; }
 
+        /// <summary>
+        /// Set when the quote was raised from a service report rather than written up front. It
+        /// is linked to that report, so it reads as converted too, but it changes with the report.
+        /// </summary>
+        public bool CreatedFromServiceReport { get; set; }
+
         public bool IsConverted => ServiceReportId.HasValue;
     }
 }

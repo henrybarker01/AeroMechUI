@@ -6,6 +6,7 @@ using AeroMech.Models;
 using AeroMech.Models.Models;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using QuestPDF.Fluent;
 
 namespace AeroMech.UI.Web.Services
@@ -15,7 +16,9 @@ namespace AeroMech.UI.Web.Services
     /// <see cref="StockAdjustment"/>, touches <see cref="Part.QtyOnHand"/> or creates a
     /// <see cref="ServiceReportEmployee"/> row that a timesheet would pick up. Stock and hours
     /// only move when <see cref="BuildServiceReportFromQuote"/> hands the quote over to
-    /// <see cref="ServiceReportService"/>.
+    /// <see cref="ServiceReportService"/>. A quote raised from a service report
+    /// (<see cref="QuoteServiceReport"/>) comes after its report has already moved them, and moves
+    /// nothing itself.
     /// </summary>
     public class QuoteService
     {
@@ -23,18 +26,24 @@ namespace AeroMech.UI.Web.Services
         private readonly IDbContextFactory<AeroMechDBContext> _contextFactory;
         private readonly QuoteDocument _quoteDocument;
         private readonly AuditService _auditService;
+        private readonly IMemoryCache _memoryCache;
 
-        public QuoteService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, QuoteDocument quoteDocument, AuditService auditService)
+        public QuoteService(IDbContextFactory<AeroMechDBContext> contextFactory, IMapper mapper, QuoteDocument quoteDocument, AuditService auditService, IMemoryCache memoryCache)
         {
             _contextFactory = contextFactory;
             _mapper = mapper;
             _quoteDocument = quoteDocument;
             _auditService = auditService;
+            _memoryCache = memoryCache;
         }
 
         // Date picker is date-only. Persist as UTC midnight for the selected calendar date (no timezone day-shift).
         private static DateTimeOffset NormalizeDateOnlyToUtc(DateTimeOffset value)
             => new DateTimeOffset(value.Date, TimeSpan.Zero);
+
+        // One series for every quote, whether it was written up front or raised from a service report.
+        private static async Task<int> NextQuoteNumber(AeroMechDBContext context)
+            => (await context.Quotes.MaxAsync(x => (int?)x.QuoteNumber) ?? 0) + 1;
 
         public async Task<int> AddQuote(QuoteModel quote)
         {
@@ -46,7 +55,7 @@ namespace AeroMech.UI.Web.Services
             quoteToAdd.QuoteDate = NormalizeDateOnlyToUtc(quote.QuoteDate);
             quoteToAdd.ClientId = quote.ClientId == 0 ? null : quote.ClientId;
             quoteToAdd.VehicleId = quote.VehicleId == 0 ? null : quote.VehicleId;
-            quoteToAdd.QuoteNumber = (await _aeroMechDBContext.Quotes.MaxAsync(x => (int?)x.QuoteNumber) ?? 0) + 1;
+            quoteToAdd.QuoteNumber = await NextQuoteNumber(_aeroMechDBContext);
 
             quoteToAdd.Labour.ForEach(x => x.Id = 0);
 
@@ -315,11 +324,122 @@ namespace AeroMech.UI.Web.Services
         }
 
         /// <summary>
-        /// Renders the quote document for work that was written up as a service report first.
-        /// Some clients still work backwards - the report is captured and only then does the
-        /// client want the numbers to sign off - so the same document is composed from the report
-        /// rather than keeping a second copy of the pricing in the quotes table. Nothing is
-        /// written: no quote row, no quote number, and the report itself is left untouched.
+        /// Raises a quote from a service report, the other way round from
+        /// <see cref="BuildServiceReportFromQuote"/>. Some clients only want the numbers once the
+        /// work is done, so the report is written up first and then printed as a quote for them to
+        /// sign. That quote is numbered from the same series as any other, listed with the others,
+        /// and linked to the report the way a converted quote is. It is a copy of the report, so
+        /// printing the report as a quote again rewrites it under the same number; a plain save of
+        /// the report leaves it as it was last printed. A report that was converted from a quote
+        /// already answers to that quote - the record of what the client accepted - and it is left
+        /// exactly as it is.
+        /// </summary>
+        /// <param name="serviceReport">The report as it was just saved.</param>
+        /// <returns>The quote the report goes out under.</returns>
+        public async Task<QuoteModel> QuoteServiceReport(ServiceReportModel serviceReport)
+        {
+            using var _aeroMechDBContext = await _contextFactory.CreateDbContextAsync();
+
+            var report = await _aeroMechDBContext.ServiceReports
+                .Include(x => x.Quote).ThenInclude(x => x!.Labour)
+                .Include(x => x.Quote).ThenInclude(x => x!.Parts)
+                .Include(x => x.Quote).ThenInclude(x => x!.AdHockParts)
+                .SingleAsync(x => x.Id == serviceReport.Id);
+
+            var quote = report.Quote;
+
+            if (quote != null && !quote.CreatedFromServiceReport)
+                return await GetQuote(quote.Id);
+
+            var isNew = quote == null;
+
+            if (quote == null)
+            {
+                quote = new Quote
+                {
+                    QuoteNumber = await NextQuoteNumber(_aeroMechDBContext),
+                    CreatedFromServiceReport = true
+                };
+
+                _aeroMechDBContext.Quotes.Add(quote);
+                report.Quote = quote;
+            }
+            else
+            {
+                // The lines are a copy of the report's, so they are written afresh rather than
+                // matched up against what the report held when it was last printed.
+                _aeroMechDBContext.QuoteLabour.RemoveRange(quote.Labour);
+                _aeroMechDBContext.QuoteParts.RemoveRange(quote.Parts);
+                _aeroMechDBContext.QuoteAdHockParts.RemoveRange(quote.AdHockParts);
+            }
+
+            // Read through the same translation that prints a report as a quote, so the stored
+            // quote and a printed one cannot come out differently.
+            var copy = BuildQuoteFromServiceReport(serviceReport);
+
+            quote.QuoteDate = NormalizeDateOnlyToUtc(copy.QuoteDate);
+            quote.ClientId = copy.ClientId == 0 ? null : copy.ClientId;
+            quote.VehicleId = copy.VehicleId == 0 ? null : copy.VehicleId;
+            quote.VehicleHours = copy.VehicleHours;
+            quote.ServiceType = copy.ServiceType.ToString();
+            quote.Description = copy.Description;
+            quote.Instruction = copy.Instruction;
+            quote.DetailedServiceReport = copy.DetailedServiceReport;
+
+            quote.Labour.AddRange(copy.Labour.Select(labour => new QuoteLabour
+            {
+                RateType = labour.RateType,
+                Rate = labour.Rate,
+                Hours = labour.Hours,
+                Discount = labour.Discount
+            }));
+
+            foreach (var part in copy.Parts)
+            {
+                if (part.IsAdHockPart)
+                    quote.AdHockParts.Add(NewAdHockPart(part));
+                else
+                    quote.Parts.Add(NewPart(part));
+            }
+
+            report.QuoteNumber = quote.QuoteNumber;
+
+            // Saved first so the entry can name the id the save produced, and inside one
+            // transaction so the quote cannot exist without its report pointing at it.
+            using var transaction = await _aeroMechDBContext.Database.BeginTransactionAsync();
+
+            await _aeroMechDBContext.SaveChangesAsync();
+
+            var reference = $"AEM{quote.QuoteNumber}";
+            var reportReference = $"AEM{report.ServiceReportNumber}";
+
+            _auditService.Record(
+                _aeroMechDBContext,
+                await _auditService.ResolveUser(),
+                AuditArea.Quotes,
+                isNew ? AuditAction.Created : AuditAction.Updated,
+                nameof(Quote),
+                quote.Id,
+                reference,
+                isNew
+                    ? $"Quote {reference} created from service report {reportReference}."
+                    : $"Quote {reference} updated from service report {reportReference}.");
+
+            await _aeroMechDBContext.SaveChangesAsync();
+            await transaction.CommitAsync();
+
+            // GetServiceReport keeps reports in the memory cache by id, and this one has just been
+            // linked to its quote underneath it.
+            _memoryCache.Remove(report.Id);
+
+            return await GetQuote(quote.Id);
+        }
+
+        /// <summary>
+        /// Renders a service report that was converted from a quote on the quote document: the
+        /// work actually captured, under the number of the quote it came from. A report written up
+        /// first has a quote of its own instead (<see cref="QuoteServiceReport"/>), which prints
+        /// like any other quote.
         /// </summary>
         public byte[] DownloadQuoteForServiceReport(ServiceReportModel serviceReport)
         {
@@ -332,9 +452,8 @@ namespace AeroMech.UI.Web.Services
         /// Reads a service report back as a quote, the other way round from
         /// <see cref="BuildServiceReportFromQuote"/>. Captured labour is per person and a quote
         /// prices per rate type, so the hours are grouped back up - a quote has nowhere to name
-        /// who did the work. The result is never saved; it only exists to be printed, so it prints
-        /// under the report's own number and carries a quote number only if the report was
-        /// converted from a real quote.
+        /// who did the work. Both the quote raised from a report and the print of a converted
+        /// report are read through here.
         /// </summary>
         private static QuoteModel BuildQuoteFromServiceReport(ServiceReportModel serviceReport)
         {
@@ -356,8 +475,7 @@ namespace AeroMech.UI.Web.Services
             return new QuoteModel
             {
                 Id = 0,
-                // A report that started as a quote keeps that quote's number on the print; one
-                // written from scratch has none, and prints under its report number alone.
+                // A report that started as a quote keeps that quote's number on the print.
                 QuoteNumber = serviceReport.QuoteNumber,
                 QuoteDate = serviceReport.ReportDate,
                 ClientId = serviceReport.ClientId,
